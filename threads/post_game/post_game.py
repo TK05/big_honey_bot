@@ -50,16 +50,13 @@ def format_post(schedule_data):
 def post_game_thread_handler(event_data):
     """Wait for game completion and, upon completion, create headline and body reflecting game result."""
 
-    print("waiting for game")
+    print("Sending to game_status_check")
     status_check(event_data["NBA_ID"])
-    print("grabbing data")
+    print(f"Generating thread data for {event_data['Date_Str']} --- {event_data['Type']}")
     headline, body = format_post(event_data)
 
     if not DEBUG:
         new_thread(headline, body, event_data['Type'])
-        print("thread posted")
-
-    print(headline)
-    print(body)
+        print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
 
     return headline, body

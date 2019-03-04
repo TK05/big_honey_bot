@@ -37,7 +37,7 @@ def status_check(nba_id):
         if r['g']['cl']:
             time_left = int(r['g']['cl'].split(':')[0])
         else:
-            print("Game Clock is NoneType")
+            print("Game clock is NoneType, sleeping 60 seconds...")
             time.sleep(60)
             continue
 
@@ -71,7 +71,7 @@ def status_check(nba_id):
                     time.sleep(10)
                     continue
             else:
-                print("something unexpected happened...")  # TODO: Handle an error properly
+                print("Something unexpected happened during game_status_check...")  # TODO: Handle an error properly
                 time.sleep(30)
                 continue
 

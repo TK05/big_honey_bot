@@ -1,7 +1,9 @@
 # 3/3/2019 - v1.0
 # TK
 
-from datetime import datetime
+# TODO: Handle json download/upload errors, if any
+
+from datetime import datetime, timedelta
 import json
 import os
 import time
@@ -31,13 +33,13 @@ while bot_running:
         # Download json
         try:
             schedule = requests.get(URL).json()
-            print("JSON Downloaded")
+            print(f"JSON Downloaded @ {datetime.now()}")
         except ValueError:
             print("Error downloading json file.")
-            time.sleep(10)
+            time.sleep(30)
             continue
 
-    print(len(schedule))
+    print(f"{len(schedule)} events remaining")
 
     # Events sorted by UTC
     all_events = sorted(schedule.keys())
@@ -53,7 +55,7 @@ while bot_running:
 
     # Check if all events finished
     if next_event_utc == 0:
-        print("All events finished posting.... exiting")
+        print("All events finished posting.... exiting".upper())
         bot_running = False
         break
 
@@ -68,8 +70,9 @@ while bot_running:
         else:
             headline, body = game_thread_handler(schedule[next_event_utc])
 
-        gist_url = update_gist(headline, schedule[next_event_utc]['Type'], body)
-        print(gist_url)
+        if not DEBUG:
+            gist_url = update_gist(headline, schedule[next_event_utc]['Type'], body)
+            print(f"Gist available at: {gist_url}")
 
         # Update event's type
         schedule[next_event_utc]['Type'] = 'done'
@@ -84,15 +87,31 @@ while bot_running:
             # Upload change to json
             header = {'Content-Type': 'application/json'}
             req = requests.put(URL, data=valid_json, headers=header)
-            print(f"{req.status_code}: JSON Updated")
+            print(f"{req.status_code}: JSON update status code")
 
         # Move onto next event
         time.sleep(10)
         continue
 
     # Calculate how long to wait
-    time_to_event = int(next_event_utc) - int(current_utc)
-    wait_time = time_to_event + 5
+    wait_time_sec = int(next_event_utc) - int(current_utc) + 5
 
-    print(f"Waiting {wait_time} seconds.")
-    time.sleep(wait_time)
+    while wait_time_sec > 0:
+        wait_time_str = str(timedelta(seconds=wait_time_sec)).split(':')
+
+        print(f"Next post in {wait_time_str[0]} hours, {wait_time_str[1]} minutes, {wait_time_str[2]} seconds"
+              f" on {schedule[next_event_utc]['Date_Str']} @ {schedule[next_event_utc]['Post_Date']} "
+              f"{os.environ['TZ_STR']}")
+
+        if DEBUG:
+            wait_time_sec -= 10
+            time.sleep(10)
+        else:
+            # Update every 30 minutes unless wait time < 30 minutes
+            if wait_time_sec > 1800:
+                wait_time_sec -= 1800
+                time.sleep(1800)
+            else:
+                wait_time_sec -= wait_time_sec
+                print(f"New Post in {wait_time_sec} seconds.")
+                time.sleep(wait_time_sec)

@@ -135,7 +135,7 @@ def pre_game_body(event_data):
 def game_thread_handler(event_data):
     """Callable function to generate and post a game thread."""
 
-    print("generating post")
+    print(f"Generating thread data for {event_data['Date_Str']} --- {event_data['Type']}")
     headline = game_headline(event_data)
 
     if event_data['Type'] == 'pre':
@@ -145,8 +145,6 @@ def game_thread_handler(event_data):
 
     if not DEBUG:
         new_thread(headline, body, event_data['Type'])
-        print("thread posted")
-    print(headline)
-    print(body)
+        print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
 
     return headline, body
