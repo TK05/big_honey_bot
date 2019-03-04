@@ -37,7 +37,7 @@ while True:
     current_utc = datetime.timestamp(datetime.now())
 
     # Check if the event has passed
-    if int(current_utc) < int(next_event_utc):
+    if int(current_utc) > int(next_event_utc):
 
         # Send event to appropriate thread handler
         if schedule[next_event_utc]['Type'] == 'post':
@@ -67,4 +67,5 @@ while True:
     time_to_event = int(next_event_utc) - int(current_utc)
     wait_time = time_to_event + 5
 
+    print(f"Waiting {wait_time} seconds.")
     time.sleep(wait_time)
