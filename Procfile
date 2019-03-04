@@ -1,0 +1,1 @@
+worker: python bots/manage_events_bot.py
