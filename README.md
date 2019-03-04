@@ -14,33 +14,72 @@ Capable of:
 
 ## Configuration
 
-
-**config.py**
-
-Contains most of the necessary global configuration variables needed to configure the bot. 
+To configure properly, environment variables will need to be properly set.
 
 
+### Debug setting
 
-**_config.py**
+DEBUG=False
 
-Contains the login and configuration necessary to upload gists. In the style of...
+### App config settings
 
+SEASON=2018 *first year in season; ex: 2018 for '18-'19*
 
-```json
-GISTS = {
-	'USERNAME': :github_username,
-	'API_TOKEN': :github_api_token,
-	'URL': 'https://api.github.com/gists',
-	'pre': ['pre_game.md', :gists_id_to_pre],
-	'game': ['game_thread.md', :gists_id_to_game],
-	'post': ['post_game.md', :gists_id_to_post]
-	}
-```
+TEAM=Nuggets
+
+LOCATION=Denver
+
+TZ_STR=MT
+
+TIMEZONE=US/Mountain
 
 
-**praw.ini**
+### App/PRAW specific settings
 
-Configuration file necessary for [PRAW](https://praw.readthedocs.io/en/latest/getting_started/configuration/prawini.html) to work.
+TARGET_SUB=:targetsub
+
+USER_AGENT=BigHoneyBot_v1.0 by SomeGuy
+
+
+### Subreddit link_flair IDs
+
+FLAIR_PRE=:id for link_flair
+
+FLAIR_GAME=:id for link_flair
+
+FLAIR_POST=:id for link_flair
+
+
+### PRAW config end variables
+
+praw_username=:bot_username
+
+praw_password=:bot_password
+
+praw_client_id=:reddit_app_client_id
+
+praw_client_secret=:reddit_app_client_secret
+
+
+### GISTS config env variables
+
+GISTS_USERNAME=:github_username
+
+GISTS_API=:github_access_token
+
+GISTS_PRE_FN=:gist_filename
+
+GISTS_GAME_FN=:gist_filename
+
+GISTS_POST_FN=:gist_filename
+
+GISTS_PRE_ID=:gist_id
+
+GISTS_GAME_ID=:gist_id
+
+GISTS_POST_ID=:gist_id
+
+
 
 ---
 
