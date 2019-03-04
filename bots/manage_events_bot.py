@@ -2,13 +2,14 @@
 # TK
 
 from datetime import datetime
+import json
 import time
 from threads.game.game_thread import game_thread_handler
 from threads.post_game.post_game import post_game_thread_handler
 from bots.new_gists import update_gist
-from data.all_events import all_events
 
-schedule = all_events
+with open('../data/all_events.json', 'r') as f:
+    schedule = json.load(f)
 
 # Events sorted by UTC
 event_keys = sorted(schedule.keys())
