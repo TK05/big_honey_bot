@@ -51,11 +51,16 @@ def line_inj_odds(teams):
     bets_idx = ['away_bets', 'home_bets']
 
     for i, team in enumerate(bets_idx):
-            betting_data[i] = [
-                game_data[game_idx][team]['moneyline'],
-                f"{game_data[game_idx][team]['spread']} ({game_data[game_idx][team]['spread_moneyline']})",
-                game_data[game_idx][team]['total'],
-                f"{game_data[game_idx][team]['over_under']} ({game_data[game_idx][team]['over_under_moneyline']})"]
+        # Add '+' to moneyline and spread
+        moneyline = game_data[game_idx][team]['moneyline']
+        moneyline = f"+{moneyline}" if '-' not in str(moneyline) else moneyline
+        spread = game_data[game_idx][team]['spread']
+        spread = f"+{spread}" if '-' not in str(spread) else spread
+
+        betting_data[i] = [
+            moneyline, f"{spread} ({game_data[game_idx][team]['spread_moneyline']})",
+            game_data[game_idx][team]['total'],
+            f"{game_data[game_idx][team]['over_under']} ({game_data[game_idx][team]['over_under_moneyline']})"]
 
     # Makes more sense to flip the implied totals imo
     betting_data[0][-2], betting_data[1][-2] = betting_data[1][-2], betting_data[0][-2]

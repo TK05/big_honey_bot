@@ -146,5 +146,8 @@ def game_thread_handler(event_data):
     if not DEBUG:
         new_thread(headline, body, event_data['Type'])
         print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
+    else:
+        print(headline)
+        print(body)
 
     return headline, body
