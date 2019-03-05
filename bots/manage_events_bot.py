@@ -17,7 +17,7 @@ DEBUG = True if os.environ['DEBUG'] == 'True' else False
 if DEBUG:
     debug_schedule = 0
 
-URL = f"https://api.myjson.com/bins/{os.environ['BIN']}"
+URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
 
 bot_running = True
 
@@ -30,10 +30,10 @@ while bot_running:
         else:
             schedule = debug_schedule
     else:
-        # Download json
+        # Download json from myjson bin
         try:
             schedule = requests.get(URL).json()
-            print(f"JSON Downloaded @ {datetime.now()}")
+            print(f"Event JSON Downloaded @ {datetime.now()}")
         except ValueError:
             print("Error downloading json file.")
             time.sleep(30)

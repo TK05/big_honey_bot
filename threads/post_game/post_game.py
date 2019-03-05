@@ -1,9 +1,10 @@
 # 3/2/2019 - v1.0
 # TK
 
+from datetime import datetime
 import os
 import random
-import json
+import requests
 from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from threads.post_game.game_status_check import status_check
 from bots.new_thread_bot import new_thread
@@ -13,6 +14,7 @@ from threads.static.templates import PostGame
 DEBUG = True if os.environ['DEBUG'] == 'True' else False
 
 TEAM = os.environ['TEAM']
+URL = f"https://api.myjson.com/bins/{os.environ['HEADLINE_BIN']}"
 
 
 def post_game_headline(opp_team, date, result, margin, final_score):
@@ -21,8 +23,12 @@ def post_game_headline(opp_team, date, result, margin, final_score):
     Thread title will be randomly selected from post_game_headlines.json based on win/loss and margin.
     """
 
-    with open('post_game_headlines.json') as f:
-        hl_list = json.load(f)
+    # Download json from myjson bin
+    try:
+        hl_list = requests.get(URL).json()
+        print(f"Headline JSON Downloaded @ {datetime.now()}")
+    except ValueError:
+        print("Error downloading json file.")
 
     for score, lines in hl_list[result].items():
         if margin < int(score):
