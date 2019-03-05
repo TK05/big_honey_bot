@@ -216,7 +216,7 @@ class Game(object):
     def betting_head_and_fmt():
         betting_header = (
             f"##Betting Odds\n\n"
-            f"||**Moneyline**|**Spread**|**Over/Under**|**Implied Totals**|\n"
+            f"||**Moneyline**|**Spread**|**Implied Totals**|**Over/Under**|\n"
             f"|:--:|:--:|:--:|:--:|:--:|\n")
 
         return betting_header

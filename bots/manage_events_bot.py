@@ -2,6 +2,7 @@
 # TK
 
 # TODO: Handle json download/upload errors, if any
+# TODO: Makes a few unncessary json requests
 
 from datetime import datetime, timedelta
 import json
@@ -38,8 +39,6 @@ while bot_running:
             print("Error downloading json file.")
             time.sleep(30)
             continue
-
-    print(f"{len(schedule)} events remaining")
 
     # Events sorted by UTC
     all_events = sorted(schedule.keys())
@@ -94,7 +93,7 @@ while bot_running:
         continue
 
     # Calculate how long to wait
-    wait_time_sec = int(next_event_utc) - int(current_utc) + 5
+    wait_time_sec = int(next_event_utc) - int(current_utc)
 
     while wait_time_sec > 0:
         wait_time_str = str(timedelta(seconds=wait_time_sec)).split(':')
@@ -104,14 +103,14 @@ while bot_running:
               f"{os.environ['TZ_STR']}")
 
         if DEBUG:
-            wait_time_sec -= 10
             time.sleep(10)
+            wait_time_sec -= 10
         else:
             # Update every 30 minutes unless wait time < 30 minutes
             if wait_time_sec > 1800:
-                wait_time_sec -= 1800
                 time.sleep(1800)
+                wait_time_sec -= 1800
             else:
-                wait_time_sec -= wait_time_sec
                 print(f"New Post in {wait_time_sec} seconds.")
                 time.sleep(wait_time_sec)
+                wait_time_sec -= wait_time_sec
