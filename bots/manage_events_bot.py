@@ -2,7 +2,6 @@
 # TK
 
 # TODO: Handle json download/upload errors, if any
-# TODO: Makes a few unncessary json requests
 
 from datetime import datetime, timedelta
 import json
@@ -61,40 +60,10 @@ while bot_running:
     # Update current time as utc
     current_utc = datetime.timestamp(datetime.now())
 
-    # Check if the event has passed
-    if int(current_utc) > int(next_event_utc):
-        # Send event to appropriate thread handler
-        if schedule[next_event_utc]['Type'] == 'post':
-            headline, body = post_game_thread_handler(schedule[next_event_utc])
-        else:
-            headline, body = game_thread_handler(schedule[next_event_utc])
-
-        if not DEBUG:
-            gist_url = update_gist(headline, schedule[next_event_utc]['Type'], body)
-            print(f"Gist available at: {gist_url}")
-
-        # Update event's type
-        schedule[next_event_utc]['Type'] = 'done'
-
-        if DEBUG:
-            del schedule[next_event_utc]
-            debug_schedule = schedule
-        else:
-            # Convert to valid json
-            valid_json = json.dumps(schedule)
-
-            # Upload change to json
-            header = {'Content-Type': 'application/json'}
-            req = requests.put(URL, data=valid_json, headers=header)
-            print(f"{req.status_code}: JSON update status code")
-
-        # Move onto next event
-        time.sleep(10)
-        continue
-
     # Calculate how long to wait
     wait_time_sec = int(next_event_utc) - int(current_utc)
 
+    # Wait until it's time to post
     while wait_time_sec > 0:
         wait_time_str = str(timedelta(seconds=wait_time_sec)).split(':')
 
@@ -114,3 +83,28 @@ while bot_running:
                 print(f"New Post in {wait_time_sec} seconds.")
                 time.sleep(wait_time_sec)
                 wait_time_sec -= wait_time_sec
+
+    # Send event to appropriate thread handler
+    if schedule[next_event_utc]['Type'] == 'post':
+        headline, body = post_game_thread_handler(schedule[next_event_utc])
+    else:
+        headline, body = game_thread_handler(schedule[next_event_utc])
+
+    if not DEBUG:
+        gist_url = update_gist(headline, schedule[next_event_utc]['Type'], body)
+        print(f"Gist available at: {gist_url}")
+
+    # Update event's type
+    schedule[next_event_utc]['Type'] = 'done'
+
+    if DEBUG:
+        del schedule[next_event_utc]
+        debug_schedule = schedule
+    else:
+        # Convert to valid json
+        valid_json = json.dumps(schedule)
+
+        # Upload change to json
+        header = {'Content-Type': 'application/json'}
+        req = requests.put(URL, data=valid_json, headers=header)
+        print(f"{req.status_code}: JSON update status code")
