@@ -73,7 +73,7 @@ def edit_existing_thread(prev_post_obj, new_body):
 def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, prev_post=None):
     """Wait for game completion and, upon completion, create headline and body reflecting game result."""
 
-    print("Sending to game_status_check")
+    print(f"Sending to game_status_check, final version only: {str(only_final)}")
     was_final = status_check(event_data["NBA_ID"], only_final)
     print(f"Generating thread data for {event_data['Date_Str']} --- "
           f"{event_data['Type']} - Final Version: {str(was_final)}")
