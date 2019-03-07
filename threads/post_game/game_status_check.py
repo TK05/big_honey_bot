@@ -1,4 +1,4 @@
-# 3/2/2019 - v1.0
+# 3/6/2019 - v1.1
 # TK
 # TODO: Make sure this works when overtime happens
 
@@ -10,7 +10,7 @@ import requests
 SEASON = os.environ['SEASON']
 
 
-def status_check(nba_id):
+def status_check(nba_id, only_final):
     """Continually check the status of a game given a nba.com game ID.
 
     Continually requests a new version of the gamedetail json to determine the status
@@ -18,6 +18,8 @@ def status_check(nba_id):
     to avoid requests.
 
     Arguments: nba_id -> nba.com game ID
+               only_final -> boolean, True meaning only game_status == 3 is an
+               acceptable end condition.
     Return: Returns None for the purpose of pausing any subsequent functions until
     the game is complete.
     """
@@ -28,20 +30,21 @@ def status_check(nba_id):
 
         r = requests.get(f"http://data.nba.com/data/v2015/json/mobile_teams"
                          f"/nba/{SEASON}/scores/gamedetail/{nba_id}_gamedetail.json")
-        r = r.json()
+        game_data = r.json()
 
-        game_status = r['g']['st']
-        current_quarter = r['g']['p']
+        game_status = game_data['g']['st']
+        current_quarter = game_data['g']['p']
 
         # Attempt to handle NoneType game clocks gracefully
-        if r['g']['cl']:
-            time_left = int(r['g']['cl'].split(':')[0])
+        if game_data['g']['cl']:
+            min_left = int(game_data['g']['cl'].split(':')[0])
+            sec_left = float(game_data['g']['cl'].split(':')[1])
         else:
             print("Game clock is NoneType, sleeping 60 seconds...")
             time.sleep(60)
             continue
 
-        print(f"Status: {game_status}, Quarter: {current_quarter}, Time: {time_left}")
+        print(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}")
 
         # Check for game start
         if game_status == 1:
@@ -55,17 +58,30 @@ def status_check(nba_id):
 
         # Check if game in 4th quarter or OT
         elif current_quarter >= 4:
-            if time_left > 5:
+            if min_left > 5:
                 time.sleep(60*5)
                 continue
-            elif time_left >= 1:
+            elif min_left >= 1:
                 time.sleep(30)
                 continue
-            elif time_left == 0:
+            elif min_left == 0:
 
-                # Check if game is over
+                """Ideally, checking for game_status == 3 is ideal but sometimes stats.nba is slow
+                to finalize a game and will stagnate at Q4 0:00 for minutes. Solution to initially post
+                when game is over (and scores are different to not misinterpret overtime) and then update
+                the thread when game_status == 3"""
+                away_score = game_data['g']['vls']['s']
+                home_score = game_data['g']['hls']['s']
+
+                # Game is over and boxscore is finalized
                 if game_status == 3:
-                    print("Game Over")
+                    print("Game Over, finalized version")
+                    final_version = True
+                    game_ongoing = False
+                # Game is over but boxscore not finalized
+                elif abs(away_score - home_score) == 0 and sec_left == 0 and not only_final:
+                    print("Game Over, initial version")
+                    final_version = False
                     game_ongoing = False
                 else:
                     time.sleep(10)
@@ -75,4 +91,4 @@ def status_check(nba_id):
                 time.sleep(30)
                 continue
 
-    return True
+    return final_version

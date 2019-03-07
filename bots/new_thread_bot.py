@@ -1,4 +1,4 @@
-# 3/3/2019 - v1.0
+# 3/6/2019 - v1.1
 # TK
 
 import os
@@ -47,3 +47,9 @@ def new_thread(title, body, thread_type):
     post = subreddit.submit(title, body, flair_id=FLAIRS[thread_type], send_replies=False)
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
+
+    return post
+
+
+def edit_thread(post_obj, body):
+    post_obj.edit(body)

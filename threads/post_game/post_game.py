@@ -1,4 +1,4 @@
-# 3/2/2019 - v1.0
+# 3/6/2019 - v1.1
 # TK
 
 from datetime import datetime
@@ -7,7 +7,7 @@ import random
 import requests
 from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from threads.post_game.game_status_check import status_check
-from bots.new_thread_bot import new_thread
+from bots.new_thread_bot import new_thread, edit_thread
 from threads.static.templates import PostGame
 
 
@@ -53,19 +53,41 @@ def format_post(schedule_data):
     return headline, body
 
 
-def post_game_thread_handler(event_data):
+def post_new_thread(headline, body, thread_type):
+    if not DEBUG:
+        post_obj = new_thread(headline, body, thread_type)
+        print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
+    else:
+        post_obj = None
+        print(headline)
+        print(body)
+
+    return post_obj
+
+
+def edit_existing_thread(prev_post_obj, new_body):
+    edit_thread(prev_post_obj, new_body)
+    print(f"Thread id: '{prev_post_obj}' edited on r/{os.environ['TARGET_SUB']}")
+
+
+def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, prev_post=None):
     """Wait for game completion and, upon completion, create headline and body reflecting game result."""
 
     print("Sending to game_status_check")
-    status_check(event_data["NBA_ID"])
-    print(f"Generating thread data for {event_data['Date_Str']} --- {event_data['Type']}")
+    was_final = status_check(event_data["NBA_ID"], only_final)
+    print(f"Generating thread data for {event_data['Date_Str']} --- "
+          f"{event_data['Type']} - Final Version: {str(was_final)}")
     headline, body = format_post(event_data)
 
-    if not DEBUG:
-        new_thread(headline, body, event_data['Type'])
-        print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
+    # Game final, no need for a future edit
+    if was_final and not was_prev_post:
+        post_new_thread(headline, body, event_data['Type'])
+    # Game final after initial post
+    elif was_final and was_prev_post:
+        edit_existing_thread(headline, body, prev_post)
+    # Game finished but not final, initial post
     else:
-        print(headline)
-        print(body)
+        initial_post = post_new_thread(headline, body, event_data['Type'])
+        post_game_thread_handler(event_data, only_final=True, was_prev_post=True, prev_post=initial_post)
 
     return headline, body
