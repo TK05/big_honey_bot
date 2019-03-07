@@ -201,7 +201,7 @@ class Game(object):
             try:
                 away_row = f"{team_injuries[0][i][0]} ({team_injuries[0][i][1]})|"
             except IndexError:
-                away_row = ""
+                away_row = "||"
 
             try:
                 home_row = f"{team_injuries[1][i][0]} ({team_injuries[1][i][1]})|"
