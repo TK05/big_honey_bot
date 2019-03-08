@@ -47,7 +47,8 @@ def update_record():
 
 
 def update_tripdub():
-    dunk_res = requests.get('https://www.basketball-reference.com/players/j/jokicni01.html').text
+    header = {'user_agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0'}
+    dunk_res = requests.get('https://www.basketball-reference.com/players/j/jokicni01.html', headers=header).text
     dunk_obj = re.findall(r'(?<=fg2_dunk\" >)[\d]*', dunk_res)
     dunks = dunk_obj[-3]
     del dunk_res
