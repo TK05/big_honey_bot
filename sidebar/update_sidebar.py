@@ -25,6 +25,7 @@ reddit = praw.Reddit(client_id=client_id,
 
 
 def update_record():
+    print("grab record")
     id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
 
     # Get and set nba.com Team_ID's needed to lookup records
@@ -34,7 +35,7 @@ def update_record():
             break
 
     rec_response = requests.get("https://data.nba.net/prod//v1/current/standings_conference.json").json()
-
+    print("record grabbed")
     for conf in rec_response['league']['standard']['conference'].values():
         for seed, team in enumerate(conf):
             if team_focus_id == team['teamId']:
@@ -47,8 +48,10 @@ def update_record():
 
 
 def update_tripdub():
+    print("grab bballref")
     header = {'user_agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0'}
     dunk_res = requests.get('https://www.basketball-reference.com/players/j/jokicni01.html', headers=header).text
+    print("bballref grabbed")
     dunk_obj = re.findall(r'(?<=fg2_dunk\" >)[\d]*', dunk_res)
     dunks = dunk_obj[-3]
     del dunk_res
