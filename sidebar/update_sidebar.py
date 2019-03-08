@@ -81,6 +81,7 @@ def update_playoff(conf_data, team_seed):
 
 def update_sidebar():
     sidebar_md = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
+    print('sidebar grabbed')
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
@@ -88,14 +89,18 @@ def update_sidebar():
     seed_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
 
     conf_data, team_seed, record_sub = update_record()
+    print('update record ran')
     sidebar_md = record_regex.sub(record_sub, sidebar_md)
+    print('record regex done')
 
     if PLAYOFF_WATCH:
         play_sub, seed_sub = update_playoff(conf_data, team_seed)
         sidebar_md = play_regex.sub(play_sub, sidebar_md)
         sidebar_md = seed_regex.sub(seed_sub, sidebar_md)
+        print('playoff regex done')
 
     sidebar_md = tripdub_regex.sub(update_tripdub(), sidebar_md)
+    print('tripdub regex done')
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(sidebar_md)
