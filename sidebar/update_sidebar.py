@@ -54,13 +54,10 @@ def update_tripdub():
     print("bballref grabbed")
     dunk_obj = re.findall(r'(?<=fg2_dunk\" >)[\d]*', dunk_res)
     dunks = dunk_obj[-3]
-    del dunk_res
 
     season = playerdashboardbyyearoveryear.PlayerDashboardByYearOverYear(player_id='203999')
     season_dict = season.get_normalized_dict()
     trip_dub = season_dict['ByYearPlayerDashboard'][0]['TD3']
-    del season
-    del season_dict
 
     return f"Nikola Jokić TD-to-Dunk Ratio: {trip_dub}:{dunks}"
 
