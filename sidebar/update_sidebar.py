@@ -52,13 +52,10 @@ def update_tripdub():
 
     dunk_obj = re.findall(r'(?<=fg2_dunk\" >)[\d]*', dunk_res)
     dunks = dunk_obj[-3]
-    print('dunk found')
 
     td_res = requests.get("https://www.basketball-reference.com/play-index/pgl_finder.cgi?request=1&match=career&year_min=2019&year_max=2019&is_playoffs=N&age_min=0&age_max=99&season_start=1&season_end=-1&pos_is_g=Y&pos_is_gf=Y&pos_is_f=Y&pos_is_fg=Y&pos_is_fc=Y&pos_is_c=Y&pos_is_cf=Y&player_id=jokicni01&is_trp_dbl=Y&order_by=pts", headers=header)
     td_res = Selector(text=td_res.text)
     trip_dub = td_res.xpath('//td[@data-stat="counter"]/a/text()').get()
-
-    print('trip dub counted')
 
     return f"Nikola Jokić TD-to-Dunk Ratio: {trip_dub}:{dunks}"
 
@@ -94,13 +91,12 @@ def update_sidebar():
         sidebar_md = seed_regex.sub(seed_sub, sidebar_md)
 
     sidebar_md = tripdub_regex.sub(update_tripdub(), sidebar_md)
-    print('tripdub regex done')
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(sidebar_md)
     print("Old-Reddit sidebar updated")
 
-    widgets = reddit.subreddit(os.environ['TARGET_SUB']).widgets
+    widgets = reddit.subreddit(TARGET_SUB).widgets
     new_reddit_sidebar = None
     for widget in widgets.sidebar:
         if isinstance(widget, praw.models.TextArea):

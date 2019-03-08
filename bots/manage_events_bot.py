@@ -20,9 +20,10 @@ if DEBUG:
     debug_schedule = 0
 
 URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
+UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
 
 # Update sidebar upon initial loading
-if os.environ['UPDATE_SIDEBAR']:
+if UPDATE_SIDEBAR:
     print("Updating sidebar")
     update_sidebar()
     last_sidebar_update = datetime.timestamp(datetime.now())
@@ -68,8 +69,9 @@ while bot_running:
     # Update current time as utc
     current_utc = datetime.timestamp(datetime.now())
 
+    # TODO: maybe make this at 4am every morning
     # Update sidebar every 24 hours
-    if os.environ['UPDATE_SIDEBAR']:
+    if UPDATE_SIDEBAR:
         if (last_sidebar_update + (24*60*60)) < current_utc:
             print("Updating sidebar")
             update_sidebar()
@@ -102,6 +104,14 @@ while bot_running:
     # Send event to appropriate thread handler
     if schedule[next_event_utc]['Type'] == 'post':
         headline, body = post_game_thread_handler(schedule[next_event_utc])
+
+        # TODO: check if this updates correctly
+        # Update sidebar after ever post-game
+        if UPDATE_SIDEBAR:
+            print("Updating sidebar")
+            update_sidebar()
+            last_sidebar_update = datetime.timestamp(datetime.now())
+
     else:
         headline, body = game_thread_handler(schedule[next_event_utc])
 
