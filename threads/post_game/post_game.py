@@ -84,7 +84,7 @@ def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, 
         post_new_thread(headline, body, event_data['Type'])
     # Game final after initial post
     elif was_final and was_prev_post:
-        edit_existing_thread(headline, body, prev_post)
+        edit_existing_thread(body, prev_post)
     # Game finished but not final, initial post
     else:
         initial_post = post_new_thread(headline, body, event_data['Type'])

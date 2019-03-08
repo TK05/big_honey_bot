@@ -79,7 +79,7 @@ def status_check(nba_id, only_final):
                     final_version = True
                     game_ongoing = False
                 # Game is over but boxscore not finalized
-                elif abs(away_score - home_score) == 0 and sec_left == 0 and not only_final:
+                elif abs(away_score - home_score) != 0 and sec_left == 0 and not only_final:
                     print("Game Over, initial version")
                     final_version = False
                     game_ongoing = False
