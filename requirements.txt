@@ -3,7 +3,6 @@ chardet==3.0.4
 cssselect==1.0.3
 idna==2.8
 lxml==4.3.2
-nba-api==1.0.7
 parsel==1.5.1
 praw==6.1.1
 prawcore==1.0.1
