@@ -1,6 +1,3 @@
-# 3/3/2019 - v1.0
-# TK
-
 # TODO: Handle json download/upload errors, if any
 
 from datetime import datetime, timedelta
@@ -22,18 +19,11 @@ if DEBUG:
 URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
 UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
 
-# Update sidebar upon initial loading
-if UPDATE_SIDEBAR:
-    print("Updating sidebar")
-    update_sidebar()
-    print("Sidebar updated")
-    last_sidebar_update = datetime.timestamp(datetime.now())
-
 bot_running = True
 
 while bot_running:
 
-    was_post = False
+    was_post = False    # Necessary to track sidebar updates after post game threads
 
     if DEBUG:
         if debug_schedule == 0:
@@ -69,37 +59,31 @@ while bot_running:
         bot_running = False
         break
 
-    # Update current time as utc
     current_utc = datetime.timestamp(datetime.now())
-
-    # TODO: maybe make this at 4am every morning
-    # Update sidebar every 24 hours
-    if UPDATE_SIDEBAR:
-        if (last_sidebar_update + (24*60*60)) < current_utc:
-            print("Updating sidebar")
-            update_sidebar()
-            print("Sidebar updated")
-            last_sidebar_update = current_utc
-
-    # Calculate how long to wait
     wait_time_sec = int(next_event_utc) - int(current_utc)
 
     # Wait until it's time to post
     while wait_time_sec > 0:
         wait_time_str = str(timedelta(seconds=wait_time_sec)).split(':')
 
-        print(f"Next post in {wait_time_str[0]} hours, {wait_time_str[1]} minutes, {wait_time_str[2]} seconds"
+        print(f"Next post in {wait_time_str[0]} hours, {wait_time_str[1]} minutes"
               f" on {schedule[next_event_utc]['Date_Str']} @ {schedule[next_event_utc]['Post_Date']} "
               f"{os.environ['TZ_STR']}")
+
+        # Update sidebar every day ~ 4am
+        if UPDATE_SIDEBAR:
+            if int(datetime.now().strftime('%H')) == 4:
+                print(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
+                update_sidebar()
 
         if DEBUG:
             time.sleep(10)
             wait_time_sec -= 10
         else:
-            # Update every 30 minutes unless wait time < 30 minutes
-            if wait_time_sec > 1800:
-                time.sleep(1800)
-                wait_time_sec -= 1800
+            # Update every 60 minutes unless wait time < 60 minutes
+            if wait_time_sec > 3600:
+                time.sleep(3600)
+                wait_time_sec -= 3600
             else:
                 print(f"New Post in {wait_time_sec} seconds.")
                 time.sleep(wait_time_sec)
@@ -123,7 +107,6 @@ while bot_running:
         del schedule[next_event_utc]
         debug_schedule = schedule
     else:
-        # Convert to valid json
         valid_json = json.dumps(schedule)
 
         # Upload change to json
@@ -131,12 +114,10 @@ while bot_running:
         req = requests.put(URL, data=valid_json, headers=header)
         print(f"{req.status_code}: JSON update status code")
 
-    # TODO: check if this updates correctly
     # Update sidebar after ever post-game
     if UPDATE_SIDEBAR and was_post:
         print("Sleeping 10 minutes to wait for standings to update")
-        time.sleep(60 * 10)  # ~ 10 minutes for standings to update
+        time.sleep(60 * 10)  # TODO: Check if 10 minutes is a long enough wait
         print("Updating sidebar")
         update_sidebar()
-        print("Sidebar updated")
         last_sidebar_update = datetime.timestamp(datetime.now())
