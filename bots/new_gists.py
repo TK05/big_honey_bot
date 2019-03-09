@@ -16,6 +16,7 @@ gists_header = {'X-Github-username': USERNAME, 'Content-Type': 'application/json
 
 
 def update_gist(description, thr_type, paste_data):
+    """Updates a GitHub Gist."""
 
     data = json.dumps({
         "description": f"{description}",
