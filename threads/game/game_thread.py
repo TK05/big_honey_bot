@@ -7,7 +7,7 @@ import re
 import pytz
 import requests
 from parsel import Selector
-from bots.new_thread_bot import new_thread
+from bots.thread_handler_bot import new_thread
 from threads.static.templates import Game
 from threads.static.data import Data
 from threads.game.lineup_injury_odds import line_inj_odds

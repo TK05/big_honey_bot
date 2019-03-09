@@ -7,7 +7,7 @@ import random
 import requests
 from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from threads.post_game.game_status_check import status_check
-from bots.new_thread_bot import new_thread, edit_thread
+from bots.thread_handler_bot import new_thread, edit_thread
 from threads.static.templates import PostGame
 
 
