@@ -226,7 +226,7 @@ class Game(object):
         betting_rows = ""
 
         for i, row in enumerate(betting_odds):
-            betting_rows += f"[](/{team_abv[i]}){team_abv[i]}|"
+            betting_rows += f"**[](/{team_abv[i]}){team_abv[i]}**|"
             for odd in row:
                 betting_rows += f"{odd}|"
             betting_rows += "\n"
