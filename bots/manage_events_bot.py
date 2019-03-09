@@ -26,11 +26,14 @@ UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
 if UPDATE_SIDEBAR:
     print("Updating sidebar")
     update_sidebar()
+    print("Sidebar updated")
     last_sidebar_update = datetime.timestamp(datetime.now())
 
 bot_running = True
 
 while bot_running:
+
+    was_post = False
 
     if DEBUG:
         if debug_schedule == 0:
@@ -75,6 +78,7 @@ while bot_running:
         if (last_sidebar_update + (24*60*60)) < current_utc:
             print("Updating sidebar")
             update_sidebar()
+            print("Sidebar updated")
             last_sidebar_update = current_utc
 
     # Calculate how long to wait
@@ -104,14 +108,7 @@ while bot_running:
     # Send event to appropriate thread handler
     if schedule[next_event_utc]['Type'] == 'post':
         headline, body = post_game_thread_handler(schedule[next_event_utc])
-
-        # TODO: check if this updates correctly
-        # Update sidebar after ever post-game
-        if UPDATE_SIDEBAR:
-            print("Updating sidebar")
-            update_sidebar()
-            last_sidebar_update = datetime.timestamp(datetime.now())
-
+        was_post = True
     else:
         headline, body = game_thread_handler(schedule[next_event_utc])
 
@@ -133,3 +130,13 @@ while bot_running:
         header = {'Content-Type': 'application/json'}
         req = requests.put(URL, data=valid_json, headers=header)
         print(f"{req.status_code}: JSON update status code")
+
+    # TODO: check if this updates correctly
+    # Update sidebar after ever post-game
+    if UPDATE_SIDEBAR and was_post:
+        print("Sleeping 10 minutes to wait for standings to update")
+        time.sleep(60 * 10)  # ~ 10 minutes for standings to update
+        print("Updating sidebar")
+        update_sidebar()
+        print("Sidebar updated")
+        last_sidebar_update = datetime.timestamp(datetime.now())
