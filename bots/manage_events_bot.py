@@ -5,6 +5,7 @@ import json
 import os
 import time
 import requests
+import pytz
 from threads.game.game_thread import game_thread_handler
 from threads.post_game.post_game import post_game_thread_handler
 from bots.new_gists import update_gist
@@ -72,7 +73,7 @@ while bot_running:
 
         # Update sidebar every day ~ 4am
         if UPDATE_SIDEBAR:
-            if int(datetime.now().strftime('%H')) == 4:
+            if int(datetime.now(tz=pytz.timezone(os.environ['TIMEZONE'])).strftime('%H')) == 4:
                 print(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
                 update_sidebar()
 
