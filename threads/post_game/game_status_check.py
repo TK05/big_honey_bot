@@ -1,5 +1,3 @@
-# 3/6/2019 - v1.1
-# TK
 # TODO: Make sure this works when overtime happens
 
 import os

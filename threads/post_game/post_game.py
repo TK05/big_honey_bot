@@ -1,6 +1,3 @@
-# 3/6/2019 - v1.1
-# TK
-
 from datetime import datetime
 import os
 import random
@@ -54,6 +51,8 @@ def format_post(schedule_data):
 
 
 def post_new_thread(headline, body, thread_type):
+    """Posts a new thread, returns a Submission object for editing later."""
+
     if not DEBUG:
         post_obj = new_thread(headline, body, thread_type)
         print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
@@ -66,12 +65,17 @@ def post_new_thread(headline, body, thread_type):
 
 
 def edit_existing_thread(prev_post_obj, new_body):
+    """Edits an existing thread given a Submission object."""
+
     edit_thread(prev_post_obj, new_body)
     print(f"Thread id: '{prev_post_obj}' edited on r/{os.environ['TARGET_SUB']}")
 
 
 def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, prev_post=None):
-    """Wait for game completion and, upon completion, create headline and body reflecting game result."""
+    """Wait for game completion and, upon completion, create headline and body reflecting game result.
+
+    If data returned is not the final boxscore, function will recursive call itself to later return
+    finalized data to edit the thread."""
 
     print(f"Sending to game_status_check, final version only: {str(only_final)}")
     was_final = status_check(event_data["NBA_ID"], only_final)

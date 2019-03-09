@@ -25,9 +25,11 @@ reddit = praw.Reddit(client_id=client_id,
 
 
 def update_record():
+    """Grabs team's record and standing from nba.com."""
+
     id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
 
-    # Get and set nba.com Team_ID's needed to lookup records
+    # Get Team_ID needed to lookup records
     for team in id_response['league']['standard']:
         if team['nickname'] == TEAM:
             team_focus_id = team['teamId']
@@ -47,13 +49,20 @@ def update_record():
 
 
 def update_tripdub():
+    """Grabs Jokic's current triple-double count and dunk count."""
+
     header = {'user_agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0'}
     dunk_res = requests.get('https://www.basketball-reference.com/players/j/jokicni01.html', headers=header).text
 
     dunk_obj = re.findall(r'(?<=fg2_dunk\" >)[\d]*', dunk_res)
     dunks = dunk_obj[-3]
 
-    td_res = requests.get("https://www.basketball-reference.com/play-index/pgl_finder.cgi?request=1&match=career&year_min=2019&year_max=2019&is_playoffs=N&age_min=0&age_max=99&season_start=1&season_end=-1&pos_is_g=Y&pos_is_gf=Y&pos_is_f=Y&pos_is_fg=Y&pos_is_fc=Y&pos_is_c=Y&pos_is_cf=Y&player_id=jokicni01&is_trp_dbl=Y&order_by=pts", headers=header)
+    td_res = requests.get(f"https://www.basketball-reference.com/play-index/pgl_finder.cgi?request=1&"
+                          f"match=career&year_min=2019&year_max=2019&is_playoffs=N&age_min=0&age_max=99&"
+                          f"season_start=1&season_end=-1&pos_is_g=Y&pos_is_gf=Y&pos_is_f=Y&pos_is_fg=Y&"
+                          f"pos_is_fc=Y&pos_is_c=Y&pos_is_cf=Y&player_id=jokicni01&is_trp_dbl=Y&order_by=pts",
+                          headers=header)
+
     td_res = Selector(text=td_res.text)
     trip_dub = td_res.xpath('//td[@data-stat="counter"]/a/text()').get()
 
@@ -61,6 +70,8 @@ def update_tripdub():
 
 
 def update_playoff(conf_data, team_seed):
+    """Calculates magic numbers for both playoffs and current seed."""
+
     tf_wins = int(conf_data[team_seed]['win'])
     ninth_losses = int(conf_data[8]['loss'])
     play_magic_num = 83 - tf_wins - ninth_losses
@@ -75,7 +86,10 @@ def update_playoff(conf_data, team_seed):
 
 
 def update_sidebar():
-    sidebar_md = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
+    """Updates sidebar for both new and old reddit."""
+
+    # Old Reddit
+    old_reddit_sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
@@ -83,19 +97,20 @@ def update_sidebar():
     seed_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
 
     conf_data, team_seed, record_sub = update_record()
-    sidebar_md = record_regex.sub(record_sub, sidebar_md)
+    old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
 
     if PLAYOFF_WATCH:
         play_sub, seed_sub = update_playoff(conf_data, team_seed)
-        sidebar_md = play_regex.sub(play_sub, sidebar_md)
-        sidebar_md = seed_regex.sub(seed_sub, sidebar_md)
+        old_reddit_sidebar = play_regex.sub(play_sub, old_reddit_sidebar)
+        old_reddit_sidebar = seed_regex.sub(seed_sub, old_reddit_sidebar)
 
-    sidebar_md = tripdub_regex.sub(update_tripdub(), sidebar_md)
+    old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
-    sidebar.edit(sidebar_md)
+    sidebar.edit(old_reddit_sidebar)
     print("Old-Reddit sidebar updated")
 
+    # New Reddit
     widgets = reddit.subreddit(TARGET_SUB).widgets
     new_reddit_sidebar = None
     for widget in widgets.sidebar:

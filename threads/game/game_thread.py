@@ -1,6 +1,3 @@
-# 3/2/2019 - v1.0
-# TK
-
 from datetime import datetime
 import os
 import re

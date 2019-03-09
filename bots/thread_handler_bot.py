@@ -1,6 +1,3 @@
-# 3/6/2019 - v1.1
-# TK
-
 import os
 import praw
 
@@ -30,8 +27,9 @@ subreddit = reddit.subreddit(TARGET_SUB)
 def new_thread(title, body, thread_type):
     """Post new thread given subject and body. Uses praw settings in config.ini
 
-    Will automatically unsticky any other "THREAD" type thread,
-    turn off send_replies, sticky the thread and sort by new.
+    Will automatically unsticky any other "THREAD" type thread, turn off send_replies,
+    sticky the thread and sort by new. Returns a submission object incase the thread
+    needs to be edited in the future.
     """
 
     # Unsticky the correct post
@@ -52,4 +50,5 @@ def new_thread(title, body, thread_type):
 
 
 def edit_thread(post_obj, body):
+    """Takes a Submission object and edits the body."""
     post_obj.edit(body)

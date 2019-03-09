@@ -1,6 +1,3 @@
-# 3/3/2019 - v1.0
-# TK
-
 import os
 from datetime import datetime
 import pprint

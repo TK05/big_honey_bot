@@ -1,6 +1,3 @@
-# 3/2/2019 - v1.0
-# TK
-
 import os
 from decimal import Decimal, ROUND_HALF_UP
 import requests

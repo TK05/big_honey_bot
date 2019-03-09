@@ -1,6 +1,3 @@
-# 3/2/2019 - v1.0
-# TK
-
 import requests
 
 LINEUP_INJ_URL = "https://www.lineups.com/nba/lineups"
