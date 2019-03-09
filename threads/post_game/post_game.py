@@ -65,7 +65,7 @@ def post_new_thread(headline, body, thread_type):
     return post_obj
 
 
-def edit_existing_thread(prev_post_obj, new_body):
+def edit_existing_thread(new_body, prev_post_obj):
     edit_thread(prev_post_obj, new_body)
     print(f"Thread id: '{prev_post_obj}' edited on r/{os.environ['TARGET_SUB']}")
 
