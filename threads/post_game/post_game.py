@@ -65,7 +65,7 @@ def post_new_thread(headline, body, thread_type):
     return post_obj
 
 
-def edit_existing_thread(new_body, prev_post_obj):
+def edit_existing_thread(prev_post_obj, new_body):
     edit_thread(prev_post_obj, new_body)
     print(f"Thread id: '{prev_post_obj}' edited on r/{os.environ['TARGET_SUB']}")
 
@@ -84,7 +84,7 @@ def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, 
         post_new_thread(headline, body, event_data['Type'])
     # Game final after initial post
     elif was_final and was_prev_post:
-        edit_existing_thread(body, prev_post)
+        edit_existing_thread(prev_post, body)
     # Game finished but not final, initial post
     else:
         initial_post = post_new_thread(headline, body, event_data['Type'])
