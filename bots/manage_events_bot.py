@@ -116,7 +116,7 @@ while bot_running:
         print(f"{req.status_code}: JSON update status code")
 
     # Update sidebar after ever post-game
-    if UPDATE_SIDEBAR and was_post:
+    if UPDATE_SIDEBAR and was_post and not DEBUG:
         print("Sleeping 10 minutes to wait for standings to update")
         time.sleep(60 * 10)  # TODO: Check if 10 minutes is a long enough wait
         print("Updating sidebar")
