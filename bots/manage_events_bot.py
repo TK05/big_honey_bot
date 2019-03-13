@@ -22,9 +22,8 @@ UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
 
 # Update sidebar at each restart
 if UPDATE_SIDEBAR:
-    if int(datetime.now(tz=pytz.timezone(os.environ['TIMEZONE'])).strftime('%H')) == 4:
-        print(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
-        update_sidebar()
+    print(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
+    update_sidebar()
 
 bot_running = True
 
