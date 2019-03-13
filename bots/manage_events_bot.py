@@ -8,6 +8,7 @@ import requests
 import pytz
 from threads.game.game_thread import game_thread_handler
 from threads.post_game.post_game import post_game_thread_handler
+from threads.post_game.thread_stats import generate_stats_comment
 from bots.new_gists import update_gist
 from sidebar.update_sidebar import update_sidebar
 
@@ -19,12 +20,15 @@ if DEBUG:
 
 URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
 UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
+THREAD_STATS = os.environ['THREAD_STATS']
 
 # Update sidebar at each restart
-if UPDATE_SIDEBAR:
+if UPDATE_SIDEBAR and not DEBUG:
     print(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
     update_sidebar()
 
+game_thread = None
+post_game_thread = None
 bot_running = True
 
 while bot_running:
@@ -97,10 +101,13 @@ while bot_running:
 
     # Send event to appropriate thread handler
     if schedule[next_event_utc]['Type'] == 'post':
-        headline, body = post_game_thread_handler(schedule[next_event_utc])
+        headline, body, post_game_thread = post_game_thread_handler(schedule[next_event_utc])
         was_post = True
+    elif schedule[next_event_utc]['Type'] == 'game':
+        headline, body, game_thread = game_thread_handler(schedule[next_event_utc])
     else:
-        headline, body = game_thread_handler(schedule[next_event_utc])
+        headline, body, game_thread = game_thread_handler(schedule[next_event_utc])
+        game_thread = None
 
     if not DEBUG:
         gist_url = update_gist(headline, schedule[next_event_utc]['Type'], body)
@@ -120,6 +127,10 @@ while bot_running:
         req = requests.put(URL, data=valid_json, headers=header)
         print(f"{req.status_code}: JSON update status code")
 
+    # Reply to thread with stats comment
+    if THREAD_STATS and was_post and game_thread and post_game_thread:
+        generate_stats_comment(game_thread, post_game_thread)
+
     # Update sidebar after ever post-game
     if UPDATE_SIDEBAR and was_post and not DEBUG:
         print("Sleeping 10 minutes to wait for standings to update")
@@ -127,3 +138,7 @@ while bot_running:
         print("Updating sidebar")
         update_sidebar()
         last_sidebar_update = datetime.timestamp(datetime.now())
+
+    if DEBUG:
+        print("Debug end-wait 30 seconds")
+        time.sleep(30)

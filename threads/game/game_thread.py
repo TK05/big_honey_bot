@@ -9,7 +9,6 @@ from threads.static.templates import Game
 from threads.static.data import Data
 from threads.game.lineup_injury_odds import line_inj_odds
 
-DEBUG = True if os.environ['DEBUG'] == 'True' else False
 
 TEAM = os.environ['TEAM']
 LOCATION = os.environ['LOCATION']
@@ -140,11 +139,7 @@ def game_thread_handler(event_data):
     else:
         body = game_body(event_data['UTC'], event_data)
 
-    if not DEBUG:
-        new_thread(headline, body, event_data['Type'])
-        print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
-    else:
-        print(headline)
-        print(body)
+    thread_obj = new_thread(headline, body, event_data['Type'])
+    print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
 
-    return headline, body
+    return headline, body, thread_obj
