@@ -76,11 +76,18 @@ def update_playoff(conf_data, team_seed):
     ninth_losses = int(conf_data[8]['loss'])
     play_magic_num = 83 - tf_wins - ninth_losses
 
+    if play_magic_num > 0:
+        play_sub = f'Playoff Magic #: {play_magic_num}^*'
+    else:
+        play_sub = f'Playoffs **CLINCHED!**'
+
     next_seed_losses = int(conf_data[int(team_seed) + 1]['loss'])
     seed_magic_num = 83 - tf_wins - next_seed_losses
 
-    play_sub = f'Playoff Magic #: {play_magic_num}^*'
-    seed_sub = f'#{int(team_seed) + 1} Seed Magic #: {seed_magic_num}^*'
+    if seed_magic_num > 0:
+        seed_sub = f'#{int(team_seed) + 1} Seed Magic #: {seed_magic_num}^*'
+    else:
+        seed_sub = f'#{int(team_seed) + 1} Seed **CLINCHED!**'
 
     return play_sub, seed_sub
 
