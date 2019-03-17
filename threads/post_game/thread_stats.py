@@ -2,6 +2,8 @@ import os
 import praw
 
 
+DEBUG = True if os.environ['DEBUG'] == 'True' else False
+
 USER_AGENT = os.environ['USER_AGENT']
 
 username = os.environ['praw_username']
@@ -97,5 +99,8 @@ def generate_stats_comment(game_thread, post_game_thread):
     print(f"Gathering stats for: {game_thread.id}, Replying to: {post_game_thread.id}")
     details = thread_details(game_thread)
     comment = format_post(*details)
-    comment_id = post_reply(post_game_thread, comment)
-    print(f"Thread stats reply finished, ID: {comment_id}")
+    if not DEBUG:
+        comment_id = post_reply(post_game_thread, comment)
+        print(f"Thread stats reply finished, ID: {comment_id}")
+    else:
+        print(comment)
