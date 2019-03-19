@@ -76,7 +76,7 @@ def update_playoff(conf_data, team_seed):
     ninth_losses = int(conf_data[8]['loss'])
     play_magic_num = 83 - tf_wins - ninth_losses
 
-    if play_magic_num > 0:
+    if play_magic_num > 1:  # TODO: manually adjusted
         play_sub = f'Playoff Magic #: {play_magic_num}^*'
     else:
         play_sub = f'Playoffs **CLINCHED!**'
