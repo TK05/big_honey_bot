@@ -75,8 +75,12 @@ def format_post(num_comments, num_commenters, total_karma, top_comment, most_pos
 
     comment += f"**Honey/Post Avg.:** {karma_per_comment}\n\n&nbsp;\n\n" \
                f"**BHB's POTT:** +{top_comment[1]} Honey\n" \
-               f">[{top_comment[0]}]({top_comment[3]})\n" \
-               f">>{top_comment[2]}\n\n&nbsp;\n\n" \
+               f">[{top_comment[0]}]({top_comment[3]})\n"
+
+    for line in top_comment[2].split("\n\n"):
+        comment += f">>{line}\n\n"
+
+    comment += f"&nbsp;\n\n" \
                f"**Busiest Bee:** {most_posts[0]} w/ {most_posts[1]} Posts\n\n" \
                f"**Most Honey:** {most_karma[0]} +{most_karma[1]} Honey\n\n&nbsp;\n\n" \
                f"**BHB's Top-Bees**\n\n" \
