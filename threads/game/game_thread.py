@@ -45,6 +45,31 @@ def game_headline(event_data):
                          event_data['Opponent'], opp_wins, opp_loss, event_data['Date_Str'], event_data['Time'])
 
 
+def playoff_headline(event_data, playoff_data):
+    """Generate a thread title for playoff game threads."""
+
+    team_wins, opp_wins = playoff_data[2]
+
+    if event_data['Type'] == 'pre':
+        headline = "GAME DAY THREAD: "
+    else:
+        headline = "GAME THREAD: "
+
+    headline += f"{str(playoff_data[3]).upper()}, GAME {playoff_data[1]} - " \
+                f"{TEAM} {event_data['Home_Away_Fix']} {event_data['Opponent']}"
+
+    if team_wins > opp_wins:
+        headline += f" | {TEAM} Lead {team_wins}-{opp_wins}"
+    elif team_wins < opp_wins:
+        headline += f" | {TEAM} Trail {team_wins}-{opp_wins}"
+    else:
+        headline += f" | Series Tied {team_wins}-{opp_wins}"
+
+    headline += f" | {event_data['Date_Str']} - {event_data['Time']}"
+
+    return headline
+
+
 def game_body(utc_key, event_data):
     """Generate body of game thread depending on event data.
 
@@ -128,11 +153,14 @@ def pre_game_body(event_data):
     return pg_body
 
 
-def game_thread_handler(event_data):
+def game_thread_handler(event_data, playoff_data):
     """Callable function to generate and post a game thread."""
 
     print(f"Generating thread data for {event_data['Date_Str']} --- {event_data['Type']}")
-    headline = game_headline(event_data)
+    if playoff_data[0]:
+        headline = playoff_headline(event_data, playoff_data)
+    else:
+        headline = game_headline(event_data)
 
     if event_data['Type'] == 'pre':
         body = pre_game_body(event_data)

@@ -21,6 +21,11 @@ if DEBUG:
 URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
 UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
 THREAD_STATS = os.environ['THREAD_STATS']
+IN_PLAYOFFS = os.environ['IN_PLAYOFFS']
+PLAYOFF_GAME_NUM = int(os.environ['PLAYOFF_GAME_NUM'])
+PLAYOFF_ROUND = os.environ['PLAYOFF_ROUND']
+playoff_round = ' '.join(PLAYOFF_ROUND.split('_'))
+playoff_record = [0, 0]
 
 # Update sidebar at each restart
 if UPDATE_SIDEBAR and not DEBUG:
@@ -99,14 +104,16 @@ while bot_running:
                 time.sleep(wait_time_sec)
                 wait_time_sec -= wait_time_sec
 
+    playoff_data = [IN_PLAYOFFS, PLAYOFF_GAME_NUM, playoff_record, playoff_round]
+
     # Send event to appropriate thread handler
     if schedule[next_event_utc]['Type'] == 'post':
-        headline, body, post_game_thread = post_game_thread_handler(schedule[next_event_utc])
+        headline, body, win, post_game_thread = post_game_thread_handler(schedule[next_event_utc], playoff_data)
         was_post = True
     elif schedule[next_event_utc]['Type'] == 'game':
-        headline, body, game_thread = game_thread_handler(schedule[next_event_utc])
+        headline, body, game_thread = game_thread_handler(schedule[next_event_utc], playoff_data)
     else:
-        headline, body, game_thread = game_thread_handler(schedule[next_event_utc])
+        headline, body, game_thread = game_thread_handler(schedule[next_event_utc], playoff_data)
         game_thread = None
 
     if not DEBUG:
@@ -138,6 +145,15 @@ while bot_running:
         print("Updating sidebar")
         update_sidebar()
         last_sidebar_update = datetime.timestamp(datetime.now())
+
+    if IN_PLAYOFFS and was_post:
+        PLAYOFF_GAME_NUM += 1
+        if win:
+            playoff_record[0] += 1
+        else:
+            playoff_record[1] += 1
+
+        print(f"New PO GAME#: {PLAYOFF_GAME_NUM}, PO SERIES NOW: {playoff_record}")
 
     if DEBUG:
         print("Debug end-wait 30 seconds")

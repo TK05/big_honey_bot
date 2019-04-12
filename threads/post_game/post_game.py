@@ -40,11 +40,49 @@ def post_game_headline(opp_team, date, result, margin, final_score):
             return f"POST GAME THREAD: {template.format(TEAM, opp_team, final_score, date)}"
 
 
-def format_post(schedule_data):
+def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
+    """Generate a post game thread title based on game result for playoff game."""
+
+    playoff_game_num = playoff_data[1]
+    team_wins, opp_wins = playoff_data[2]
+
+    if win:
+        team_wins += 1
+    else:
+        opp_wins += 1
+
+    if team_wins >= 4:
+        return f"PGT: {final_score} - {TEAM.upper()} ADVANCE!!! WIN SERIES OVER THE {str(opp_team).upper()}" \
+               f" {team_wins}-{opp_wins} | {date}"
+
+    if opp_wins >= 4:
+        return f"PGT: The wild ride is over | {final_score} | " \
+               f"{TEAM} fall in {playoff_game_num} to the {opp_team} | {date}"
+
+    if win:
+        headline = f"PGT: {TEAM.upper()} WIN GAME #{playoff_game_num}{'!' * int(team_wins)} - {final_score}"
+    else:
+        headline = f"PGT: {TEAM.upper()} DROP GAME #{playoff_game_num} - {final_score}"
+
+    if team_wins > opp_wins:
+        headline += f" | Lead series over the {opp_team} {team_wins}-{opp_wins} | {date}"
+    elif team_wins < opp_wins:
+        headline += f" | Trail series versus the {opp_team} {team_wins}-{opp_wins} | {date}"
+    else:
+        headline += f" | Series against the {opp_team} tied at {team_wins}-{opp_wins} | {date}"
+
+    return headline
+
+
+def format_post(schedule_data, playoff_data=None):
     """Create body of post-game thread as markdown text."""
 
     bs_tables, win, margin, final_score = generate_markdown_tables(schedule_data['NBA_ID'], schedule_data['Location'])
-    headline = post_game_headline(schedule_data['Opponent'], schedule_data['Date_Str'], str(win), margin, final_score)
+
+    if playoff_data:
+        headline = playoff_headline(schedule_data['Opponent'], schedule_data['Date_Str'], win, margin, final_score, playoff_data)
+    else:
+        headline = post_game_headline(schedule_data['Opponent'], schedule_data['Date_Str'], str(win), margin, final_score)
 
     top_links = PostGame.top_links(schedule_data['ESPN_Recap'], schedule_data['ESPN_Box'],
                                    schedule_data['ESPN_Gamecast'], schedule_data['NBA_Box'],
@@ -52,7 +90,7 @@ def format_post(schedule_data):
 
     body = f"{top_links}\n\n&nbsp;\n\n{bs_tables}"
 
-    return headline, body
+    return headline, body, win
 
 
 def post_new_thread(headline, body, thread_type):
@@ -73,7 +111,7 @@ def edit_existing_thread(prev_post_obj, new_body):
     return prev_post_obj
 
 
-def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, prev_post=None):
+def post_game_thread_handler(event_data, playoff_data, only_final=False, was_prev_post=False, prev_post=None):
     """Wait for game completion and, upon completion, create headline and body reflecting game result.
 
     If data returned is not the final boxscore, function will recursive call itself to later return
@@ -83,7 +121,10 @@ def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, 
     was_final = status_check(event_data["NBA_ID"], only_final)
     print(f"Generating thread data for {event_data['Date_Str']} --- "
           f"{event_data['Type']} - Final Version: {str(was_final)}")
-    headline, body = format_post(event_data)
+    if playoff_data[0]:
+        headline, body, win = format_post(event_data, playoff_data=playoff_data)
+    else:
+        headline, body, win = format_post(event_data)
 
     # Game final, no need for a future edit
     if was_final and not was_prev_post:
@@ -97,4 +138,4 @@ def post_game_thread_handler(event_data, only_final=False, was_prev_post=False, 
         post_game_thread = initial_post
         post_game_thread_handler(event_data, only_final=True, was_prev_post=True, prev_post=initial_post)
 
-    return headline, body, post_game_thread
+    return headline, body, win, post_game_thread

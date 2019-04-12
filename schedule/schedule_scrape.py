@@ -46,7 +46,7 @@ def espn_schedule_scrape(save_html=False, save_json=True, pretty_print=False):
         date_raw = game.xpath('./td[@class="Table2__td"][1]/span/text()').get()
         time_raw = game.xpath('./td[@class="Table2__td"][3]/span[1]/a/text()').get()
 
-        if not time_raw:    # ignore game if it has already been played
+        if not time_raw or time_raw == 'TBD':    # ignore game if it has already been played or TBD
             continue
 
         utc_key, date = espn_convert_date_time(date_raw, time_raw, 2018)
@@ -104,6 +104,10 @@ def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
                 nbacom_data[utc_key]['TV']          = tv networks
                 nbacom_data[utc_key]['Radio']       = radio networks
         """
+
+        # Playoff Fix: If time is TBD, continue
+        if game.xpath('./div[2]/div[3]/div[1]/span/text()').get() == 'TBD':
+            continue
 
         utc_key = game.xpath('./@data-eventtime').get()
         nbacom_data[utc_key] = dict()
