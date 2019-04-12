@@ -9,7 +9,7 @@ TARGET_SUB = os.environ['TARGET_SUB']
 USER_AGENT = os.environ['USER_AGENT']
 YEAR = os.environ['SEASON']
 TEAM = os.environ['TEAM']
-PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH']
+PLAYOFF_WATCH = True if os.environ['PLAYOFF_WATCH'] == 'True' else False
 
 username = os.environ['praw_username']
 password = os.environ['praw_password']

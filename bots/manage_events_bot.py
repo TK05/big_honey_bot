@@ -20,9 +20,10 @@ if DEBUG:
     print(os.environ)
 
 URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
-UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
-THREAD_STATS = os.environ['THREAD_STATS']
-IN_PLAYOFFS = os.environ['IN_PLAYOFFS']
+TIMEZONE = os.environ['TIMEZONE']
+UPDATE_SIDEBAR = True if os.environ['UPDATE_SIDEBAR'] == 'True' else False
+THREAD_STATS = True if os.environ['THREAD_STATS'] == 'True' else False
+IN_PLAYOFFS = True if os.environ['IN_PLAYOFFS'] == 'True' else False
 PLAYOFF_GAME_NUM = int(os.environ['PLAYOFF_GAME_NUM'])
 PLAYOFF_ROUND = os.environ['PLAYOFF_ROUND']
 playoff_round = ' '.join(PLAYOFF_ROUND.split('_'))
@@ -88,7 +89,7 @@ while bot_running:
 
         # Update sidebar every day ~ 4am
         if UPDATE_SIDEBAR:
-            if int(datetime.now(tz=pytz.timezone(os.environ['TIMEZONE'])).strftime('%H')) == 4:
+            if int(datetime.now(tz=pytz.timezone(TIMEZONE)).strftime('%H')) == 4:
                 print(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
                 update_sidebar()
 
