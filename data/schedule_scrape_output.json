@@ -13,7 +13,7 @@
         "Arena": "Pepsi Center",
         "City": "Denver, CO",
         "Opponent": "Spurs",
-        "TV": "ESPN",
+        "TV": "ESPN, Altitude",
         "Radio": null
     },
     "1555462800": {
@@ -30,7 +30,7 @@
         "Arena": "Pepsi Center",
         "City": "Denver, CO",
         "Opponent": "Spurs",
-        "TV": "NBA TV",
+        "TV": "NBA TV, Altitude",
         "Radio": null
     },
     "1555635600": {
@@ -47,7 +47,7 @@
         "Arena": "AT&T Center",
         "City": "San Antonio, TX",
         "Opponent": "Spurs",
-        "TV": "NBA TV",
+        "TV": "NBA TV, Altitude",
         "Radio": null
     },
     "1555795800": {
@@ -64,7 +64,7 @@
         "Arena": "AT&T Center",
         "City": "San Antonio, TX",
         "Opponent": "Spurs",
-        "TV": "TNT",
+        "TV": "TNT, Altitude",
         "Radio": null
     }
 }
