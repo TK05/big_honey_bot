@@ -17,6 +17,7 @@ DEBUG = True if os.environ['DEBUG'] == 'True' else False
 
 if DEBUG:
     debug_schedule = 0
+    print(os.environ)
 
 URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
 UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
