@@ -11,6 +11,7 @@ from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
 from bots.new_gists import update_gist
 from sidebar.update_sidebar import update_sidebar
+from playoffs.playoff_data import get_series_status
 
 
 DEBUG = True if os.environ['DEBUG'] == 'True' else False
@@ -24,10 +25,10 @@ TIMEZONE = os.environ['TIMEZONE']
 UPDATE_SIDEBAR = True if os.environ['UPDATE_SIDEBAR'] == 'True' else False
 THREAD_STATS = True if os.environ['THREAD_STATS'] == 'True' else False
 IN_PLAYOFFS = True if os.environ['IN_PLAYOFFS'] == 'True' else False
-PLAYOFF_GAME_NUM = int(os.environ['PLAYOFF_GAME_NUM'])
-PLAYOFF_ROUND = os.environ['PLAYOFF_ROUND']
-playoff_round = ' '.join(PLAYOFF_ROUND.split('_'))
-playoff_record = [0, 0]
+
+# Update playoff data at each restart
+if IN_PLAYOFFS:
+    playoff_round, playoff_game_num, playoff_record = get_series_status()
 
 # Update sidebar at each restart
 if UPDATE_SIDEBAR and not DEBUG:
@@ -105,8 +106,10 @@ while bot_running:
                 print(f"New Post in {wait_time_sec} seconds.")
                 time.sleep(wait_time_sec)
                 wait_time_sec -= wait_time_sec
-
-    playoff_data = [IN_PLAYOFFS, PLAYOFF_GAME_NUM, playoff_record, playoff_round]
+    if IN_PLAYOFFS:
+        playoff_data = [IN_PLAYOFFS, playoff_game_num, playoff_record, playoff_round]
+    else:
+        playoff_data = [IN_PLAYOFFS]
 
     # Send event to appropriate thread handler
     if schedule[next_event_utc]['Type'] == 'post':
@@ -137,7 +140,7 @@ while bot_running:
         print(f"{req.status_code}: JSON update status code")
 
     # Reply to thread with stats comment
-    if THREAD_STATS and was_post and game_thread and post_game_thread:
+    if THREAD_STATS and was_post and game_thread and post_game_thread and not DEBUG:
         generate_stats_comment(game_thread, post_game_thread)
 
     # Update sidebar after ever post-game
@@ -149,13 +152,13 @@ while bot_running:
         last_sidebar_update = datetime.timestamp(datetime.now())
 
     if IN_PLAYOFFS and was_post:
-        PLAYOFF_GAME_NUM += 1
+        playoff_game_num += 1
         if win:
             playoff_record[0] += 1
         else:
             playoff_record[1] += 1
 
-        print(f"New PO GAME#: {PLAYOFF_GAME_NUM}, PO SERIES NOW: {playoff_record}")
+        print(f"New PO GAME#: {playoff_game_num}, PO SERIES NOW: {playoff_record}")
 
     if DEBUG:
         print("Debug end-wait 30 seconds")

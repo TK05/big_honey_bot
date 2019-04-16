@@ -55,7 +55,7 @@ def playoff_headline(event_data, playoff_data):
     else:
         headline = "GAME THREAD: "
 
-    headline += f"{str(playoff_data[3]).upper()}, GAME {playoff_data[1]} - " \
+    headline += f"ROUND {playoff_data[3]}, GAME {playoff_data[1]} - " \
                 f"{TEAM} {event_data['Home_Away_Fix']} {event_data['Opponent']}"
 
     if team_wins > opp_wins:

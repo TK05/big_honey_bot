@@ -43,7 +43,6 @@ def post_game_headline(opp_team, date, result, margin, final_score):
 def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
     """Generate a post game thread title based on game result for playoff game."""
 
-    playoff_game_num = playoff_data[1]
     team_wins, opp_wins = playoff_data[2]
 
     if win:
@@ -57,12 +56,12 @@ def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
 
     if opp_wins >= 4:
         return f"PGT: The wild ride is over | {final_score} | " \
-               f"{TEAM} fall in {playoff_game_num} to the {opp_team} | {date}"
+               f"{TEAM} fall in {playoff_data[1]} to the {opp_team} | {date}"
 
     if win:
-        headline = f"PGT: {TEAM.upper()} WIN GAME #{playoff_game_num}{'!' * int(team_wins)} - {final_score}"
+        headline = f"PGT: {TEAM.upper()} WIN GAME #{playoff_data[1]}{'!' * int(team_wins)} - {final_score}"
     else:
-        headline = f"PGT: {TEAM.upper()} DROP GAME #{playoff_game_num} - {final_score}"
+        headline = f"PGT: {TEAM.upper()} DROP GAME #{playoff_data[1]} - {final_score}"
 
     if team_wins > opp_wins:
         headline += f" | Lead series over the {opp_team} {team_wins}-{opp_wins} | {date}"
@@ -136,6 +135,6 @@ def post_game_thread_handler(event_data, playoff_data, only_final=False, was_pre
     else:
         initial_post = post_new_thread(headline, body, event_data['Type'])
         post_game_thread = initial_post
-        post_game_thread_handler(event_data, only_final=True, was_prev_post=True, prev_post=initial_post)
+        post_game_thread_handler(event_data, playoff_data, only_final=True, was_prev_post=True, prev_post=initial_post)
 
     return headline, body, win, post_game_thread
