@@ -19,14 +19,15 @@ def get_series_status():
                     playoff_record = [series['t1w'], series['t2w']]
                 elif TEAM == series['tn2']:
                     playoff_record = [series['t2w'], series['t1w']]
+                else:
+                    continue
 
                 try:
-                    playoff_record
                     if 4 in playoff_record:
                         continue
                     game_number = sum(playoff_record) + 1
-                    break
+                    return current_round, game_number, playoff_record
                 except NameError:
                     continue
 
-    return current_round, game_number, playoff_record
+    raise Exception("COULD NOT DETERMINE PLAYOFF SERIES STATUS")
