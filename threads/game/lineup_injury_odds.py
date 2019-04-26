@@ -23,10 +23,12 @@ def line_inj_odds(teams):
     game_idx = None
 
     for i, game in enumerate(game_data):
-        if teams[0].lower() in game['home_route'] or teams[0].lower() in game['away_route']:
+        teams_list = [game['home_route'].split('-'), game['away_route'].split('-')]
+        teams_list = [item for sublist in teams_list for item in sublist]
+        if teams[0].lower() in teams_list:
             game_idx = i
 
-    if not game_idx:    # Return out of function if game not found
+    if game_idx is None:    # Return out of function if game not found
         return team_lineups, team_injuries, betting_data
 
     # Find all injuries for both home and away teams
@@ -58,8 +60,5 @@ def line_inj_odds(teams):
             moneyline, f"{spread} ({game_data[game_idx][team]['spread_moneyline']})",
             game_data[game_idx][team]['total'],
             f"{game_data[game_idx][team]['over_under']} ({game_data[game_idx][team]['over_under_moneyline']})"]
-
-    # Makes more sense to flip the implied totals imo
-    betting_data[0][-2], betting_data[1][-2] = betting_data[1][-2], betting_data[0][-2]
 
     return team_lineups, team_injuries, betting_data
