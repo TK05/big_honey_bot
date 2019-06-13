@@ -60,7 +60,3 @@ def create_gist(schedule_json, filename='schedule.json', public=False):
 
         print('Gist creation FAILED')
         print('Check tools/tmp/create_gist_failed.txt for more details.')
-
-test_data = {'a': 43}
-test_data_j = json.dumps(test_data)
-create_gist(test_data_j)
