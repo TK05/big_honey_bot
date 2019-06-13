@@ -3,7 +3,7 @@ import os
 import copy
 import json
 import pytz
-from data.static.data import Data
+from data.static.data import team_lookup
 
 
 TIMEZONE = os.environ['TIMEZONE']
@@ -33,8 +33,7 @@ def post_game_edit(schedule):
         new_schedule[utc]['Date_Str'] = date_str
         new_schedule[utc]['Post_Date'] = event['Date']
 
-        opp_abv = Data.team_lookup()
-        new_schedule[utc]['Opp_Abv'] = opp_abv[event['Opponent']][1]
+        new_schedule[utc]['Opp_Abv'] = team_lookup[event['Opponent']][1]
 
     return new_schedule
 
