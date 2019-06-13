@@ -34,3 +34,16 @@ def update_gist(description, gist_key, paste_data):
     gist_url = response['html_url']
 
     return gist_url
+
+
+def get_gist(gist_key):
+    """Return Gist content from given gist_key
+    Content is returned as-is (IE: string instead of JSON)
+    """
+
+    response = requests.get(f"{gists_url}/{gists[gist_key]['id']}", headers=gists_header)
+
+    response_json = response.json()
+    content = response_json['files'][gists[gist_key]['filename']]['content']
+
+    return content
