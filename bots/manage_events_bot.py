@@ -1,30 +1,30 @@
-# TODO: Handle json download/upload errors, if any
-
 from datetime import datetime, timedelta
 import json
 import os
 import time
-import requests
 import pytz
+
+from config import options, setup
 from threads.game.game_thread import game_thread_handler
 from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
-from handle_gists.gists import update_gist
+from handle_gists.gists import update_gist, get_gist
 from sidebar.update_sidebar import update_sidebar
 from playoffs.playoff_data import get_series_status
 
 
-DEBUG = True if os.environ['DEBUG'] == 'True' else False
+DEBUG = options['debug']
 
 if DEBUG:
     debug_schedule = 0
+    print('DEBUG ON')
     print(os.environ)
 
-URL = f"https://api.myjson.com/bins/{os.environ['EVENT_BIN']}"
-TIMEZONE = os.environ['TIMEZONE']
-UPDATE_SIDEBAR = True if os.environ['UPDATE_SIDEBAR'] == 'True' else False
-THREAD_STATS = True if os.environ['THREAD_STATS'] == 'True' else False
-IN_PLAYOFFS = True if os.environ['IN_PLAYOFFS'] == 'True' else False
+TIMEZONE = setup['timezone']
+UPDATE_SIDEBAR = options['update_sidebar']
+THREAD_STATS = options['thread_stats']
+IN_PLAYOFFS = options['in_playoffs']
+TZ_STR = setup['timezone_string']
 
 # Update playoff data at each restart
 if IN_PLAYOFFS:
@@ -45,19 +45,14 @@ while bot_running:
 
     if DEBUG:
         if debug_schedule == 0:
-            with open('../data/all_events.json', 'r') as f:
+            with open('../tools/json_output/all_events.json', 'r') as f:
                 schedule = json.load(f)
         else:
             schedule = debug_schedule
     else:
-        # Download json from myjson bin
-        try:
-            schedule = requests.get(URL).json()
-            print(f"Event JSON Downloaded @ {datetime.now()}")
-        except ValueError:
-            print("Error downloading json file.")
-            time.sleep(30)
-            continue
+        # Download schedule Gist, convert to dict
+        gist_schedule = get_gist('schedule')
+        schedule = json.dumps(gist_schedule)
 
     # Events sorted by UTC
     all_events = sorted(schedule.keys())
@@ -86,7 +81,7 @@ while bot_running:
 
         print(f"Next post in {wait_time_str[0]} hours, {wait_time_str[1]} minutes"
               f" on {schedule[next_event_utc]['Date_Str']} @ {schedule[next_event_utc]['Post_Date']} "
-              f"{os.environ['TZ_STR']}")
+              f"{TZ_STR}")
 
         # Update sidebar every day ~ 4am
         if UPDATE_SIDEBAR:
@@ -134,19 +129,18 @@ while bot_running:
     else:
         valid_json = json.dumps(schedule)
 
-        # Upload change to json
-        header = {'Content-Type': 'application/json'}
-        req = requests.put(URL, data=valid_json, headers=header)
-        print(f"{req.status_code}: JSON update status code")
+        # Upload change to schedule json
+        gist_url = update_gist(f"Updated: {datetime.now().strftime('%c')}", 'schedule', valid_json)
+        print(f"Schedule Gist Updated: {gist_url}")
 
     # Reply to thread with stats comment
     if THREAD_STATS and was_post and game_thread and post_game_thread and not DEBUG:
         generate_stats_comment(game_thread, post_game_thread)
 
-    # Update sidebar after ever post-game
+    # Update sidebar after post-game post
     if UPDATE_SIDEBAR and was_post and not DEBUG:
         print("Sleeping 10 minutes to wait for standings to update")
-        time.sleep(60 * 10)  # TODO: Check if 10 minutes is a long enough wait
+        time.sleep(60 * 10)
         print("Updating sidebar")
         update_sidebar()
         last_sidebar_update = datetime.timestamp(datetime.now())
