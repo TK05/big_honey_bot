@@ -17,6 +17,7 @@ options = {
     'update_sidebar': True,
     'thread_stats': True,
     'in_playoffs': False,
+    'playoff_watch': False
 }
 
 gists = {
