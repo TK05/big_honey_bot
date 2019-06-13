@@ -13,10 +13,10 @@ YEAR = setup['season']
 TEAM = setup['team']
 PLAYOFF_WATCH = options['playoff_watch']
 
-USERNAME = os.environ['praw_username']
-PASSWORD = os.environ['praw_password']
-CLIENT_ID = os.environ['praw_client_id']
-CLIENT_SECRET = os.environ['praw_client_secret']
+USERNAME = os.environ['PRAW_USERNAME']
+PASSWORD = os.environ['PRAW_PASSWORD']
+CLIENT_ID = os.environ['PRAW_CLIENT_ID']
+CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
 
 
 reddit = praw.Reddit(client_id=CLIENT_ID,

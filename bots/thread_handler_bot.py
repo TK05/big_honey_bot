@@ -7,10 +7,10 @@ from config import setup
 TARGET_SUB = os.environ['TARGET_SUB']
 USER_AGENT = setup['user_agent']
 
-USERNAME = os.environ['praw_username']
-PASSWORD = os.environ['praw_password']
-CLIENT_ID = os.environ['praw_client_id']
-CLIENT_SECRET = os.environ['praw_client_secret']
+USERNAME = os.environ['PRAW_USERNAME']
+PASSWORD = os.environ['PRAW_PASSWORD']
+CLIENT_ID = os.environ['PRAW_CLIENT_ID']
+CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
 
 FLAIRS = setup['flairs']
 
