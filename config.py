@@ -12,7 +12,20 @@ gists = {
         'id': '1a32b36af1a2c6ed3eb16f08ffa51580'
     },
     'schedule': {
-        'filename': None,
-        'id': None
+        'filename': 'schedule.json',
+        'id': 'ca4c2fa43d1da9986d2c66556774f44b'
     }
+}
+
+options = {
+    'debug': False,
+    'update_sidebar': True,
+    'thread_stats': True,
+    'in_playoffs': False,
+
+}
+
+setup = {
+    'timezone': 'US/Mountain',
+    'timezone_string': 'MT'
 }
