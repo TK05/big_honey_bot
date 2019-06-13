@@ -1,11 +1,10 @@
-# TODO: Make sure this works when overtime happens
-
-import os
 import time
 import requests
 
+from config import setup
 
-SEASON = os.environ['SEASON']
+
+SEASON = setup['season']
 
 
 def status_check(nba_id, only_final):
