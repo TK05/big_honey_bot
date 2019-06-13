@@ -1,18 +1,17 @@
-from datetime import datetime
 import os
 import random
-import json
-import requests
+
+from config import setup
 from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from threads.post_game.game_status_check import status_check
 from bots.thread_handler_bot import new_thread, edit_thread
+from threads.static.headlines import headlines
+from threads.static.headlines_playoffs import po_headlines
 from threads.static.templates import PostGame
 
 
-DEBUG = True if os.environ['DEBUG'] == 'True' else False
-
-TEAM = os.environ['TEAM']
-URL = f"https://api.myjson.com/bins/{os.environ['HEADLINE_BIN']}"
+TEAM = setup['team']
+TARGET_SUB = os.environ['TARGET_SUB']
 
 
 def post_game_headline(opp_team, date, result, margin, final_score):
@@ -21,21 +20,10 @@ def post_game_headline(opp_team, date, result, margin, final_score):
     Thread title will be randomly selected from post_game_headlines.json based on win/loss and margin.
     """
 
-    if DEBUG:
-        with open('../threads/post_game/post_game_headlines.json', 'r') as f:
-            hl_list = json.load(f)
-    else:
-        # Download json from myjson bin
-        try:
-            hl_list = requests.get(URL).json()
-            print(f"Headline JSON Downloaded @ {datetime.now()}")
-        except ValueError:
-            print("Error downloading json file.")
-
-    for score, lines in hl_list[result].items():
+    for score, lines in headlines[result].items():
         if margin < int(score):
-            rand = random.randrange(len(hl_list[result][score]))
-            template = hl_list[result][score][rand]
+            rand = random.randrange(len(headlines[result][score]))
+            template = headlines[result][score][rand]
 
             return f"POST GAME THREAD: {template.format(TEAM, opp_team, final_score, date)}"
 
@@ -51,24 +39,24 @@ def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
         opp_wins += 1
 
     if team_wins >= 4:
-        return f"PGT: {final_score} - {TEAM.upper()} ADVANCE!!! WIN SERIES OVER THE {str(opp_team).upper()}" \
-               f" {team_wins}-{opp_wins} | {date}"
+        headline = po_headlines['clinch']
+        return headline.format(final_score, TEAM.upper(), opp_team.upper(), team_wins, opp_wins, date)
 
     if opp_wins >= 4:
-        return f"PGT: The wild ride is over | {final_score} | " \
-               f"{TEAM} fall in {playoff_data[1]} to the {opp_team} | {date}"
+        headline = po_headlines['over']
+        return headline.format(final_score, TEAM, playoff_data[1], opp_team, date)
 
     if win:
-        headline = f"PGT: {TEAM.upper()} WIN GAME #{playoff_data[1]}{'!' * int(team_wins)} - {final_score}"
+        headline = po_headlines['win'].format(TEAM.upper(), playoff_data[1], ('!' * int(team_wins)), final_score)
     else:
-        headline = f"PGT: {TEAM.upper()} DROP GAME #{playoff_data[1]} - {final_score}"
+        headline = po_headlines['lose'].format(TEAM.upper(), playoff_data[1], final_score)
 
     if team_wins > opp_wins:
-        headline += f" | Lead series over the {opp_team} {team_wins}-{opp_wins} | {date}"
+        headline += po_headlines['leading'].format(opp_team, team_wins, opp_wins, date)
     elif team_wins < opp_wins:
-        headline += f" | Trail series versus the {opp_team} {team_wins}-{opp_wins} | {date}"
+        headline += po_headlines['trailing'].format(opp_team, team_wins, opp_wins, date)
     else:
-        headline += f" | Series against the {opp_team} tied at {team_wins}-{opp_wins} | {date}"
+        headline += po_headlines['tied'].format(opp_team, team_wins, opp_wins, date)
 
     return headline
 
@@ -96,7 +84,7 @@ def post_new_thread(headline, body, thread_type):
     """Posts a new thread, returns a Submission object for editing later."""
 
     post_obj = new_thread(headline, body, thread_type)
-    print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
+    print(f"Thread posted to r/{TARGET_SUB}")
 
     return post_obj
 
@@ -105,7 +93,7 @@ def edit_existing_thread(prev_post_obj, new_body):
     """Edits an existing thread given a Submission object."""
 
     edit_thread(prev_post_obj, new_body)
-    print(f"Thread id: '{prev_post_obj}' edited on r/{os.environ['TARGET_SUB']}")
+    print(f"Thread id: '{prev_post_obj}' edited on r/{TARGET_SUB}")
 
     return prev_post_obj
 
