@@ -1,10 +1,12 @@
-import os
 from decimal import Decimal, ROUND_HALF_UP
 import requests
+
+from config import setup
 from threads.static.templates import PostGame
 
 
-SEASON = os.environ['SEASON']
+SEASON = setup['season']
+# TODO: This URL could change in the future.
 URL_TEMPLATE = "http://data.nba.com/data/v2015/json/mobile_teams/nba/{}/scores/gamedetail/{}_gamedetail.json"
 
 
