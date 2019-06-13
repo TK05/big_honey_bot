@@ -1,9 +1,11 @@
-import os
-
 import requests
 
-TEAM = os.environ['TEAM']
-SEASON = os.environ['SEASON']
+from config import setup
+
+TEAM = setup['team']
+SEASON = setup['season']
+
+# TODO: This URL could be invalid in the future.
 url = f'https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/{SEASON}/scores/00_playoff_bracket.json'
 
 
