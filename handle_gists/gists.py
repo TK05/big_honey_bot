@@ -1,3 +1,4 @@
+# TODO: Handle response_code != 201
 import json
 import os
 import requests
@@ -14,7 +15,10 @@ gists_header = {'X-Github-username': USERNAME, 'Content-Type': 'application/json
 
 
 def update_gist(description, gist_key, paste_data):
-    """Updates a GitHub Gist."""
+    """Updates a Gist.
+    Uses gist_key to gather config data from config/config.py.
+    Returns gist url for later console logging.
+    """
 
     data = json.dumps({
         "description": f"{description}",
