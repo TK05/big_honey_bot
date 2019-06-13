@@ -4,23 +4,23 @@ import re
 import pytz
 import requests
 from parsel import Selector
+
+from config import setup
 from bots.thread_handler_bot import new_thread
 from threads.static.templates import Game
-from threads.static.data import Data
+from data.static.data import team_lookup
 from threads.game.lineup_injury_odds import line_inj_odds
 
 
-TEAM = os.environ['TEAM']
-LOCATION = os.environ['LOCATION']
-TZ_STR = os.environ['TZ_STR']
-
-TZ_URL = "http://www.thetimezoneconverter.com/?t={}&tz=Denver&"
-team_lookup = Data.team_lookup()
+TEAM = setup['team']
+LOCATION = setup['location']
+TZ_STR = setup['timezone_string']
 
 
 def game_headline(event_data):
     """Generate a thread title based on event and team data."""
 
+    # TODO: This URL could change in the future.
     id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
 
     # Get and set nba.com Team_ID's needed to lookup records
@@ -145,7 +145,7 @@ def game_body(utc_key, event_data):
 def pre_game_body(event_data):
     """Generates a very basic pre-game thread with room for additions."""
 
-    tz_url = TZ_URL.format(event_data['Time'])
+    tz_url = f"http://www.thetimezoneconverter.com/?t={event_data['Time']}&tz=Denver&"
 
     pg_body = Game.pre_game_body(event_data['Time'], TZ_STR, tz_url, event_data['Arena'],
                                  event_data['City'], event_data['TV'], event_data['Radio'])

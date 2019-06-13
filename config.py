@@ -3,6 +3,7 @@ DEBUG = False
 setup = {
     'season': 2018,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
+    'location': 'Denver',
     'timezone': 'US/Mountain',
     'timezone_string': 'MT',
     'user_agent': 'BigHoneyBot_by_TK05',
