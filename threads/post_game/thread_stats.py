@@ -1,24 +1,27 @@
 import os
 import praw
 
+from config import DEBUG, setup
+from threads.static.templates import ThreadStats
 
-DEBUG = True if os.environ['DEBUG'] == 'True' else False
 
-USER_AGENT = os.environ['USER_AGENT']
+USER_AGENT = setup['user_agent']
 
-username = os.environ['praw_username']
-password = os.environ['praw_password']
-client_id = os.environ['praw_client_id']
-client_secret = os.environ['praw_client_secret']
+USERNAME = os.environ['praw_username']
+PASSWORD = os.environ['praw_password']
+CLIENT_ID = os.environ['praw_client_id']
+CLIENT_SECRET = os.environ['praw_client_secret']
 
-reddit = praw.Reddit(client_id=client_id,
-                     client_secret=client_secret,
-                     username=username,
-                     password=password,
+reddit = praw.Reddit(client_id=CLIENT_ID,
+                     client_secret=CLIENT_SECRET,
+                     username=USERNAME,
+                     password=PASSWORD,
                      user_agent=USER_AGENT)
 
 
 def thread_details(thread):
+    """Determine thread stats from given thread."""
+
     thread.comments.replace_more(limit=None)
 
     num_comments = thread.num_comments
@@ -62,47 +65,19 @@ def thread_details(thread):
     return [num_comments, len(all_authors), total_karma, top_comment, most_posts, most_karma, top_posters]
 
 
-def format_post(num_comments, num_commenters, total_karma, top_comment, most_posts, most_karma, top_posters):
-    comment = f"##BHB's Game Thread Stats\n\n&nbsp;\n\n" \
-              f"**Posts:** {num_comments}\n\n" \
-              f"**Bees:** {num_commenters}\n\n" \
-              f"**Honey Harvested:** +{total_karma}\n\n"
-
-    try:
-        karma_per_comment = round((total_karma / num_comments), 2)
-    except ZeroDivisionError:
-        karma_per_comment = 0
-
-    comment += f"**Honey/Post Avg.:** {karma_per_comment}\n\n&nbsp;\n\n" \
-               f"**BHB's POTT:** +{top_comment[1]} Honey\n" \
-               f">[{top_comment[0]}]({top_comment[3]})\n"
-
-    for line in top_comment[2].split("\n\n"):
-        comment += f">>{line}\n\n"
-
-    comment += f"&nbsp;\n\n" \
-               f"**Busiest Bee:** {most_posts[0]} w/ {most_posts[1]} Posts\n\n" \
-               f"**Most Honey:** {most_karma[0]} +{most_karma[1]} Honey\n\n&nbsp;\n\n" \
-               f"**BHB's Top-Bees**\n\n" \
-               f"Bee|Posts|Honey|H/P|\n" \
-               f":-|:-:|:-:|:-:|\n"
-
-    for poster in top_posters:
-        comment += f"**{poster[0]}**|{poster[1]}|+{poster[2]}|{poster[3]}|\n"
-
-    return comment
-
-
 def post_reply(thread, comment):
+    """Submit a new comment to a given thread"""
+
     comment_obj = thread.reply(comment)
 
     return comment_obj.id
 
 
 def generate_stats_comment(game_thread, post_game_thread):
+
     print(f"Gathering stats for: {game_thread.id}, Replying to: {post_game_thread.id}")
     details = thread_details(game_thread)
-    comment = format_post(*details)
+    comment = ThreadStats.format_post(*details)
     if not DEBUG:
         comment_id = post_reply(post_game_thread, comment)
         print(f"Thread stats reply finished, ID: {comment_id}")
