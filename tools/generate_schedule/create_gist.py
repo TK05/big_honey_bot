@@ -50,6 +50,10 @@ def create_gist(schedule_json, filename='schedule.json', public=False):
 
     else:
         json_data = json.dumps(response.json(), indent=4)
+        try:
+            os.mkdir('../tmp')
+        except FileExistsError:
+            pass
         with open('../tmp/create_gist_failed.txt', 'w') as f:
             f.write(f'Status Code: {response.status_code}\n\n'
                     f'{json_data}')
