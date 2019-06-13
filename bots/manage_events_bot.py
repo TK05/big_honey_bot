@@ -9,7 +9,7 @@ import pytz
 from threads.game.game_thread import game_thread_handler
 from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
-from bots.new_gists import update_gist
+from handle_gists.gists import update_gist
 from sidebar.update_sidebar import update_sidebar
 from playoffs.playoff_data import get_series_status
 
