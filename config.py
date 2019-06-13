@@ -1,3 +1,22 @@
+DEBUG = False
+
+setup = {
+    'timezone': 'US/Mountain',
+    'timezone_string': 'MT',
+    'user_agent': 'BigHoneyBot_by_TK05',
+    'flairs': {     # Subreddit specific link_flair IDs
+        'pre': '51a03fc6-3e0c-11e9-8856-0e97475b835e',
+        'game': 'b94d2b1e-7af0-11e8-9106-0ecef3c85830',
+        'post': '3f0b88d4-3e0c-11e9-afb3-0e6687893da2'
+    }
+}
+
+options = {
+    'update_sidebar': True,
+    'thread_stats': True,
+    'in_playoffs': False,
+}
+
 gists = {
     'pre': {
         'filename': 'pre_game.md',
@@ -15,17 +34,4 @@ gists = {
         'filename': 'schedule.json',
         'id': 'ca4c2fa43d1da9986d2c66556774f44b'
     }
-}
-
-options = {
-    'debug': False,
-    'update_sidebar': True,
-    'thread_stats': True,
-    'in_playoffs': False,
-
-}
-
-setup = {
-    'timezone': 'US/Mountain',
-    'timezone_string': 'MT'
 }
