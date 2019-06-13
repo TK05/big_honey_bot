@@ -1,7 +1,5 @@
 import requests
 
-LINEUP_INJ_URL = "https://www.lineups.com/nba/lineups"
-
 
 def line_inj_odds(teams):
     """Scrapes for lineups, injuries and odds.
@@ -16,6 +14,7 @@ def line_inj_odds(teams):
     team_injuries = [[], []]
     betting_data = [[], []]
 
+    # TODO: This URL could change and isn't 100% reliable.
     game_data = requests.get("https://api.lineups.com/nba/fetch/lineups/gateway").json()
     game_data = game_data['data']
 
