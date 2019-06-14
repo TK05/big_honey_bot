@@ -4,29 +4,32 @@ import requests
 import praw
 from parsel import Selector
 
+from config import setup, options
+
 
 TARGET_SUB = os.environ['TARGET_SUB']
-USER_AGENT = os.environ['USER_AGENT']
-YEAR = os.environ['SEASON']
-TEAM = os.environ['TEAM']
-PLAYOFF_WATCH = True if os.environ['PLAYOFF_WATCH'] == 'True' else False
+USER_AGENT = setup['user_agent']
+YEAR = setup['season']
+TEAM = setup['team']
+PLAYOFF_WATCH = options['playoff_watch']
 
-username = os.environ['praw_username']
-password = os.environ['praw_password']
-client_id = os.environ['praw_client_id']
-client_secret = os.environ['praw_client_secret']
+USERNAME = os.environ['PRAW_USERNAME']
+PASSWORD = os.environ['PRAW_PASSWORD']
+CLIENT_ID = os.environ['PRAW_CLIENT_ID']
+CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
 
 
-reddit = praw.Reddit(client_id=client_id,
-                     client_secret=client_secret,
-                     username=username,
-                     password=password,
+reddit = praw.Reddit(client_id=CLIENT_ID,
+                     client_secret=CLIENT_SECRET,
+                     username=USERNAME,
+                     password=PASSWORD,
                      user_agent=USER_AGENT)
 
 
 def update_record():
     """Grabs team's record and standing from nba.com."""
 
+    # TODO: This URL could be invalid in the future.
     id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
 
     # Get Team_ID needed to lookup records
@@ -52,6 +55,7 @@ def update_record():
 def update_tripdub():
     """Grabs Jokic's current triple-double count and dunk count."""
 
+    # TODO: URL's could change in the future.
     header = {'user_agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0'}
     dunk_res = requests.get('https://www.basketball-reference.com/players/j/jokicni01.html', headers=header).text
 
@@ -97,14 +101,6 @@ def update_playoff(conf_data, team_seed):
     else:
         play_sub = f'Playoff Magic #: {play_magic_num}^*'
         seed_sub = ''
-
-    # next_seed_losses = int(conf_data[int(team_seed) + 1]['loss'])
-    # seed_magic_num = 83 - tf_wins - next_seed_losses
-    #
-    # if seed_magic_num > 0:
-    #     seed_sub = f'#{int(team_seed) + 1} Seed Magic #: {seed_magic_num}^*'
-    # else:
-    #     seed_sub = f'#{int(team_seed) + 1} Seed **CLINCHED!**'
 
     return play_sub, seed_sub
 

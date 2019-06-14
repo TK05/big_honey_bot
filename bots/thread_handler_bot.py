@@ -1,35 +1,33 @@
 import os
 import praw
 
+from config import setup
+
 
 TARGET_SUB = os.environ['TARGET_SUB']
-USER_AGENT = os.environ['USER_AGENT']
+USER_AGENT = setup['user_agent']
 
-username = os.environ['praw_username']
-password = os.environ['praw_password']
-client_id = os.environ['praw_client_id']
-client_secret = os.environ['praw_client_secret']
+USERNAME = os.environ['PRAW_USERNAME']
+PASSWORD = os.environ['PRAW_PASSWORD']
+CLIENT_ID = os.environ['PRAW_CLIENT_ID']
+CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
 
-FLAIRS = {
-    'pre': os.environ['FLAIR_PRE'],
-    'game': os.environ['FLAIR_GAME'],
-    'post': os.environ['FLAIR_POST']
-}
+FLAIRS = setup['flairs']
 
-reddit = praw.Reddit(client_id=client_id,
-                     client_secret=client_secret,
-                     username=username,
-                     password=password,
+reddit = praw.Reddit(client_id=CLIENT_ID,
+                     client_secret=CLIENT_SECRET,
+                     username=USERNAME,
+                     password=PASSWORD,
                      user_agent=USER_AGENT)
 subreddit = reddit.subreddit(TARGET_SUB)
 
 
 def new_thread(title, body, thread_type):
-    """Post new thread given subject and body. Uses praw settings in config.ini
+    """Post new thread given subject and body. Uses praw settings from env and config.py.
 
     Will automatically unsticky any other "THREAD" type thread, turn off send_replies,
-    sticky the thread and sort by new. Returns a submission object incase the thread
-    needs to be edited in the future.
+    sticky the thread, set appropriate flair and sort by new.
+    Returns a submission object in case the thread needs to be edited in the future.
     """
 
     # Unsticky the correct post

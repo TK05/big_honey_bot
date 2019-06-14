@@ -3,10 +3,12 @@ import os
 import copy
 import json
 import pytz
-from data.static.data import Data
+
+from config import setup
+from data.static.data import team_lookup
 
 
-TIMEZONE = os.environ['TIMEZONE']
+TIMEZONE = setup['timezone']
 
 
 def post_game_edit(schedule):
@@ -33,8 +35,7 @@ def post_game_edit(schedule):
         new_schedule[utc]['Date_Str'] = date_str
         new_schedule[utc]['Post_Date'] = event['Date']
 
-        opp_abv = Data.team_lookup()
-        new_schedule[utc]['Opp_Abv'] = opp_abv[event['Opponent']][1]
+        new_schedule[utc]['Opp_Abv'] = team_lookup[event['Opponent']][1]
 
     return new_schedule
 
@@ -84,12 +85,17 @@ def pre_game_edit(schedule):
 
 if __name__ == '__main__':
 
-    with open('../data/schedule_scrape_output.json', 'r') as f:
+    with open('../json_output/schedule_scrape_output.json', 'r') as f:
         raw_schedule = json.load(f)
 
     schedule1 = post_game_edit(raw_schedule)
     schedule2 = game_edit(schedule1)
     schedule3 = pre_game_edit(schedule2)
 
-    with open('../data/all_events.json', 'w') as f:
+    try:
+        os.mkdir('../json_output')
+    except FileExistsError:
+        pass
+
+    with open('../json_output/all_events.json', 'w') as f:
         json.dump(schedule3, f, indent=4)

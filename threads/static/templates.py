@@ -232,3 +232,39 @@ class Game(object):
             betting_rows += "\n"
 
         return betting_rows
+
+
+class ThreadStats(object):
+
+    @staticmethod
+    def format_post(num_comments, num_commenters, total_karma, top_comment, most_posts, most_karma, top_posters):
+        """Formats submission given thread stats."""
+
+        comment = f"##BHB's Game Thread Stats\n\n&nbsp;\n\n" \
+            f"**Posts:** {num_comments}\n\n" \
+            f"**Bees:** {num_commenters}\n\n" \
+            f"**Honey Harvested:** +{total_karma}\n\n"
+
+        try:
+            karma_per_comment = round((total_karma / num_comments), 2)
+        except ZeroDivisionError:
+            karma_per_comment = 0
+
+        comment += f"**Honey/Post Avg.:** {karma_per_comment}\n\n&nbsp;\n\n" \
+            f"**BHB's POTT:** +{top_comment[1]} Honey\n" \
+            f">[{top_comment[0]}]({top_comment[3]})\n"
+
+        for line in top_comment[2].split("\n\n"):
+            comment += f">>{line}\n\n"
+
+        comment += f"&nbsp;\n\n" \
+            f"**Busiest Bee:** {most_posts[0]} w/ {most_posts[1]} Posts\n\n" \
+            f"**Most Honey:** {most_karma[0]} +{most_karma[1]} Honey\n\n&nbsp;\n\n" \
+            f"**BHB's Top-Bees**\n\n" \
+            f"Bee|Posts|Honey|H/P|\n" \
+            f":-|:-:|:-:|:-:|\n"
+
+        for poster in top_posters:
+            comment += f"**{poster[0]}**|{poster[1]}|+{poster[2]}|{poster[3]}|\n"
+
+        return comment

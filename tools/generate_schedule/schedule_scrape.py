@@ -6,10 +6,10 @@ import requests
 from parsel import Selector
 import pytz
 
+from config import DEBUG, setup
 
-DEBUG = True if os.environ['DEBUG'] == 'True' else False
 
-TIMEZONE = os.environ['TIMEZONE']
+TIMEZONE = setup['timezone']
 SCRAPE_YEAR = datetime.today().year
 ESPN_TIMEZONE = pytz.timezone('US/Eastern')     # ESPN uses Eastern timezone
 ESPN_SCH_URL = 'http://www.espn.com/nba/team/schedule/_/name/den'  # ESPN schedule hub for team
@@ -64,7 +64,12 @@ def espn_schedule_scrape(save_html=False, save_json=True, pretty_print=False):
         espn_data[utc_key]['ESPN_ID'] = game_id_raw[-1]
 
         if save_json:
-            with open('../data/schedule_scrape_output.json', 'w') as f:
+            try:
+                os.mkdir('../json_output')
+            except FileExistsError:
+                pass
+
+            with open('../json_output/schedule_scrape_output.json', 'w') as f:
                 json.dump(espn_data, f, indent=4)
 
         if pretty_print:
@@ -131,8 +136,12 @@ def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
         nbacom_data[utc_key]["Radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
 
     if save_json:
+        try:
+            os.mkdir('../json_output')
+        except FileExistsError:
+            pass
 
-        with open('../data/schedule_scrape_output.json', 'r') as f:
+        with open('../json_output/schedule_scrape_output.json', 'r') as f:
             json_file = json.load(f)
 
         # update json file using utc_key as key
@@ -140,7 +149,7 @@ def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
             for data_key, data in game_dict.items():
                 json_file[utc_key][data_key] = data
 
-        with open('../data/schedule_scrape_output.json', 'w') as f:
+        with open('../json_output/schedule_scrape_output.json', 'w') as f:
             json.dump(json_file, f, indent=4)
 
     if pretty_print:
@@ -189,13 +198,18 @@ def request_schedule(url, file_name, save_html):
     # import from file_name if it exists, otherwise scrape page using requests
     if DEBUG:
         try:
-            with open(f'../data/{file_name}', 'r') as file:
+            os.mkdir('../tmp')
+        except FileExistsError:
+            pass
+
+        try:
+            with open(f'../tmp/{file_name}', 'r') as file:
                 response = file.read().replace('\n', '')
         except FileNotFoundError:
             response = requests.get(url).text
 
             if save_html:
-                f = open(f'../data/{file_name}', 'w', encoding='utf-8')
+                f = open(f'../tmp/{file_name}', 'w', encoding='utf-8')
                 f.write(response)
     else:
         response = requests.get(url).text
