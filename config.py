@@ -5,7 +5,7 @@ setup = {
     'team': 'Nuggets',
     'location': 'Denver',
     'timezone': 'US/Mountain',
-    'timezone_string': 'MT',
+    'timezone_short': 'MT',
     'user_agent': 'BigHoneyBot_by_TK05',
     'flairs': {     # Subreddit specific link_flair IDs
         'pre': '51a03fc6-3e0c-11e9-8856-0e97475b835e',

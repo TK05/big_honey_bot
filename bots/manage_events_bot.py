@@ -22,7 +22,7 @@ TIMEZONE = setup['timezone']
 UPDATE_SIDEBAR = options['update_sidebar']
 THREAD_STATS = options['thread_stats']
 IN_PLAYOFFS = options['in_playoffs']
-TZ_STR = setup['timezone_string']
+TZ_STR = setup['timezone_short']
 
 # Update playoff data at each restart
 if IN_PLAYOFFS:

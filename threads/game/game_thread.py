@@ -14,7 +14,7 @@ from threads.game.lineup_injury_odds import line_inj_odds
 
 TEAM = setup['team']
 LOCATION = setup['location']
-TZ_STR = setup['timezone_string']
+TZ_STR = setup['timezone_short']
 
 
 def game_headline(event_data):
