@@ -89,7 +89,7 @@ previous Game Thread.
 
 `'in_playoffs': False` - When enabled, it will track series status and use custom playoff headlines.
 
-`'playoff_watch': False` - When enabled, a Playoffs [Magic Number](https://en.wikipedia.org/wiki/Magic_number_(sports)
+`'playoff_watch': False` - When enabled, a Playoffs [Magic Number](https://en.wikipedia.org/wiki/Magic_number_(sports))
 is added to the sidebar.
 
 
