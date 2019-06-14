@@ -1,4 +1,4 @@
-**Source code for r/denvernuggets BigHoneyBot**
+**r/denvernuggets BigHoneyBot**
 
 A reddit bot to automate the posting of game threads on r/denvernuggets.
 
@@ -20,6 +20,10 @@ sleep until the next scheduled posting event.
 
 Other features include automating some trivial sidebar updates, posting "thread stats" for comments & commenters from
 the game thread, tracking playoff magic numbers and other playoff specific features.
+
+BigHoneyBot is currently running on Heroku with a single worker. This has proven to be more than enough to manage a
+single schedule and has the added benefit of being able to run 24/7 on Heroku's free-tier. Status can be monitored with
+a something like `heroku logs -t` using the heroku-cli.
 
 **Can I Use It?**
 
