@@ -6,17 +6,14 @@ import requests
 from parsel import Selector
 import pytz
 
-from config import DEBUG, setup
+from config import DEBUG, setup  # When DEBUG; save json & html
 
 
 TIMEZONE = setup['timezone']
-SCRAPE_YEAR = datetime.today().year
-ESPN_TIMEZONE = pytz.timezone('US/Eastern')     # ESPN uses Eastern timezone
-ESPN_SCH_URL = 'http://www.espn.com/nba/team/schedule/_/name/den'  # ESPN schedule hub for team
-NBA_COM_TEAM_URL = 'https://www.nba.com/nuggets/schedule'  # nba.com team schedule
+SCRAPE_YEAR = setup['season']
 
 
-def espn_schedule_scrape(save_html=False, save_json=True, pretty_print=False):
+def espn_schedule_scrape():
     """ Load html from file or request html with requests.
         Traverse XML down to individual games.
         Scrape each game, append to a game dict with game's UTC timestamp as key.
@@ -27,10 +24,10 @@ def espn_schedule_scrape(save_html=False, save_json=True, pretty_print=False):
 
     scrape_type = 'espn_s1'  # TODO: see if this is helps organizing event status
 
-    response = request_schedule(ESPN_SCH_URL, 'espn_schedule.html', save_html)
+    response = request_schedule(setup['espn_url'], 'espn_schedule.html')
 
     response_selector = Selector(text=response)
-    games_raw = response_selector.xpath('.//tbody[@class="Table2__tbody"]//tr')  # each item is an entire game's details
+    games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
     espn_data = dict()
 
     for game in games_raw:
@@ -43,40 +40,39 @@ def espn_schedule_scrape(save_html=False, save_json=True, pretty_print=False):
                 espn_data[utc_key]['ESPN_ID']       = espn ID for game
         """
 
-        date_raw = game.xpath('./td[@class="Table2__td"][1]/span/text()').get()
-        time_raw = game.xpath('./td[@class="Table2__td"][3]/span[1]/a/text()').get()
+        date_raw = game.xpath('./td[@class="Table__TD"][1]/span/text()').get()
+        time_raw = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/text()').get()
 
         if not time_raw or time_raw == 'TBD':    # ignore game if it has already been played or TBD
             continue
 
-        utc_key, date = espn_convert_date_time(date_raw, time_raw, 2018)
+        utc_key, date = espn_convert_date_time(date_raw, time_raw)
 
         espn_data[utc_key] = dict()
         espn_data[utc_key]['Date'] = date
         espn_data[utc_key]['Type'] = scrape_type    # TODO: check if this matters
 
         # grabs and generates espn id and all necessary links
-        game_id_url = game.xpath('./td[@class="Table2__td"][3]/span[1]/a/@href').get()
+        game_id_url = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/@href').get()
         espn_data[utc_key]['ESPN_Gamecast'] = game_id_url
         espn_data[utc_key]['ESPN_Box'] = game_id_url.replace("game", "boxscore", 1)
         espn_data[utc_key]['ESPN_Recap'] = game_id_url.replace("game", "recap", 1)
         game_id_raw = game_id_url.split('=')
         espn_data[utc_key]['ESPN_ID'] = game_id_raw[-1]
 
-        if save_json:
-            try:
-                os.mkdir('../json_output')
-            except FileExistsError:
-                pass
+        try:
+            os.mkdir('../json_output')
+        except FileExistsError:
+            pass
 
-            with open('../json_output/schedule_scrape_output.json', 'w') as f:
-                json.dump(espn_data, f, indent=4)
+        with open(f'../json_output/schedule_scrape_output.json', 'w') as f:
+            json.dump(espn_data, f, indent=4)
 
-        if pretty_print:
+        if DEBUG:
             pprint.pprint(espn_data)
 
 
-def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
+def nba_com_schedule_scrap():
     """ Load html from file or request html with requests.
         Traverse XML down to individual games.
         Scrape each game, append to a game dict with game's UTC timestamp as key.
@@ -88,7 +84,7 @@ def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
 
     scrape_type = 'nba_s2'  # TODO: see if this is helps organizing event status
 
-    response = request_schedule(NBA_COM_TEAM_URL, 'nba_schedule.html', save_html)
+    response = request_schedule(setup['nba_url'], 'nba_schedule.html')
 
     response_selector = Selector(text=response)
     games_raw = response_selector.xpath('.//li[@data-gamestatus="1"]')  # len(games_raw) would show remaining games
@@ -114,7 +110,9 @@ def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
         if game.xpath('./div[2]/div[3]/div[1]/span/text()').get() == 'TBD':
             continue
 
-        utc_key = game.xpath('./@data-eventtime').get()
+        # 2019 Fix: NBA.com changed game event utc to 2 hours before
+        utc_key = str(int(game.xpath('./@data-eventtime').get()) + 7200)
+
         nbacom_data[utc_key] = dict()
 
         nbacom_data[utc_key]['Type'] = scrape_type
@@ -135,31 +133,30 @@ def nba_com_schedule_scrap(save_html=False, save_json=True, pretty_print=False):
         nbacom_data[utc_key]["TV"] = tv
         nbacom_data[utc_key]["Radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
 
-    if save_json:
-        try:
-            os.mkdir('../json_output')
-        except FileExistsError:
-            pass
-
+    if not os.path.exists('../json_output/schedule_scrape_output.json'):
+        json_file = {}
+    else:
         with open('../json_output/schedule_scrape_output.json', 'r') as f:
             json_file = json.load(f)
 
-        # update json file using utc_key as key
-        for utc_key, game_dict in nbacom_data.items():
-            for data_key, data in game_dict.items():
-                json_file[utc_key][data_key] = data
+    # update json file using utc_key as key
+    for utc_key, game_dict in nbacom_data.items():
+        for data_key, data in game_dict.items():
+            json_file[utc_key][data_key] = data
 
-        with open('../json_output/schedule_scrape_output.json', 'w') as f:
-            json.dump(json_file, f, indent=4)
+    with open('../json_output/schedule_scrape_output.json', 'w') as f:
+        json.dump(json_file, f, indent=4)
 
-    if pretty_print:
+    if DEBUG:
         pprint.pprint(nbacom_data)
 
 
-def espn_convert_date_time(date_in, time_in, scrape_year):
+def espn_convert_date_time(date_in, time_in):
     """ convert raw time and date
         outputs utc timestamp (as int) for key and a local time string for easier reading
     """
+    espn_timezone = pytz.timezone('US/Eastern')  # ESPN uses Eastern timezone
+    scrape_year = setup['season']
 
     # TODO: fix this table so it's not needed
     # ESPN doesn't include year, so lookup table to return month (as int) and correct year
@@ -179,7 +176,10 @@ def espn_convert_date_time(date_in, time_in, scrape_year):
 
     # transform hour into gmt (24 hour)
     time_in = time_in.split(":")
-    if 'PM' in time_in[-1]:
+    if 'PM' in time_in[-1] and time_in[0] == '12':
+        hour = 12
+        minute = (int(time_in[-1].strip(' PM')))
+    elif 'PM' in time_in[-1]:
         hour = int(time_in[0]) + 12
         minute = (int(time_in[-1].strip(' PM')))
     else:
@@ -187,13 +187,13 @@ def espn_convert_date_time(date_in, time_in, scrape_year):
         minute = (int(time_in[-1].strip(' AM')))
 
     site_dt = datetime(year, month, day, hour, minute)  # datetime of scraped time
-    site_dt = ESPN_TIMEZONE.localize(site_dt)   # properly converted to correct timezone
+    site_dt = espn_timezone.localize(site_dt)   # properly converted to correct timezone
     loc_str = datetime.strftime(site_dt.astimezone(tz=pytz.timezone(TIMEZONE)), format('%D %I:%M %p'))
 
     return int(site_dt.timestamp()), loc_str
 
 
-def request_schedule(url, file_name, save_html):
+def request_schedule(url, file_name):
 
     # import from file_name if it exists, otherwise scrape page using requests
     if DEBUG:
@@ -208,9 +208,9 @@ def request_schedule(url, file_name, save_html):
         except FileNotFoundError:
             response = requests.get(url).text
 
-            if save_html:
-                f = open(f'../tmp/{file_name}', 'w', encoding='utf-8')
-                f.write(response)
+        f = open(f'../tmp/{file_name}', 'w', encoding='utf-8')
+        f.write(response)
+
     else:
         response = requests.get(url).text
 
@@ -219,9 +219,5 @@ def request_schedule(url, file_name, save_html):
 
 # espn should always be ran before nba.com
 if __name__ == '__main__':
-    if DEBUG:
-        espn_schedule_scrape(save_html=True)
-        nba_com_schedule_scrap(save_html=True)
-    else:
-        espn_schedule_scrape()
-        nba_com_schedule_scrap()
+    espn_schedule_scrape()
+    nba_com_schedule_scrap()
