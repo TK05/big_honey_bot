@@ -1,11 +1,13 @@
 DEBUG = False
 
 setup = {
-    'season': 2018,  # Start year. EX: 18-19 season = 2018
+    'season': 2019,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
     'location': 'Denver',
     'timezone': 'US/Mountain',
     'timezone_short': 'MT',
+    'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den',  # ESPN schedule hub for team
+    'nba_url': 'https://www.nba.com/nuggets/schedule',  # nba.com team schedule
     'user_agent': 'BigHoneyBot_by_TK05',
     'flairs': {     # Subreddit specific link_flair IDs
         'pre': '51a03fc6-3e0c-11e9-8856-0e97475b835e',

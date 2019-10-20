@@ -27,7 +27,7 @@ team_lookup = {
     "Bucks": ["mkebucks", 'MIL'],
     "Knicks": ["nyknicks", 'NYK'],
     "Magic": ["orlandomagic", 'ORL'],
-    "Sixers": ["sixers", 'PHI'],
+    "76Ers": ["sixers", 'PHI'],
     "Raptors": ["torontoraptors", 'TOR'],
     "Wizards": ["washingtonwizards", 'WAS']
 }
