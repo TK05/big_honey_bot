@@ -30,7 +30,7 @@ def update_record():
     """Grabs team's record and standing from nba.com."""
 
     # TODO: This URL could be invalid in the future.
-    id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
+    id_response = requests.get(f"https://data.nba.net/prod/v2/{setup['season']}/teams.json").json()
 
     # Get Team_ID needed to lookup records
     for team in id_response['league']['standard']:
@@ -63,13 +63,17 @@ def update_tripdub():
     dunks = dunk_obj[-3]
 
     td_res = requests.get(f"https://www.basketball-reference.com/play-index/pgl_finder.cgi?request=1&"
-                          f"match=career&year_min=2019&year_max=2019&is_playoffs=N&age_min=0&age_max=99&"
-                          f"season_start=1&season_end=-1&pos_is_g=Y&pos_is_gf=Y&pos_is_f=Y&pos_is_fg=Y&"
-                          f"pos_is_fc=Y&pos_is_c=Y&pos_is_cf=Y&player_id=jokicni01&is_trp_dbl=Y&order_by=pts",
+                          f"match=career&year_min={setup['season'] + 1}&year_max={setup['season'] + 1}&is_playoffs=N&"
+                          f"age_min=0&age_max=99&season_start=1&season_end=-1&pos_is_g=Y&pos_is_gf=Y&pos_is_f=Y&"
+                          f"pos_is_fg=Y&pos_is_fc=Y&pos_is_c=Y&pos_is_cf=Y&player_id=jokicni01&"
+                          f"is_trp_dbl=Y&order_by=pts",
                           headers=header)
 
     td_res = Selector(text=td_res.text)
     trip_dub = td_res.xpath('//td[@data-stat="counter"]/a/text()').get()
+
+    if trip_dub == 'None':
+        trip_dub = 0
 
     return f"Nikola Jokić TD-to-Dunk Ratio: {trip_dub}:{dunks}"
 
