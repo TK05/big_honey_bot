@@ -131,7 +131,9 @@ def nba_com_schedule_scrap():
             tv = f"{tv_nat}, "
         tv += game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[1]/text()').get()
         nbacom_data[utc_key]["TV"] = tv
-        nbacom_data[utc_key]["Radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
+        # TODO: Check if radio is added to nba.com eventually
+        # nbacom_data[utc_key]["Radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
+        nbacom_data[utc_key]["Radio"] = "KKSE-FM 92.5"
 
     if not os.path.exists('../json_output/schedule_scrape_output.json'):
         json_file = {}
