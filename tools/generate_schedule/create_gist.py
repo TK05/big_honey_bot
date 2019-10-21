@@ -60,3 +60,10 @@ def create_gist(schedule_json, filename='schedule.json', public=False):
 
         print('Gist creation FAILED')
         print('Check tools/tmp/create_gist_failed.txt for more details.')
+
+
+if __name__ == '__main__':
+
+    with open('../json_output/schedule_scrape_output.json', 'r') as f:
+        schedule = json.load(f)
+        create_gist(json.dumps(schedule, indent=4))
