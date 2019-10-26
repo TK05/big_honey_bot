@@ -91,6 +91,10 @@ if __name__ == '__main__':
     schedule1 = post_game_edit(raw_schedule)
     schedule2 = game_edit(schedule1)
     schedule3 = pre_game_edit(schedule2)
+    ordered_schedule = dict()
+
+    for event, details in sorted(schedule3.items()):
+        ordered_schedule[event] = details
 
     try:
         os.mkdir('../json_output')
@@ -98,4 +102,4 @@ if __name__ == '__main__':
         pass
 
     with open('../json_output/all_events.json', 'w') as f:
-        json.dump(schedule3, f, indent=4)
+        json.dump(ordered_schedule, f, indent=4)
