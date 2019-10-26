@@ -66,6 +66,6 @@ def create_gist(schedule_json, filename='schedule.json', public=False):
 
 if __name__ == '__main__':
 
-    with open('../json_output/schedule_scrape_output.json', 'r') as file:
+    with open('../json_output/all_events.json', 'r') as file:
         schedule = json.load(file)
         create_gist(json.dumps(schedule, indent=4))
