@@ -162,9 +162,8 @@ class Game(object):
     def lineup_head_and_fmt(away_abv, home_abv):
         lineup_header = (
             f"##Probable Starters\n\n"
-            f"**[](/{away_abv}){away_abv}**|**AST/G**|**REB/G**|**PTS/G**|"
-            f"**[](/{home_abv}){home_abv}**|**AST/G**|**REB/G**|**PTS/G**|\n"
-            f"|:--|:--:|:--:|:--:|:--|:--:|:--:|:--:|\n")
+            f"**[](/{away_abv}){away_abv}**|**[](/{home_abv}){home_abv}**|\n"
+            f"|:--|:--|\n")
 
         return lineup_header
 
@@ -174,10 +173,8 @@ class Game(object):
 
         for i in range(len(team_lineups[0])):
             lineup_rows += (
-                f"**{team_lineups[0][i][1]}** {team_lineups[0][i][0]}|"
-                f"{team_lineups[0][i][2]}|{team_lineups[0][i][3]}|{team_lineups[0][i][4]}|"
-                f"**{team_lineups[1][i][1]}** {team_lineups[1][i][0]}|"
-                f"{team_lineups[1][i][2]}|{team_lineups[1][i][3]}|{team_lineups[1][i][4]}|\n"
+                f"**{team_lineups[0][i][0]}** {team_lineups[0][i][1]}|"
+                f"**{team_lineups[1][i][0]}** {team_lineups[1][i][1]}|\n"
             )
 
         return lineup_rows
@@ -186,8 +183,7 @@ class Game(object):
     def injuries_head_and_fmt(away_abv, home_abv):
         injuries_header = (
             f"##Injuries\n\n"
-            f"**[](/{away_abv}){away_abv}**|"
-            f"**[](/{home_abv}){home_abv}**|\n"
+            f"**[](/{away_abv}){away_abv}**|**[](/{home_abv}){home_abv}**|\n"
             f"|:--|:--|\n")
 
         return injuries_header
@@ -199,12 +195,12 @@ class Game(object):
         for i in range(max(len(team_injuries[0]), len(team_injuries[1]))):
 
             try:
-                away_row = f"{team_injuries[0][i][0]} ({team_injuries[0][i][1]})|"
+                away_row = f"{team_injuries[0][i][0]} - {team_injuries[0][i][1]}|"
             except IndexError:
                 away_row = "||"
 
             try:
-                home_row = f"{team_injuries[1][i][0]} ({team_injuries[1][i][1]})|"
+                home_row = f"{team_injuries[1][i][0]} - {team_injuries[1][i][1]}|"
             except IndexError:
                 home_row = ""
 
@@ -216,22 +212,14 @@ class Game(object):
     def betting_head_and_fmt():
         betting_header = (
             f"##Betting Odds\n\n"
-            f"||**Moneyline**|**Spread**|**Implied Totals**|**Over/Under**|\n"
-            f"|:--:|:--:|:--:|:--:|:--:|\n")
+            f"|**Moneyline**|**Over/Under**|\n"
+            f"|:--:|:--:|\n")
 
         return betting_header
 
     @staticmethod
-    def betting_rows(betting_odds, team_abv):
-        betting_rows = ""
-
-        for i, row in enumerate(betting_odds):
-            betting_rows += f"**[](/{team_abv[i]}){team_abv[i]}**|"
-            for odd in row:
-                betting_rows += f"{odd}|"
-            betting_rows += "\n"
-
-        return betting_rows
+    def betting_rows(betting_odds):
+        return f'|{betting_odds[0]}|{betting_odds[1]}|'
 
 
 class ThreadStats(object):

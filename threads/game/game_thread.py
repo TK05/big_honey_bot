@@ -107,7 +107,7 @@ def game_body(utc_key, event_data):
         [top_sub, bot_sub])
 
     # Call to lineup script to return lineups, injuries, betting odds
-    team_lineups, team_injuries, betting_odds = line_inj_odds([TEAM, event_data['Opponent']])
+    team_lineups, team_injuries, betting_odds = line_inj_odds(TEAM)
 
     lineup_header = Game.lineup_head_and_fmt(away_abv, home_abv)
     lineup_rows = Game.lineup_rows(team_lineups)
@@ -116,7 +116,7 @@ def game_body(utc_key, event_data):
     injuries_rows = Game.injuries_rows(team_injuries)
 
     betting_header = Game.betting_head_and_fmt()
-    betting_rows = Game.betting_rows(betting_odds, [away_abv, home_abv])
+    betting_rows = Game.betting_rows(betting_odds)
 
     # Scrape referees to get referees for the game
     ref_res = requests.get("https://official.nba.com/referee-assignments/").text
@@ -133,7 +133,9 @@ def game_body(utc_key, event_data):
             ref2 = regex.sub('', game.xpath('./td[3]/a/text()').get())
             ref3 = regex.sub('', game.xpath('./td[4]/a/text()').get())
 
-            referees += f"{ref1.strip()}, {ref2.strip()}, {ref3.strip()}*"
+            referees += f"{ref1.strip()}, {ref2.strip()}, {ref3.strip()}"
+
+    referees += '*'
 
     return (f"{gen_info_table}\n\n&nbsp;\n\n"
             f"{lineup_header}{lineup_rows}\n\n&nbsp;\n\n"

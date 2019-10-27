@@ -1,63 +1,61 @@
 import requests
+from parsel import Selector
 
 
-def line_inj_odds(teams):
+def line_inj_odds(team_name):
     """Scrapes for lineups, injuries and odds.
 
-    Arguments: teams -> list of two teams (will search based on away team but order not important)
-    Return: team_lineups -> nested list of lineups with name, position and stats, [away, home]
+    Arguments: team name (from config)
+    Return: team_lineups -> nested list of lineups with name, position and designation, [away, home]
             team_injuries -> nested list of injuries with name and status, [away, home]
-            betting_data -> nested list of moneyline, spread, over/under, implied totals data [away, home]
+            betting_data -> [moneyline, over/under]
     """
 
     team_lineups = [[], []]
     team_injuries = [[], []]
-    betting_data = [[], []]
+    betting_data = []
 
-    # TODO: This URL could change and isn't 100% reliable.
-    game_data = requests.get("https://api.lineups.com/nba/fetch/lineups/gateway").json()
-    game_data = game_data['data']
+    response = Selector(text=requests.get("https://www.rotowire.com/basketball/nba-lineups.php").text)
+    all_games = response.xpath('.//div[@class="lineup is-nba"]')
 
-    # Find correct key for current game
+    # Find game box that contains correct game
     game_idx = None
 
-    for i, game in enumerate(game_data):
-        teams_list = [game['home_route'].split('-'), game['away_route'].split('-')]
-        teams_list = [item for sublist in teams_list for item in sublist]
-        if teams[0].lower() in teams_list:
+    for i, game in enumerate(all_games):
+        away = game.xpath('./div[2]/div[2]/a[1]/text()').get().strip()
+        home = game.xpath('./div[2]/div[2]/a[2]/text()').get().strip()
+
+        if home == team_name or away == team_name:
             game_idx = i
 
     if game_idx is None:    # Return out of function if game not found
         return team_lineups, team_injuries, betting_data
 
-    # Find all injuries for both home and away teams
-    injury_idx = ['away_injuries', 'home_injuries']
+    game = all_games[game_idx]
 
-    for i, team in enumerate(injury_idx):
-        for player in game_data[game_idx][team]:
-            team_injuries[i].append((player['name'], player['designation']))
+    for side in [0, 1]:
+        lineups = game.xpath(f'./div[2]/div[3]/ul[{side + 1}]')
+        lineup_len = game.xpath(f'./div[2]/div[3]/ul[{side + 1}]/li')
 
-    # Find all players for both home and away teams
-    player_idx = ['away_players', 'home_players']
+        for player in range(2, 7):
+            pos = lineups.xpath(f'./li[{player}]/div[1]/text()').get()
+            name = lineups.xpath(f'./li[{player}]/a[1]/text()').get()
+            des = lineups.xpath(f'./li[{player}]/span[1]/text()').get()
 
-    for i, team in enumerate(player_idx):
-        for player in game_data[game_idx][team]:
-            team_lineups[i].append((player['first_dot_last'], player['position'], player['assists'],
-                                    player['rebounds'], player['points']))
+            if des:
+                name = f'{name} - *{des}*'
+            team_lineups[side].append((pos, name))
 
-    # Find all betting odds for home and away teams
-    bets_idx = ['away_bets', 'home_bets']
+        for injury in range(8, len(lineup_len) + 1):
+            name = lineups.xpath(f'./li[{injury}]/a[1]/text()').get()
+            des = lineups.xpath(f'./li[{injury}]/span[1]/text()').get()
+            team_injuries[side].append((name, des))
 
-    for i, team in enumerate(bets_idx):
-        # Add '+' to moneyline and spread
-        moneyline = game_data[game_idx][team]['moneyline']
-        moneyline = f"+{moneyline}" if '-' not in str(moneyline) else moneyline
-        spread = game_data[game_idx][team]['spread']
-        spread = f"+{spread}" if '-' not in str(spread) else spread
+    ml = game.xpath(f'./div[2]/div[4]/div/div/div[1]/text()').get()
+    ml = ' '.join(ml.split())
+    ou = game.xpath(f'./div[2]/div[4]/div/div/div[2]/text()').get()
+    ou = ' '.join(ou.split())
 
-        betting_data[i] = [
-            moneyline, f"{spread} ({game_data[game_idx][team]['spread_moneyline']})",
-            game_data[game_idx][team]['total'],
-            f"{game_data[game_idx][team]['over_under']} ({game_data[game_idx][team]['over_under_moneyline']})"]
+    betting_data = [ml, ou]
 
     return team_lineups, team_injuries, betting_data
