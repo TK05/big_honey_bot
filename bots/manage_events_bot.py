@@ -50,7 +50,7 @@ while bot_running:
     else:
         # Download schedule Gist, convert to dict
         gist_schedule = get_gist('schedule')
-        schedule = json.dumps(gist_schedule)
+        schedule = json.loads(gist_schedule)
 
     # Events sorted by UTC
     all_events = sorted(schedule.keys())

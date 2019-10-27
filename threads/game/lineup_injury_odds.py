@@ -13,7 +13,7 @@ def line_inj_odds(team_name):
 
     team_lineups = [[], []]
     team_injuries = [[], []]
-    betting_data = []
+    betting_data = ['N/A', 'N/A']
 
     response = Selector(text=requests.get("https://www.rotowire.com/basketball/nba-lineups.php").text)
     all_games = response.xpath('.//div[@class="lineup is-nba"]')

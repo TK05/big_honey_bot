@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 
 setup = {
     'season': 2019,  # Start year. EX: 18-19 season = 2018
