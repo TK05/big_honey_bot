@@ -25,9 +25,9 @@ def game_headline(event_data):
 
     # Get and set nba.com Team_ID's needed to lookup records
     for team in id_response['league']['standard']:
-        if team['nickname'] == TEAM:
+        if team['nickname'] == TEAM and team['isNBAFranchise']:
             team_focus_id = team['teamId']
-        if team['nickname'] == event_data['Opponent']:
+        if team['nickname'] == event_data['Opponent'] and team['isNBAFranchise']:
             opp_team_id = team['teamId']
 
     rec_response = requests.get("https://data.nba.net/prod//v1/current/standings_conference.json").json()
