@@ -60,7 +60,7 @@ def update_tripdub():
     dunk_res = requests.get('https://www.basketball-reference.com/players/j/jokicni01.html', headers=header).text
 
     dunk_obj = re.findall(r'(?<=fg2_dunk\" >)[\d]*', dunk_res)
-    dunks = dunk_obj[-8] # TODO: Has to be changed every season
+    dunks = dunk_obj[-7]    # TODO: Has to be changed every season
 
     td_res = requests.get(f"https://www.basketball-reference.com/play-index/pgl_finder.cgi?request=1&"
                           f"match=career&year_min={setup['season'] + 1}&year_max={setup['season'] + 1}&is_playoffs=N&"
