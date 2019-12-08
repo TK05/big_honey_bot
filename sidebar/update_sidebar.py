@@ -109,6 +109,28 @@ def update_playoff(conf_data, team_seed):
     return play_sub, seed_sub
 
 
+def update_munder():
+    """Grab all game results from espn and count munders"""
+
+    response = requests.get(setup['espn_url']).text
+
+    response_selector = Selector(text=response)
+    games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
+    munder_count = 0
+
+    for game in games_raw:
+        time_raw = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/text()').get()
+
+        if not time_raw:
+            score_raw = game.xpath('./td[@class="Table__TD"][3]/span[2]/a/text()').get()
+            opp_score = int(score_raw.split('-')[-1])
+
+            if opp_score < 100:
+                munder_count += 1
+
+    return f"Munders: {munder_count}"
+
+
 def update_sidebar():
     """Updates sidebar for both new and old reddit."""
 
@@ -117,6 +139,7 @@ def update_sidebar():
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
+    munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
     play_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
     seed_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
 
@@ -129,6 +152,7 @@ def update_sidebar():
         old_reddit_sidebar = seed_regex.sub(seed_sub, old_reddit_sidebar)
 
     old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
+    old_reddit_sidebar = munder_regex.sub(update_munder(), old_reddit_sidebar)
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(old_reddit_sidebar)
