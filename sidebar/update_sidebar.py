@@ -97,13 +97,13 @@ def update_playoff(conf_data, team_seed):
         for seed in range(7, team_seed, -1):
             seed_losses = int(conf_data[seed]['loss'])
             seed_magic_num = 83 - tf_wins - seed_losses
-            seed_sub = f'#{seed} Seed Magic #: {seed_magic_num}^*'
+            seed_sub = f'#{seed} Seed Magic #: {seed_magic_num}'
             if seed_magic_num > 0:
                 break
             else:
                 seed_sub = f'#{team_seed + 1} Seed: CLINCHED!'
     else:
-        play_sub = f'Playoff Magic #: {play_magic_num}^*'
+        play_sub = f'Playoff Magic #: {play_magic_num}'
         seed_sub = ''
 
     return play_sub, seed_sub
