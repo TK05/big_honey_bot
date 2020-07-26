@@ -179,7 +179,7 @@ def update_sidebar():
         new_text = play_regex.sub(play_sub, new_text)
         new_text = seed_regex.sub(seed_sub, new_text)
 
-    new_text = tripdub_regex.sub(update_tripdub(), new_text)
+    # new_text = tripdub_regex.sub(update_tripdub(), new_text)
     new_text = munder_regex.sub(update_munder(), new_text)
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
