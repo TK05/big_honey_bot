@@ -148,7 +148,11 @@ def nba_com_schedule_scrap():
     # update json file using utc_key as key
     for utc_key, game_dict in nbacom_data.items():
         for data_key, data in game_dict.items():
-            json_file[utc_key][data_key] = data
+            try:
+                json_file[utc_key][data_key] = data
+            except KeyError:
+                # 2020 catch for scrimmage games not on both sites
+                pass
 
     with open('../json_output/schedule_scrape_output.json', 'w') as f:
         json.dump(json_file, f, indent=4)
@@ -174,7 +178,10 @@ def espn_convert_date_time(date_in, time_in):
                    'Mar': (3, (scrape_year + 1)),
                    'Apr': (4, (scrape_year + 1)),
                    'May': (5, (scrape_year + 1)),
-                   'Jun': (6, (scrape_year + 1))}
+                   'Jun': (6, (scrape_year + 1)),
+                   'Jul': (7, (scrape_year + 1)),
+                   'Aug': (8, (scrape_year + 1)),
+                   'Sep': (9, (scrape_year + 1))}
 
     date_in = date_in.split()  # ex:['Wed,', 'Jan', '30]
     month, year = mo_yr_table[date_in[1]]
