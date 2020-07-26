@@ -155,7 +155,7 @@ def update_sidebar():
         old_reddit_sidebar = play_regex.sub(play_sub, old_reddit_sidebar)
         old_reddit_sidebar = seed_regex.sub(seed_sub, old_reddit_sidebar)
 
-    old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
+    # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
     old_reddit_sidebar = munder_regex.sub(update_munder(), old_reddit_sidebar)
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
