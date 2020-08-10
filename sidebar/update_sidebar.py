@@ -127,7 +127,8 @@ def update_munder():
             else:
                 opp_idx = 0
             score_raw = game.xpath('./td[@class="Table__TD"][3]/span[2]/a/text()').get()
-            opp_score = int(score_raw.strip(' OT').split('-')[opp_idx])
+            score_raw = score_raw.split(' ')[0]
+            opp_score = int(score_raw.split('-')[opp_idx])
 
             if opp_score < 100:
                 munder_count += 1
