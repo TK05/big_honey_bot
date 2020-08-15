@@ -24,7 +24,7 @@ setup = {
 options = {
     'update_sidebar': True,
     'thread_stats': True,
-    'in_playoffs': False,
+    'in_playoffs': True,
     'playoff_watch': False
 }
 
