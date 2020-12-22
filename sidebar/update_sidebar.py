@@ -4,15 +4,15 @@ import requests
 import praw
 from parsel import Selector
 
-from config import setup, options
+from config import setup
 
 
-TARGET_SUB = os.environ['TARGET_SUB']
-USER_AGENT = os.environ['USER_AGENT']
+USER_AGENT = setup['user_agent']
 YEAR = setup['season']
 TEAM = setup['team']
-PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH']
 
+TARGET_SUB = os.environ['TARGET_SUB']
+PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH']
 USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']

@@ -10,7 +10,7 @@ PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']
 CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
 
-USER_AGENT = setup['USER_AGENT']
+USER_AGENT = setup['user_agent']
 FLAIRS = setup['flairs']
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
