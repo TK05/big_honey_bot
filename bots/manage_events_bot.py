@@ -4,7 +4,7 @@ import os
 import time
 import pytz
 
-from config import options, setup, DEBUG
+from config import setup, DEBUG
 from threads.game.game_thread import game_thread_handler
 from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
@@ -18,10 +18,11 @@ if DEBUG:
     print('DEBUG ON')
     print(os.environ)
 
+UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
+THREAD_STATS = os.environ['THREAD_STATS']
+IN_PLAYOFFS = os.environ['IN_PLAYOFFS']
+
 TIMEZONE = setup['timezone']
-UPDATE_SIDEBAR = options['update_sidebar']
-THREAD_STATS = options['thread_stats']
-IN_PLAYOFFS = options['in_playoffs']
 TZ_STR = setup['timezone_short']
 
 # Update playoff data at each restart

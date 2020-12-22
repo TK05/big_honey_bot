@@ -8,10 +8,10 @@ from config import setup, options
 
 
 TARGET_SUB = os.environ['TARGET_SUB']
-USER_AGENT = setup['user_agent']
+USER_AGENT = os.environ['USER_AGENT']
 YEAR = setup['season']
 TEAM = setup['team']
-PLAYOFF_WATCH = options['playoff_watch']
+PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH']
 
 USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']

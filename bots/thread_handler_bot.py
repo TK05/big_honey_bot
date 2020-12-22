@@ -5,13 +5,12 @@ from config import setup
 
 
 TARGET_SUB = os.environ['TARGET_SUB']
-USER_AGENT = setup['user_agent']
-
 USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']
 CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
 
+USER_AGENT = setup['USER_AGENT']
 FLAIRS = setup['flairs']
 
 reddit = praw.Reddit(client_id=CLIENT_ID,

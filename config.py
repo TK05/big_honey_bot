@@ -1,7 +1,7 @@
 DEBUG = False
 
 setup = {
-    'season': 2019,  # Start year. EX: 18-19 season = 2018
+    'season': 2020,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
     'location': 'Denver',
     'timezone': 'US/Mountain',
@@ -19,13 +19,6 @@ setup = {
     #     'game': '7fa2da68-3e0d-11e9-9571-0e5fef20b374',
     #     'post': '7962e238-3e0d-11e9-92dc-0edef102ea7a'
     # }
-}
-
-options = {
-    'update_sidebar': True,
-    'thread_stats': True,
-    'in_playoffs': True,
-    'playoff_watch': False
 }
 
 gists = {
