@@ -18,9 +18,9 @@ if DEBUG:
     print('DEBUG ON')
     print(os.environ)
 
-UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR']
-THREAD_STATS = os.environ['THREAD_STATS']
-IN_PLAYOFFS = os.environ['IN_PLAYOFFS']
+UPDATE_SIDEBAR = os.environ['UPDATE_SIDEBAR'] or False
+THREAD_STATS = os.environ['THREAD_STATS'] or False
+IN_PLAYOFFS = os.environ['IN_PLAYOFFS'] or False
 
 TIMEZONE = setup['timezone']
 TZ_STR = setup['timezone_short']

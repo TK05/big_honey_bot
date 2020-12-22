@@ -12,7 +12,7 @@ YEAR = setup['season']
 TEAM = setup['team']
 
 TARGET_SUB = os.environ['TARGET_SUB']
-PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH']
+PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH'] or False
 USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']
