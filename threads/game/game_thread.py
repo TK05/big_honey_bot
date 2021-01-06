@@ -129,11 +129,18 @@ def game_body(utc_key, event_data):
 
         if LOCATION in curr_row.get():
             regex = re.compile('[^a-zA-Z\s]')
-            ref1 = regex.sub('', game.xpath('./td[2]/a/text()').get())
-            ref2 = regex.sub('', game.xpath('./td[3]/a/text()').get())
-            ref3 = regex.sub('', game.xpath('./td[4]/a/text()').get())
+            ref_list = []
 
-            referees += f"{ref1.strip()}, {ref2.strip()}, {ref3.strip()}"
+            for n in range(2, 5):
+                try:
+                    ref_list.append(regex.sub('', game.xpath(f"./td[{n}]/a/text()").get()))
+                except TypeError:
+                    try:
+                        ref_list.append(regex.sub('', game.xpath(f"./td[{n}]/text()").get()))
+                    except TypeError:
+                        ref_list.append("Unknown")
+
+            referees += ", ".join(str(i).strip() for i in ref_list)
 
     referees += '*'
 
