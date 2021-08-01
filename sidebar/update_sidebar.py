@@ -32,6 +32,8 @@ def update_record():
     # TODO: This URL could be invalid in the future.
     id_response = requests.get(f"https://data.nba.net/prod/v2/{setup['season']}/teams.json").json()
 
+    team_focus_id = conf_data = team_seed = tf_wins = tf_loss = team_conf = 0
+
     # Get Team_ID needed to lookup records
     for team in id_response['league']['standard']:
         if team['nickname'] == TEAM:
@@ -84,7 +86,7 @@ def update_playoff(conf_data, team_seed):
     tf_wins = int(conf_data[team_seed]['win'])
     ninth_losses = int(conf_data[8]['loss'])
     po_code_1 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'P' for playoffs?
-    po_code_2 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'x' for playoffs?
+    # po_code_2 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'x' for playoffs?
     play_magic_num = 83 - tf_wins - ninth_losses
 
     if po_code_1 != '':
@@ -92,8 +94,12 @@ def update_playoff(conf_data, team_seed):
     else:
         playoffs_clinched = False
 
+    play_sub = f'Playoff Magic #: {play_magic_num}'
+    seed_sub = ''
+
     if playoffs_clinched:
         play_sub = f'Playoffs **CLINCHED!**'
+
         for seed in range(7, team_seed, -1):
             seed_losses = int(conf_data[seed]['loss'])
             seed_magic_num = 83 - tf_wins - seed_losses
@@ -102,9 +108,6 @@ def update_playoff(conf_data, team_seed):
                 break
             else:
                 seed_sub = f'#{team_seed + 1} Seed: CLINCHED!'
-    else:
-        play_sub = f'Playoff Magic #: {play_magic_num}'
-        seed_sub = ''
 
     return play_sub, seed_sub
 
@@ -143,7 +146,7 @@ def update_sidebar():
     old_reddit_sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
-    tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
+    # tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
     munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
     play_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
     seed_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
