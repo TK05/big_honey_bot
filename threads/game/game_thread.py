@@ -23,6 +23,8 @@ def game_headline(event_data):
     # TODO: This URL could change in the future.
     id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
 
+    team_focus_id = opp_team_id = tf_wins = tf_loss = opp_wins = opp_loss = 0
+
     # Get and set nba.com Team_ID's needed to lookup records
     for team in id_response['league']['standard']:
         if team['nickname'] == TEAM and team['isNBAFranchise']:
