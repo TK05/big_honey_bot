@@ -1,12 +1,14 @@
 DEBUG = False
 
 setup = {
-    'season': 2020,  # Start year. EX: 18-19 season = 2018
+    'season': 2021,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
     'location': 'Denver',
     'timezone': 'US/Mountain',
     'timezone_short': 'MT',
-    'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den',  # ESPN schedule hub for team
+    # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/1',  # Preseason
+    'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/2',  # Regular Season
+    # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/3',  # Postseason
     'nba_url': 'https://www.nba.com/nuggets/schedule',  # nba.com team schedule
     'user_agent': 'BigHoneyBot_by_TK05',
     'flairs': {     # Subreddit specific link_flair IDs
