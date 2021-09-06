@@ -18,24 +18,18 @@ def post_game_edit(schedule):
 
     for utc, event in schedule.items():
 
-        new_schedule[utc]['UTC'] = utc
-        new_schedule[utc]['Type'] = 'post'
-
-        if event['Location'] == 'home':
-            new_schedule[utc]['Home_Away_Fix'] = 'vs.'
-        else:
-            new_schedule[utc]['Home_Away_Fix'] = '@'
+        new_schedule[utc]['utc'] = utc
+        new_schedule[utc]['event_type'] = 'post'
 
         game_time = datetime.fromtimestamp(int(utc))
         loc_str = datetime.strftime(game_time.astimezone(tz=pytz.timezone(TIMEZONE)), format('%#I:%M %p'))
-        # TODO: Double check time fmt based on platform requirements (- or #)
         date_str = datetime.strftime(game_time.astimezone(tz=pytz.timezone(TIMEZONE)), format("%b %#d, %Y"))
 
-        new_schedule[utc]['Time'] = loc_str
-        new_schedule[utc]['Date_Str'] = date_str
-        new_schedule[utc]['Post_Date'] = event['Date']
+        new_schedule[utc]['game_start'] = loc_str
+        new_schedule[utc]['post_date'] = date_str
+        new_schedule[utc]['post_time'] = event['game_start']
 
-        new_schedule[utc]['Opp_Abv'] = team_lookup[event['Opponent']][1]
+        new_schedule[utc]['opp_abv'] = team_lookup[event['opponent']][1]
 
     return new_schedule
 
@@ -52,9 +46,8 @@ def game_edit(schedule):
         loc_str = datetime.strftime(post_date.astimezone(tz=pytz.timezone(TIMEZONE)), format('%#I:%M %p'))
 
         new_schedule[new_utc] = event
-        new_schedule[new_utc]['Type'] = 'game'
-
-        new_schedule[new_utc]['Post_Date'] = loc_str
+        new_schedule[new_utc]['event_type'] = 'game'
+        new_schedule[new_utc]['post_time'] = loc_str
 
     return new_schedule
 
@@ -67,7 +60,7 @@ def pre_game_edit(schedule):
     for utc, event in schedule.items():
 
         # Avoid adding duplicates
-        if event['Type'] == 'post':
+        if event['event_type'] == 'post':
 
             game_day = datetime.fromtimestamp(int(utc), tz=pytz.timezone(TIMEZONE))
             game_day = game_day.replace(hour=8, minute=0)
@@ -77,8 +70,8 @@ def pre_game_edit(schedule):
             loc_str = datetime.strftime(post_date.astimezone(tz=pytz.timezone(TIMEZONE)), format('%#I:%M %p'))
 
             new_schedule[new_utc] = event
-            new_schedule[new_utc]['Type'] = 'pre'
-            new_schedule[new_utc]['Post_Date'] = loc_str
+            new_schedule[new_utc]['type'] = 'pre'
+            new_schedule[new_utc]['post_time'] = loc_str
 
     return new_schedule
 
