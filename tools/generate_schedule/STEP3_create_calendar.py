@@ -12,7 +12,9 @@ def update_calendar(schedule):
             "id": utc,
             "start": event_data["start"],
             "summary": event_data["summary"],
-            "description": f"{event_data['meta']}\n\n{event_data['description']}",
+            # meta start delimeter = {meta_begin} +1 newline, meta end delimeter = {meta_end} +1 newline
+            # body start delimeter = {body_begin} +1 newline, meta end delimeter = {body_end} +1 newline
+            "description": f"{{meta_begin}}\n{event_data['meta']}\n{{meta_end}}\n\n{{body_begin}}\n{event_data['description']}\n{{body_end}}",
             "location": event_data["location"]
         }
 
