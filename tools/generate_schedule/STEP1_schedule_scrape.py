@@ -21,8 +21,6 @@ def espn_schedule_scrape():
             utc, game date, espn id
     """
 
-    scrape_type = 'espn_s1'  # TODO: see if this is helps organizing event status
-
     response = request_schedule(setup['espn_url'], 'espn_schedule.html')
 
     response_selector = Selector(text=response)
@@ -46,9 +44,7 @@ def espn_schedule_scrape():
 
         espn_data[utc_key] = dict()
         espn_data[utc_key]['game_start'] = date
-        espn_data[utc_key]['event_type'] = scrape_type
 
-        # grabs and generates espn id and all necessary links
         game_id_url = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/@href').get()
         game_id_raw = game_id_url.split('/')
         espn_data[utc_key]['espn_id'] = game_id_raw[-1]
@@ -73,8 +69,6 @@ def nba_com_schedule_scrap():
         Grabbed from nba.com:
             utc, nba id, home/away, arena, city, opponent (as team name), tv, radio
     """
-
-    scrape_type = 'nba_s2'
 
     response = request_schedule(setup['nba_url'], 'nba_schedule.html')
 
@@ -104,7 +98,6 @@ def nba_com_schedule_scrap():
 
         nbacom_data[utc_key] = dict()
 
-        nbacom_data[utc_key]['event_type'] = scrape_type
         nbacom_data[utc_key]["nba_id"] = game.xpath('./@id').get()
         nbacom_data[utc_key]["home_away"] = (game.xpath('./div[1]/span/text()').get())[0:4]
         nbacom_data[utc_key]["arena"] = game.xpath('./@data-arena').get()
@@ -117,6 +110,7 @@ def nba_com_schedule_scrap():
 
         # broadcast details, fix for when there's local and national tv
         tv = ""
+        nbacom_data[utc_key]["tv"] = None
         if game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[2]/text()').get():
             tv_nat = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[2]/text()').get()
             tv = f"{tv_nat}, "
@@ -126,12 +120,15 @@ def nba_com_schedule_scrap():
         try:
             tv += game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[1]/text()').get()
         except TypeError:
-            continue
+            pass
 
-        nbacom_data[utc_key]["tv"] = tv
+        if tv:
+            nbacom_data[utc_key]["tv"] = tv
 
         # TODO: Check if radio is added to nba.com eventually
-        nbacom_data[utc_key]["radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
+        nbacom_data[utc_key]["radio"] = None
+        if game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get():
+            nbacom_data[utc_key]["radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
 
     if not os.path.exists('../json_output/schedule_scrape_output.json'):
         json_file = {}
