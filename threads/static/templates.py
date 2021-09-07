@@ -1,6 +1,3 @@
-# I stuck most templates in here to see if it's a big easier to manage
-
-
 class PostGame(object):
 
     @staticmethod
@@ -111,7 +108,7 @@ class Game(object):
             f"|:--|:--|:--|\n"
             f"{times[0]}|**TV:** {tv}|{arena}|\n"
             f"{times[1]}|**Radio:** {radio}|{city}|\n"
-            f"{times[2]}|**Streams:** [Sportsurge](https://sportsurge.net)|**Team Subreddits**|\n"
+            f"{times[2]}|**Streams:** [NBAbite](https://nbabite.com)|**Team Subreddits**|\n"
             f"{times[3]}|**NBA** [Boxscore]({nba_links[0]}) - "
             f"[Shotchart]({nba_links[1]})| r/{subreddits[0]}|\n"
             f"{times[4]}|**ESPN** [Boxscore]({espn_links[0]}) - "
