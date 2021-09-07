@@ -17,6 +17,13 @@ LOCATION = setup['location']
 TZ_STR = setup['timezone_short']
 
 
+def home_away_fix(home_away):
+    if home_away == 'home':
+        return 'vs.'
+    else:
+        return '@'
+
+
 def game_headline(event_data):
     """Generate a thread title based on event and team data."""
 
@@ -43,7 +50,7 @@ def game_headline(event_data):
                 opp_wins = team['win']
                 opp_loss = team['loss']
 
-    return Game.headline(event_data['Type'], TEAM, tf_wins, tf_loss, event_data['Home_Away_Fix'],
+    return Game.headline(event_data['Type'], TEAM, tf_wins, tf_loss, home_away_fix(event_data['home_away']),
                          event_data['Opponent'], opp_wins, opp_loss, event_data['Date_Str'], event_data['Time'])
 
 
@@ -58,7 +65,7 @@ def playoff_headline(event_data, playoff_data):
         headline = "GAME THREAD: "
 
     headline += f"ROUND {playoff_data[3]}, GAME {playoff_data[1]} - " \
-                f"{TEAM} {event_data['Home_Away_Fix']} {event_data['Opponent']}"
+                f"{TEAM} {home_away_fix(event_data['home_away'])} {event_data['Opponent']}"
 
     if team_wins > opp_wins:
         headline += f" | {TEAM} Lead {team_wins}-{opp_wins}"
