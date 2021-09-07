@@ -129,6 +129,7 @@ def post_game_edit(schedule):
         home_away = "vs." if event_data['home_away'] == 'home' else '@'
         headline = f"POST GAME THREAD: {setup['team']} {home_away} {event_data['opponent']}"
         new_schedule[utc]['summary'] = headline
+        new_schedule[utc]['description'] = "TBD"
 
     return new_schedule
 
