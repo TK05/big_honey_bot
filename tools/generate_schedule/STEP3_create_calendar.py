@@ -14,7 +14,7 @@ def update_calendar(schedule):
             "summary": event_data["summary"],
             # meta start delimeter = {meta_begin} +1 newline, meta end delimeter = {meta_end} +1 newline
             # body start delimeter = {body_begin} +1 newline, meta end delimeter = {body_end} +1 newline
-            "description": f"{{meta_begin}}\n{event_data['meta']}\n{{meta_end}}\n\n{{body_begin}}\n{event_data['description']}\n{{body_end}}",
+            "description": f"{{meta_begin}}\n{json.dumps(event_data['meta'])}\n{{meta_end}}\n\n{{body_begin}}\n{event_data['description']}\n{{body_end}}",
             "location": event_data["location"]
         }
 
