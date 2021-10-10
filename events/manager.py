@@ -25,8 +25,10 @@ def get_all_events():
 
 def get_event(event_id):
     service = create_service()
+    event = service.get_event(event_id)
+    add_meta_and_body(event)
 
-    return service.get_event(event_id)
+    return event
 
 
 def get_next_event():
