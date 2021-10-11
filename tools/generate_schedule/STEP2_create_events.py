@@ -26,6 +26,7 @@ def create_pre_game_event(schedule):
         new_schedule[new_utc] = {}
         new_schedule[new_utc]['meta'] = {}
         new_schedule[new_utc]['meta'] = event_data
+        new_schedule[new_utc]['meta']['game_utc'] = int(old_utc)
         new_schedule[new_utc]['meta']['post_utc'] = int(new_utc)
         new_schedule[new_utc]['meta']['event_type'] = 'pre'
 
@@ -71,6 +72,7 @@ def create_game_event(schedule):
 
         new_schedule[new_utc] = {}
         new_schedule[new_utc]['meta'] = event_data
+        new_schedule[new_utc]['meta']['game_utc'] = int(old_utc)
         new_schedule[new_utc]['meta']['post_utc'] = int(new_utc)
         new_schedule[new_utc]['meta']['event_type'] = 'game'
         new_schedule[new_utc]['meta']['post_time'] = loc_time_str
@@ -122,7 +124,7 @@ def post_game_edit(schedule):
     for utc, event_data in schedule.items():
         new_schedule[utc] = {}
         new_schedule[utc]['meta'] = event_data
-        new_schedule[utc]['meta']['post_utc'] = int(utc)
+        new_schedule[utc]['meta']['post_utc'] = new_schedule[utc]['meta']['game_utc'] = int(utc)
         new_schedule[utc]['meta']['event_type'] = 'post'
 
         game_time = datetime.fromtimestamp(int(utc))
