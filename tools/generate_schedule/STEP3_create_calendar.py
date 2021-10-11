@@ -2,6 +2,7 @@ import json
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
+from tools.toolkit import description_tags
 
 
 def update_calendar(schedule):
@@ -12,9 +13,8 @@ def update_calendar(schedule):
             "id": utc,
             "start": event_data["start"],
             "summary": event_data["summary"],
-            # meta start delimeter = {meta_begin} +1 newline, meta end delimeter = {meta_end} +1 newline
-            # body start delimeter = {body_begin} +1 newline, meta end delimeter = {body_end} +1 newline
-            "description": f"{{meta_begin}}\n{json.dumps(event_data['meta'])}\n{{meta_end}}\n\n{{body_begin}}\n{event_data['description']}\n{{body_end}}",
+            "description": f"{description_tags['meta_start']}{json.dumps(event_data['meta'])}{description_tags['meta_end']}"
+                           f"{description_tags['body_start']}{event_data['description']}{description_tags['body_end']}",
             "location": event_data["location"]
         }
 

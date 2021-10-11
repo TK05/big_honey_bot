@@ -3,11 +3,11 @@ import os
 import copy
 import json
 import pytz
-import hashlib
 
 from config import setup
 from data.static.data import team_lookup
 from threads.static.templates import Game
+from tools.toolkit import create_hash
 
 
 TIMEZONE = setup['timezone']
@@ -161,11 +161,6 @@ def nba_link(link_type, nba_id):
         link += '/shotchart'
 
     return link
-
-
-def create_hash(string):
-
-    return hashlib.md5(string.encode()).hexdigest()
 
 
 if __name__ == '__main__':
