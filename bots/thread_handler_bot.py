@@ -18,6 +18,7 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
                      username=USERNAME,
                      password=PASSWORD,
                      user_agent=USER_AGENT)
+reddit.validate_on_submit = True
 subreddit = reddit.subreddit(TARGET_SUB)
 
 
