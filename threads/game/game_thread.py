@@ -171,4 +171,4 @@ def game_thread_handler(event_data, playoff_data, custom_title=None):
     thread_obj = new_thread(headline, body, event_data.meta['event_type'])
     print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
 
-    return headline, body, thread_obj
+    return thread_obj
