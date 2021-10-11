@@ -2,25 +2,21 @@ import json
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
-
-META_BEGIN = '{meta_begin}\n'
-META_END = '\n{meta_end}'
-BODY_BEGIN = '{body_begin}\n'
-BODY_END = '\n{body_end}'
+from tools.toolkit import description_tags, create_hash
 
 
 def add_meta_and_body(event):
     if event.description:
-        meta = json.loads(event.description[event.description.find(start:=META_BEGIN)+len(start):event.description.find(META_END)])
+        meta = json.loads(event.description[event.description.find(start:=description_tags['meta_start'])+len(start):event.description.find(description_tags['meta_end'])])
         setattr(event, 'meta', meta)
-        body = (event.description[event.description.find(start:=BODY_BEGIN)+len(start):event.description.find(BODY_END)])
+        body = (event.description[event.description.find(start:=description_tags['body_start'])+len(start):event.description.find(description_tags['body_end'])])
         setattr(event, 'body', body)
 
 
 def get_all_events():
     service = create_service()
 
-    return service.get_events()
+    return service.get_events(order_by='startTime', single_events=True)
 
 
 def get_event(event_id):
@@ -54,6 +50,14 @@ def create_event(event_data):
 
 def update_event(event):
     service = create_service()
+
+    # Update hashes before updating event
+    event.meta['title_hash'] = create_hash(event.summary)
+    event.meta['body_hash'] = create_hash(event.body)
+
+    # Update description w/ new hashes and any body changes
+    event.description = f"{description_tags['meta_start']}{json.dumps(event.meta)}{description_tags['meta_end']}" \
+                        f"{description_tags['body_start']}{event.body}{description_tags['body_end']}"
     service.update_event(event)
 
 
