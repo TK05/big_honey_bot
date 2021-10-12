@@ -2,7 +2,7 @@ import hashlib
 
 description_tags = {
     "meta_start": "{meta_begin}\n",
-    "meta_end": "\n{meta_end}\n",
+    "meta_end": "\n{meta_end}",
     "body_start": "\n{body_begin}\n",
     "body_end": "\n{body_end}"
 }
