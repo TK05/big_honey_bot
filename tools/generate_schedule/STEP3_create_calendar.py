@@ -12,6 +12,7 @@ def update_calendar(schedule):
         cal_event = {
             "id": utc,
             "start": event_data["start"],
+            "end": event_data["end"],
             "summary": event_data["summary"],
             "description": f"{description_tags['meta_start']}{json.dumps(event_data['meta'])}{description_tags['meta_end']}"
                            f"{description_tags['body_start']}{event_data['description']}{description_tags['body_end']}",
