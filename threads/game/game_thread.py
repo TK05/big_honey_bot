@@ -150,7 +150,7 @@ def game_body(event_data):
             f"{referees}\n")
 
 
-def game_thread_handler(event_data, playoff_data, custom_title=None):
+def game_thread_handler(event_data, playoff_data, custom_title):
     """Callable function to generate and post a game thread."""
 
     print(f"Generating thread data for {event_data.summary}")
