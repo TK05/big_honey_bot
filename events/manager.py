@@ -1,16 +1,41 @@
 import json
+import re
+from abc import ABC
+from html.parser import HTMLParser
+import re
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
 from tools.toolkit import description_tags, create_hash
 
 
+class HTMLFilter(HTMLParser, ABC):
+    text = ""
+
+    def handle_data(self, data):
+        self.text += data
+
+
 def add_meta_and_body(event):
-    if event.description:
-        meta = json.loads(event.description[event.description.find(start:=description_tags['meta_start'])+len(start):event.description.find(description_tags['meta_end'])])
+    def set_meta_and_body(ev):
+        meta = json.loads(ev.description[ev.description.find(start := description_tags['meta_start']) + len(start):ev.description.find(description_tags['meta_end'])])
         setattr(event, 'meta', meta)
-        body = (event.description[event.description.find(start:=description_tags['body_start'])+len(start):event.description.find(description_tags['body_end'])])
+        body = (ev.description[ev.description.find(start := description_tags['body_start']) + len(start):ev.description.find(description_tags['body_end'])])
         setattr(event, 'body', body)
+
+        return event
+
+    if event.description:
+        try:
+            event = set_meta_and_body(event)
+        # Handle when event touched via UI and description gets populated with HTML tags
+        except json.JSONDecodeError:
+            desc_re = re.sub('<br\s*?>', '\n', event.description)
+            desc_tag = HTMLFilter()
+            desc_tag.feed(desc_re)
+            event.description = desc_tag.text
+
+            event = set_meta_and_body(event)
 
 
 def get_all_events():
