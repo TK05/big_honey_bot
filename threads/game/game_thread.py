@@ -9,6 +9,7 @@ from bots.thread_handler_bot import new_thread
 from threads.static.templates import Game
 from data.static.data import team_lookup
 from threads.game.lineup_injury_odds import line_inj_odds
+from tools.toolkit import description_tags
 
 
 TEAM = setup['team']
@@ -34,7 +35,7 @@ def format_date_and_time(game_start):
     return date_str, time_str
 
 
-def game_headline(event_meta):
+def game_headline(event):
     """Generate a thread title based on event and team data."""
 
     # TODO: This URL could change in the future.
@@ -46,7 +47,7 @@ def game_headline(event_meta):
     for team in id_response['league']['standard']:
         if team['nickname'] == TEAM and team['isNBAFranchise']:
             team_focus_id = team['teamId']
-        if team['nickname'] == event_meta['opponent'] and team['isNBAFranchise']:
+        if team['nickname'] == event.meta['opponent'] and team['isNBAFranchise']:
             opp_team_id = team['teamId']
 
     rec_response = requests.get("https://data.nba.net/prod//v1/current/standings_conference.json").json()
@@ -60,10 +61,11 @@ def game_headline(event_meta):
                 opp_wins = team['win']
                 opp_loss = team['loss']
 
-    date_str, time_str = format_date_and_time(event_meta['game_start'])
+    date_str, time_str = format_date_and_time(event.meta['game_start'])
 
-    return Game.headline(event_meta['event_type'], TEAM, tf_wins, tf_loss, home_away_fix(event_meta['home_away']),
-                         event_meta['opponent'], opp_wins, opp_loss, date_str, time_str)
+    event.summary = event.summary.replace(description_tags['our_record'], f'({tf_wins}-{tf_loss})')
+    event.summary = event.summary.replace(description_tags['opp_record'], f'({opp_wins}-{opp_loss})')
+    event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
 
 
 def playoff_headline(event_data, playoff_data):
@@ -150,25 +152,20 @@ def game_body(event_data):
             f"{referees}\n")
 
 
-def game_thread_handler(event_data, playoff_data, custom_title):
+def game_thread_handler(event, playoff_data):
     """Callable function to generate and post a game thread."""
 
-    print(f"Generating thread data for {event_data.summary}")
-    if not custom_title:
-        if playoff_data[0]:
-            # TODO: Update for playoffs
-            headline = playoff_headline(event_data, playoff_data)
-        else:
-            headline = game_headline(event_data.meta)
+    if playoff_data[0]:
+        # TODO: Update for playoffs
+        playoff_headline(event, playoff_data)
     else:
-        headline = custom_title
+        game_headline(event)
 
-    if event_data.meta['event_type'] == 'game':
-        body = game_body(event_data)
-    else:
-        body = event_data.body
+    if event.meta['event_type'] == 'game':
+        event.body = game_body(event)
 
-    thread_obj = new_thread(headline, body, event_data.meta['event_type'])
-    print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
+    print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
+    thread_obj = new_thread(event.summary, event.body, event.meta['event_type'])
+    print(f"{os.path.basename(__file__)}: Thread posted to r/{os.environ['TARGET_SUB']}")
 
     return thread_obj
