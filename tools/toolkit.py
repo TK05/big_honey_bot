@@ -4,7 +4,10 @@ description_tags = {
     "meta_start": "{meta_begin}\n",
     "meta_end": "\n{meta_end}",
     "body_start": "\n{body_begin}\n",
-    "body_end": "\n{body_end}"
+    "body_end": "\n{body_end}",
+    "our_record": "{our_rec}",
+    "opp_record": "{opp_rec}",
+    "date_and_time": "{date_time}"
 }
 
 
