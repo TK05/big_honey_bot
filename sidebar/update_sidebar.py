@@ -1,5 +1,7 @@
 import os
 import re
+from distutils.util import strtobool
+from datetime import datetime
 import requests
 import praw
 from parsel import Selector
@@ -11,8 +13,10 @@ USER_AGENT = setup['user_agent']
 YEAR = setup['season']
 TEAM = setup['team']
 
+UPDATE_SIDEBAR = bool(strtobool(os.getenv('UPDATE_SIDEBAR', "False")))
+PLAYOFF_WATCH = bool(strtobool(os.getenv('PLAYOFF_WATCH', "False")))
+
 TARGET_SUB = os.environ['TARGET_SUB']
-PLAYOFF_WATCH = os.environ['PLAYOFF_WATCH'] or False
 USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']
@@ -142,6 +146,11 @@ def update_munder():
 def update_sidebar():
     """Updates sidebar for both new and old reddit."""
 
+    if not UPDATE_SIDEBAR:
+        return
+
+    print(f"{os.path.basename(__file__)}: Updating sidebar @ {datetime.now().strftime('%H:%M')}")
+
     # Old Reddit
     old_reddit_sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
 
@@ -164,7 +173,7 @@ def update_sidebar():
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(old_reddit_sidebar)
-    print("Old-Reddit sidebar updated")
+    print(f"{os.path.basename(__file__)}: Old-Reddit sidebar updated")
 
     # New Reddit
     widgets = reddit.subreddit(TARGET_SUB).widgets
@@ -188,4 +197,4 @@ def update_sidebar():
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
     new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
-    print("New-Reddit sidebar updated")
+    print(f"{os.path.basename(__file__)}: New-Reddit sidebar updated")
