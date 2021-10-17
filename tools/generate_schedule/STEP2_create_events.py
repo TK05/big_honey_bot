@@ -115,7 +115,11 @@ def create_game_event(schedule):
             arena=event_data['arena'],
             city=event_data['city'],
             subreddits=[top_sub, bot_sub])
-
+        new_schedule[new_utc]['description'] = f"{new_schedule[new_utc]['description']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['starters']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['injuries']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['odds']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['referees']}\n"
         new_schedule[new_utc]['meta']['title_hash'] = create_hash(new_schedule[new_utc]['summary'])
         new_schedule[new_utc]['meta']['body_hash'] = create_hash(new_schedule[new_utc]['description'])
 
