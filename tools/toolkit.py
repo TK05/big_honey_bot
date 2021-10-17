@@ -7,7 +7,11 @@ description_tags = {
     "body_end": "\n{body_end}",
     "our_record": "{our_rec}",
     "opp_record": "{opp_rec}",
-    "date_and_time": "{date_time}"
+    "date_and_time": "{date_time}",
+    "starters": "{starters}",
+    "injuries": "{injuries}",
+    "odds": "{odds}",
+    "referees": "{referees}"
 }
 
 
