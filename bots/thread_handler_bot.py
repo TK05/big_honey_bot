@@ -23,11 +23,17 @@ subreddit = reddit.subreddit(TARGET_SUB)
 
 
 def new_thread(title, body, thread_type):
-    """Post new thread given subject and body. Uses praw settings from env and config.py.
+    """Posts new thread. Uses PRAW settings from env & config.py. Unstickies any other thread with "THREAD" in the
+    title. Stickies new thread and sorts by "new".
 
-    Will automatically unsticky any other "THREAD" type thread, turn off send_replies,
-    sticky the thread, set appropriate flair and sort by new.
-    Returns a submission object in case the thread needs to be edited in the future.
+    :param title: Title of thread
+    :type title: str
+    :param body: Body of thread
+    :type body: str
+    :param thread_type: Used to match flair type with flair ID
+    :type thread_type: str
+    :returns: Reddit thread object after creation
+    :rtype: praw.models.reddit.submission.Submission
     """
 
     # Unsticky the correct post
@@ -37,7 +43,7 @@ def new_thread(title, body, thread_type):
         if post.stickied:
             if "THREAD" in post.title:
                 post.mod.sticky(state=False)
-                print(f"Unstickied {post.title}")
+                print(f"{os.path.basename(__file__)}: Unstickied {post.title}")
                 break
 
     post = subreddit.submit(title, body, flair_id=FLAIRS[thread_type], send_replies=False)
@@ -48,5 +54,13 @@ def new_thread(title, body, thread_type):
 
 
 def edit_thread(post_obj, body):
-    """Takes a Submission object and edits the body."""
+    """Edits body of existing thread
+
+    :param post_obj: Existing thread to be edited
+    :type post_obj: praw.models.reddit.submission.Submission
+    :param body: New body to post
+    :type body: str
+    :returns: None
+    :rtype: NoneType
+    """
     post_obj.edit(body)
