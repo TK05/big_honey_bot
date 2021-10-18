@@ -183,6 +183,5 @@ def game_thread_handler(event, playoff_data):
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
     thread_obj = new_thread(event.summary, event.body, event.meta['event_type'])
-    print(f"{os.path.basename(__file__)}: Thread posted to r/{os.environ['TARGET_SUB']}")
 
     return thread_obj
