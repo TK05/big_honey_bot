@@ -31,13 +31,18 @@ def make_post(event, playoff_data_arr):
 
     if event.meta['event_type'] in ['pre', 'game']:
         post = game_thread_handler(event, playoff_data_arr)
-    else:
-        post = 'asdf'
 
-    # Update event object
-    setattr(event, 'post', post)
-    event.meta['event_type'] = 'active'
-    update_event(event)
+        # Update event object
+        setattr(event, 'post', post)
+        event.meta['event_type'] = 'active'
+        update_event(event)
+
+    elif event.meta['event_type'] == 'post':
+        # TODO: Refactor this logic and in
+        win = post_game_thread_handler(event, playoff_data_arr)
+
+    else:
+        print(f"{os.path.basename(__file__)}: Unhandled event_type: {event.meta['event_type']}")
 
     return event
 
@@ -126,8 +131,9 @@ while bot_running:
         if next_event.meta['event_type'] in ['pre', 'game']:
             active_post = make_post(next_event, playoff_data)
         elif next_event.meta['event_type'] == 'post':
-            # handle game watch
-            pass
+            make_post(next_event, playoff_data)
+            # event_type already set to active, set to done
+            active_post = end_active_post(next_event)
         else:
             print(f"{os.path.basename(__file__)}: next_event.meta['event_type'] is invalid")
 
