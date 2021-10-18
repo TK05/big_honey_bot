@@ -1,13 +1,13 @@
 class PostGame(object):
 
     @staticmethod
-    def top_links(espn_recap, espn_box, espn_gc, nba_box, nba_shot):
+    def top_links(espn_id, nba_id):
         top_links = (
-                f"**ESPN:** [recap]({espn_recap}) -"
-                f" [boxscore]({espn_box}) -"
-                f" [gamecast]({espn_gc}) | "
-                f"**NBA.com:** [boxscore]({nba_box}) -"
-                f" [shotchart]({nba_shot})")
+                f"**ESPN:** [recap](https://www.espn.com/nba/recap/_/gameId/{espn_id}) -"
+                f" [boxscore](https://www.espn.com/nba/boxscore/_/gameId/{espn_id}) -"
+                f" [gamecast](https://www.espn.com/nba/game/_/gameId/{espn_id}) | "
+                f"**NBA.com:** [boxscore](https://www.nba.com/game/{nba_id}) -"
+                f" [shotchart](https://www.nba.com/game/{nba_id}/game-charts)")
 
         return top_links
 
