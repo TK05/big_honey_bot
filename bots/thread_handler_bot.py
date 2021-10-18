@@ -49,6 +49,7 @@ def new_thread(title, body, thread_type):
     post = subreddit.submit(title, body, flair_id=FLAIRS[thread_type], send_replies=False)
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
+    print(f"{os.path.basename(__file__)}: Thread posted to r/{TARGET_SUB} - {post.id}")
 
     return post
 
