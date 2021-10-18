@@ -8,7 +8,6 @@ import pytz
 
 from config import DEBUG, setup  # When DEBUG; save json & html
 
-
 TIMEZONE = setup['timezone']
 SCRAPE_YEAR = setup['season']
 
@@ -19,10 +18,8 @@ def espn_schedule_scrape():
         Scrape each game, append to a game dict with game's UTC timestamp as key.
         Output to json file.
         Grabbed from ESPN:
-            utc, game date, espn gamecast/boxscore/recap urls, espn id
+            utc, game date, espn id
     """
-
-    scrape_type = 'espn_s1'  # TODO: see if this is helps organizing event status
 
     response = request_schedule(setup['espn_url'], 'espn_schedule.html')
 
@@ -33,11 +30,8 @@ def espn_schedule_scrape():
     for game in games_raw:
         """ Creates the following:
                 UTC timestamp as game key (string) and initializes an empty dict.
-                espn_data[utc_key]['Date']          = mo/day/yr hr:mn am/pm
-                espn_data[utc_key]['ESPN_Gamecast'] = gamecast url
-                espn_data[utc_key]['ESPN_Box']      = boxscore url
-                espn_data[utc_key]['ESPN_Recap']    = recap url
-                espn_data[utc_key]['ESPN_ID']       = espn ID for game
+                espn_data[utc_key]['game_start']    = mo/day/yr hr:mn am/pm
+                espn_data[utc_key]['espn_id']       = espn ID for game
         """
 
         date_raw = game.xpath('./td[@class="Table__TD"][1]/span/text()').get()
@@ -49,16 +43,11 @@ def espn_schedule_scrape():
         utc_key, date = espn_convert_date_time(date_raw, time_raw)
 
         espn_data[utc_key] = dict()
-        espn_data[utc_key]['Date'] = date
-        espn_data[utc_key]['Type'] = scrape_type    # TODO: check if this matters
+        espn_data[utc_key]['game_start'] = date
 
-        # grabs and generates espn id and all necessary links
         game_id_url = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/@href').get()
-        espn_data[utc_key]['ESPN_Gamecast'] = game_id_url
-        espn_data[utc_key]['ESPN_Box'] = game_id_url.replace("game", "boxscore", 1)
-        espn_data[utc_key]['ESPN_Recap'] = game_id_url.replace("game", "recap", 1)
-        game_id_raw = game_id_url.split('=')
-        espn_data[utc_key]['ESPN_ID'] = game_id_raw[-1]
+        game_id_raw = game_id_url.split('/')
+        espn_data[utc_key]['espn_id'] = game_id_raw[-1]
 
         try:
             os.mkdir('../json_output')
@@ -78,11 +67,8 @@ def nba_com_schedule_scrap():
         Scrape each game, append to a game dict with game's UTC timestamp as key.
         Output to json file.
         Grabbed from nba.com:
-            utc, nba id, nba boxscore/shotchart urls...
-            location (home/away), arena, city, opponent (as team name), tv, radio
+            utc, nba id, home/away, arena, city, opponent (as team name), tv, radio
     """
-
-    scrape_type = 'nba_s2'  # TODO: see if this is helps organizing event status
 
     response = request_schedule(setup['nba_url'], 'nba_schedule.html')
 
@@ -90,20 +76,17 @@ def nba_com_schedule_scrap():
     games_raw = response_selector.xpath('.//li[@data-gamestatus="1"]')  # len(games_raw) would show remaining games
 
     nbacom_data = dict()
-    url_hub = "https://stats.nba.com/game/"
 
     for game in games_raw:
         """ Creates the following:
                 UTC timestamp as game key (string) and initializes an empty dict.
-                nbacom_data[utc_key]['NBA_ID']      = nba.com ID for game
-                nbacom_data[utc_key]['NBA_Box']     = boxscore url
-                nbacom_data[utc_key]['NBA_Shot']    = shotchart url
-                nbacom_data[utc_key]['Location']    = home or away
-                nbacom_data[utc_key]['Arena']       = arena name
-                nbacom_data[utc_key]['City']        = city location of game
-                nbacom_data[utc_key]['Opponent']    = opponent's team name
-                nbacom_data[utc_key]['TV']          = tv networks
-                nbacom_data[utc_key]['Radio']       = radio networks
+                nbacom_data[utc_key]['nba_id']      = nba.com ID for game
+                nbacom_data[utc_key]['home_away']   = home or away
+                nbacom_data[utc_key]['arena']       = arena name
+                nbacom_data[utc_key]['city']        = city location of game
+                nbacom_data[utc_key]['opponent']    = opponent's team name
+                nbacom_data[utc_key]['tv']          = tv networks
+                nbacom_data[utc_key]['radio']       = radio networks
         """
 
         # Playoff Fix: If time is TBD, continue
@@ -115,29 +98,37 @@ def nba_com_schedule_scrap():
 
         nbacom_data[utc_key] = dict()
 
-        nbacom_data[utc_key]['Type'] = scrape_type
-        nbacom_data[utc_key]["NBA_ID"] = game.xpath('./@id').get()
-        nbacom_data[utc_key]["NBA_Box"] = f"{url_hub}{nbacom_data[utc_key]['NBA_ID']}"
-        nbacom_data[utc_key]["NBA_Shot"] = f"{nbacom_data[utc_key]['NBA_Box']}/shotchart"
-        nbacom_data[utc_key]["Location"] = (game.xpath('./div[1]/span/text()').get())[0:4]
-        nbacom_data[utc_key]["Arena"] = game.xpath('./@data-arena').get()
-        nbacom_data[utc_key]["City"] = game.xpath('./div[2]/div[2]/div/span[2]/span/text()').get()
-        nbacom_data[utc_key]["Opponent"] = (game.xpath('./div[2]/div[1]/div[1]/img/@alt').get()).title()
+        nbacom_data[utc_key]["nba_id"] = game.xpath('./@id').get()
+        nbacom_data[utc_key]["home_away"] = (game.xpath('./div[1]/span/text()').get())[0:4]
+        nbacom_data[utc_key]["arena"] = game.xpath('./@data-arena').get()
+        nbacom_data[utc_key]["city"] = game.xpath('./div[2]/div[2]/div/span[2]/span/text()').get()
+        nbacom_data[utc_key]["opponent"] = (game.xpath('./div[2]/div[1]/div[1]/img/@alt').get()).title()
 
         # fix for sixers
-        if nbacom_data[utc_key]["Opponent"] == '76Ers':
-            nbacom_data[utc_key]["Opponent"] = '76ers'
+        if nbacom_data[utc_key]["opponent"] == '76Ers':
+            nbacom_data[utc_key]["opponent"] = '76ers'
 
         # broadcast details, fix for when there's local and national tv
         tv = ""
+        nbacom_data[utc_key]["tv"] = None
         if game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[2]/text()').get():
             tv_nat = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[2]/text()').get()
             tv = f"{tv_nat}, "
-        tv += game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[1]/text()').get()
-        nbacom_data[utc_key]["TV"] = tv
+
+        # TODO: Revisit after TV schedule release (2021)
+        # catch NoneType TV (maybe scrape done prior to TV schedule release)
+        try:
+            tv += game.xpath('./div[3]/div[1]/div[1]/div[1]/span[1]/span[1]/text()').get()
+        except TypeError:
+            pass
+
+        if tv:
+            nbacom_data[utc_key]["tv"] = tv
+
         # TODO: Check if radio is added to nba.com eventually
-        nbacom_data[utc_key]["Radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
-        # nbacom_data[utc_key]["Radio"] = "KKSE-FM 92.5"
+        nbacom_data[utc_key]["radio"] = None
+        if game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get():
+            nbacom_data[utc_key]["radio"] = game.xpath('./div[3]/div[1]/div[1]/div[1]/span[2]/span[1]/text()').get()
 
     if not os.path.exists('../json_output/schedule_scrape_output.json'):
         json_file = {}

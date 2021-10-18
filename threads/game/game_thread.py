@@ -1,7 +1,6 @@
 from datetime import datetime
 import os
 import re
-import pytz
 import requests
 from parsel import Selector
 
@@ -10,17 +9,33 @@ from bots.thread_handler_bot import new_thread
 from threads.static.templates import Game
 from data.static.data import team_lookup
 from threads.game.lineup_injury_odds import line_inj_odds
+from tools.toolkit import description_tags
 
 
 TEAM = setup['team']
 LOCATION = setup['location']
-TZ_STR = setup['timezone_short']
 
 
-def game_headline(event_data):
-    """Generate a thread title based on event and team data."""
+def generate_title(event):
+    """Generates thread title based on event and team data. Generates and formats team records, date and time
+    to replace placeholder tags from event title.
 
-    # TODO: This URL could change in the future.
+    :param event: Event to generate thread title for
+    :type event: gcsa.event.Event
+    :returns: Nothing, modifies event in place
+    :rtype: None
+    """
+
+    def format_date_and_time(game_start):
+        try:
+            date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
+            time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%-I:%M %p')
+        except ValueError:
+            date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
+            time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%#I:%M %p')
+
+        return date, time
+
     id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
 
     team_focus_id = opp_team_id = tf_wins = tf_loss = opp_wins = opp_loss = 0
@@ -29,7 +44,7 @@ def game_headline(event_data):
     for team in id_response['league']['standard']:
         if team['nickname'] == TEAM and team['isNBAFranchise']:
             team_focus_id = team['teamId']
-        if team['nickname'] == event_data['Opponent'] and team['isNBAFranchise']:
+        if team['nickname'] == event.meta['opponent'] and team['isNBAFranchise']:
             opp_team_id = team['teamId']
 
     rec_response = requests.get("https://data.nba.net/prod//v1/current/standings_conference.json").json()
@@ -43,12 +58,21 @@ def game_headline(event_data):
                 opp_wins = team['win']
                 opp_loss = team['loss']
 
-    return Game.headline(event_data['Type'], TEAM, tf_wins, tf_loss, event_data['Home_Away_Fix'],
-                         event_data['Opponent'], opp_wins, opp_loss, event_data['Date_Str'], event_data['Time'])
+    date_str, time_str = format_date_and_time(event.meta['game_start'])
+
+    event.summary = event.summary.replace(description_tags['our_record'], f'({tf_wins}-{tf_loss})')
+    event.summary = event.summary.replace(description_tags['opp_record'], f'({opp_wins}-{opp_loss})')
+    event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
 
 
 def playoff_headline(event_data, playoff_data):
     """Generate a thread title for playoff game threads."""
+
+    def home_away_fix(home_away):
+        if home_away == 'home':
+            return 'vs.'
+        else:
+            return '@'
 
     team_wins, opp_wins = playoff_data[2]
 
@@ -58,7 +82,7 @@ def playoff_headline(event_data, playoff_data):
         headline = "GAME THREAD: "
 
     headline += f"ROUND {playoff_data[3]}, GAME {playoff_data[1]} - " \
-                f"{TEAM} {event_data['Home_Away_Fix']} {event_data['Opponent']}"
+                f"{TEAM} {home_away_fix(event_data['home_away'])} {event_data['Opponent']}"
 
     if team_wins > opp_wins:
         headline += f" | {TEAM} Lead {team_wins}-{opp_wins}"
@@ -72,41 +96,23 @@ def playoff_headline(event_data, playoff_data):
     return headline
 
 
-def game_body(utc_key, event_data):
-    """Generate body of game thread depending on event data.
+def generate_game_body(event):
+    """Generates game thread body based on event, lineup, injury, odds and referee data. Replaces placeholder tags with
+    this generated data.
 
-    Will scrape for probable lineups, injuries and game betting odds.
+    :param event: Event to generate thread body for
+    :type event: gcsa.event.Event
+    :returns: Nothing, modifies event in place
+    :rtype: None
     """
 
-    # Format a few times based on popular time zones in the subreddit
-    time_fmt = '%#I:%M %p %Z'
-    dt_obj = datetime.fromtimestamp(int(utc_key))
-    est_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('US/Eastern')), format(time_fmt))} - Kitchener"
-    mst_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('US/Mountain')), format(time_fmt))} - Denver"
-    pst_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('US/Pacific')), format(time_fmt))} - Seattle"
-    cest_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('Europe/Belgrade')), format(time_fmt))} - Sombor"
-    aedt_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('Australia/Sydney')), format(time_fmt))} - Sydney"
-
     # Set proper home/away team abbreviation for sub icons
-    if event_data['Location'] == 'home':
+    if event.meta['home_away'] == 'home':
         home_abv = team_lookup[TEAM][1]
-        away_abv = team_lookup[event_data['Opponent']][1]
+        away_abv = team_lookup[event.meta['opponent']][1]
     else:
         away_abv = team_lookup[TEAM][1]
-        home_abv = team_lookup[event_data['Opponent']][1]
-
-    # subreddit links using team lookup dict
-    top_sub = team_lookup[event_data['Opponent']][0]
-    bot_sub = team_lookup[TEAM][0]
-
-    # Top "General Information" table
-    gen_info_table = Game.gen_info_table(
-        [est_time, mst_time, pst_time, cest_time, aedt_time],
-        event_data['TV'], event_data['Radio'],
-        [event_data['NBA_Box'], event_data['NBA_Shot']],
-        [event_data['ESPN_Box'], event_data['ESPN_Gamecast']],
-        event_data['Arena'], event_data['City'],
-        [top_sub, bot_sub])
+        home_abv = team_lookup[event.meta['opponent']][1]
 
     # Call to lineup script to return lineups, injuries, betting odds
     team_lineups, team_injuries, betting_odds = line_inj_odds(TEAM)
@@ -146,39 +152,36 @@ def game_body(utc_key, event_data):
 
     referees += '*'
 
-    return (f"{gen_info_table}\n\n&nbsp;\n\n"
-            f"{lineup_header}{lineup_rows}\n\n&nbsp;\n\n"
-            f"{injuries_header}{injuries_rows}\n\n&nbsp;\n\n"
-            f"{betting_header}{betting_rows}\n\n&nbsp;\n\n"
-            f"{referees}\n")
+    if referees == "*Referees: *":
+        referees = ''
+
+    event.body = event.body.replace(description_tags['starters'], f"{lineup_header}{lineup_rows}")
+    event.body = event.body.replace(description_tags['injuries'], f"{injuries_header}{injuries_rows}")
+    event.body = event.body.replace(description_tags['odds'], f"{betting_header}{betting_rows}")
+    event.body = event.body.replace(description_tags['referees'], f"{referees}\n")
 
 
-def pre_game_body(event_data):
-    """Generates a very basic pre-game thread with room for additions."""
+def game_thread_handler(event, playoff_data):
+    """Generates thread title and body for event. Posts generated thread.
 
-    tz_url = f"http://www.thetimezoneconverter.com/?t={event_data['Time']}&tz=Denver&"
+    :param event: Event to generate thread for
+    :type event: gcsa.event.Event
+    :param playoff_data: TODO
+    :type playoff_data: TODO
+    :returns: Reddit thread object after creation
+    :rtype: praw.models.reddit.submission.Submission
+    """
 
-    pg_body = Game.pre_game_body(event_data['Time'], TZ_STR, tz_url, event_data['Arena'],
-                                 event_data['City'], event_data['TV'], event_data['Radio'])
-
-    return pg_body
-
-
-def game_thread_handler(event_data, playoff_data):
-    """Callable function to generate and post a game thread."""
-
-    print(f"Generating thread data for {event_data['Date_Str']} --- {event_data['Type']}")
     if playoff_data[0]:
-        headline = playoff_headline(event_data, playoff_data)
+        # TODO: Update for playoffs
+        playoff_headline(event, playoff_data)
     else:
-        headline = game_headline(event_data)
+        generate_title(event)
 
-    if event_data['Type'] == 'pre':
-        body = pre_game_body(event_data)
-    else:
-        body = game_body(event_data['UTC'], event_data)
+    if event.meta['event_type'] == 'game':
+        generate_game_body(event)
 
-    thread_obj = new_thread(headline, body, event_data['Type'])
-    print(f"Thread posted to r/{os.environ['TARGET_SUB']}")
+    print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
+    thread_obj = new_thread(event.summary, event.body, event.meta['event_type'])
 
-    return headline, body, thread_obj
+    return thread_obj

@@ -1,16 +1,13 @@
-# I stuck most templates in here to see if it's a big easier to manage
-
-
 class PostGame(object):
 
     @staticmethod
-    def top_links(espn_recap, espn_box, espn_gc, nba_box, nba_shot):
+    def top_links(espn_id, nba_id):
         top_links = (
-                f"**ESPN:** [recap]({espn_recap}) -"
-                f" [boxscore]({espn_box}) -"
-                f" [gamecast]({espn_gc}) | "
-                f"**NBA.com:** [boxscore]({nba_box}) -"
-                f" [shotchart]({nba_shot})")
+                f"**ESPN:** [recap](https://www.espn.com/nba/recap/_/gameId/{espn_id}) -"
+                f" [boxscore](https://www.espn.com/nba/boxscore/_/gameId/{espn_id}) -"
+                f" [gamecast](https://www.espn.com/nba/game/_/gameId/{espn_id}) | "
+                f"**NBA.com:** [boxscore](https://www.nba.com/game/{nba_id}) -"
+                f" [shotchart](https://www.nba.com/game/{nba_id}/game-charts)")
 
         return top_links
 
@@ -111,7 +108,7 @@ class Game(object):
             f"|:--|:--|:--|\n"
             f"{times[0]}|**TV:** {tv}|{arena}|\n"
             f"{times[1]}|**Radio:** {radio}|{city}|\n"
-            f"{times[2]}|**Streams:** [Sportsurge](https://sportsurge.net)|**Team Subreddits**|\n"
+            f"{times[2]}|**Streams:** [NBAbite](https://nbabite.com)|**Team Subreddits**|\n"
             f"{times[3]}|**NBA** [Boxscore]({nba_links[0]}) - "
             f"[Shotchart]({nba_links[1]})| r/{subreddits[0]}|\n"
             f"{times[4]}|**ESPN** [Boxscore]({espn_links[0]}) - "

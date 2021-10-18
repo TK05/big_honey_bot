@@ -1,3 +1,4 @@
+import os
 import time
 import requests
 
@@ -22,6 +23,7 @@ def status_check(nba_id, only_final):
     """
 
     game_ongoing = True
+    final_version = False
 
     while game_ongoing:
 
@@ -37,11 +39,11 @@ def status_check(nba_id, only_final):
             min_left = int(game_data['g']['cl'].split(':')[0])
             sec_left = float(game_data['g']['cl'].split(':')[1])
         else:
-            print("Game clock is NoneType, sleeping 60 seconds...")
+            print(f"{os.path.basename(__file__)}: Game clock is NoneType, sleeping 60 seconds...")
             time.sleep(60)
             continue
 
-        print(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}")
+        print(f"{os.path.basename(__file__)}: Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}")
 
         # Check for game start
         if game_status == 1:
@@ -72,19 +74,19 @@ def status_check(nba_id, only_final):
 
                 # Game is over and boxscore is finalized
                 if game_status == 3:
-                    print("Game Over, finalized version")
+                    print(f"{os.path.basename(__file__)}: Game Over, finalized version")
                     final_version = True
                     game_ongoing = False
                 # Game is over but boxscore not finalized
                 elif abs(away_score - home_score) != 0 and sec_left == 0 and not only_final:
-                    print("Game Over, initial version")
+                    print(f"{os.path.basename(__file__)}: Game Over, initial version")
                     final_version = False
                     game_ongoing = False
                 else:
                     time.sleep(10)
                     continue
             else:
-                print("Something unexpected happened during game_status_check...")  # TODO: Handle an error properly
+                print(f"{os.path.basename(__file__)}: Something unexpected happened during game_status_check...")  # TODO: Handle an error properly
                 time.sleep(30)
                 continue
 

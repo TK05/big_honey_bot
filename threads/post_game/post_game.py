@@ -1,5 +1,6 @@
 import os
 import random
+from datetime import datetime
 
 from config import setup
 from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
@@ -8,17 +9,31 @@ from bots.thread_handler_bot import new_thread, edit_thread
 from threads.static.headlines import headlines
 from threads.static.headlines_playoffs import po_headlines
 from threads.static.templates import PostGame
+from events.manager import update_event
 
 
 TEAM = setup['team']
 TARGET_SUB = os.environ['TARGET_SUB']
 
 
-def post_game_headline(opp_team, date, result, margin, final_score):
+def post_game_headline(opp_team, game_start, result, margin, final_score):
     """Generate a post game thread title based on game result.
 
     Thread title will be randomly selected from post_game_headlines.json based on win/loss and margin.
     """
+
+    def format_date_and_time(time_in):
+        try:
+            date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
+            time_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%-I:%M %p')
+        except ValueError:
+            date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
+            time_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%#I:%M %p')
+
+        return date_out, time_out
+
+    date_str, time_str = format_date_and_time(game_start)
+    date = f'{date_str} - {time_str}'
 
     for score, lines in headlines[result].items():
         if margin < int(score):
@@ -61,68 +76,75 @@ def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
     return headline
 
 
-def format_post(schedule_data, playoff_data=None):
+def format_post(event, playoff_data=None):
     """Create body of post-game thread as markdown text."""
 
-    bs_tables, win, margin, final_score = generate_markdown_tables(schedule_data['NBA_ID'], schedule_data['Location'])
+    bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
 
     if playoff_data:
-        headline = playoff_headline(schedule_data['Opponent'], schedule_data['Date_Str'], win, margin, final_score, playoff_data)
+        event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, margin, final_score, playoff_data)
     else:
-        headline = post_game_headline(schedule_data['Opponent'], schedule_data['Date_Str'], str(win), margin, final_score)
+        event.summary = post_game_headline(event.meta['opponent'], event.meta['game_start'], str(win), margin, final_score)
 
-    top_links = PostGame.top_links(schedule_data['ESPN_Recap'], schedule_data['ESPN_Box'],
-                                   schedule_data['ESPN_Gamecast'], schedule_data['NBA_Box'],
-                                   schedule_data['NBA_Shot'])
+    top_links = PostGame.top_links(event.meta['espn_id'], event.meta['nba_id'])
 
-    body = f"{top_links}\n\n&nbsp;\n\n{bs_tables}"
+    event.body = f"{top_links}\n\n&nbsp;\n\n{bs_tables}"
 
-    return headline, body, win
+    return win
 
 
-def post_new_thread(headline, body, thread_type):
+def post_new_thread(event):
     """Posts a new thread, returns a Submission object for editing later."""
 
-    post_obj = new_thread(headline, body, thread_type)
-    print(f"Thread posted to r/{TARGET_SUB}")
+    post = new_thread(event.summary, event.body, event.meta['event_type'])
+    print(f"{os.path.basename(__file__)}: Thread posted to r/{TARGET_SUB}")
 
-    return post_obj
+    return post
 
 
-def edit_existing_thread(prev_post_obj, new_body):
+def edit_existing_thread(event):
     """Edits an existing thread given a Submission object."""
 
-    edit_thread(prev_post_obj, new_body)
-    print(f"Thread id: '{prev_post_obj}' edited on r/{TARGET_SUB}")
+    edit_thread(event.post, event.body)
+    print(f"{os.path.basename(__file__)}: Thread id: '{event.post.id}' edited on r/{TARGET_SUB}")
 
-    return prev_post_obj
+    return event.post
 
 
-def post_game_thread_handler(event_data, playoff_data, only_final=False, was_prev_post=False, prev_post=None):
+def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
     """Wait for game completion and, upon completion, create headline and body reflecting game result.
 
     If data returned is not the final boxscore, function will recursive call itself to later return
     finalized data to edit the thread."""
 
-    print(f"Sending to game_status_check, final version only: {str(only_final)}")
-    was_final = status_check(event_data["NBA_ID"], only_final)
-    print(f"Generating thread data for {event_data['Date_Str']} --- "
-          f"{event_data['Type']} - Final Version: {str(was_final)}")
+    def add_post_to_event_and_update(event_obj, post):
+        setattr(event_obj, 'post', post)
+        event.meta['event_type'] = 'active'
+        update_event(event_obj)
+
+    print(f"{os.path.basename(__file__)}: Sending to game_status_check, final version only: {str(only_final)}")
+    was_final = status_check(event.meta["nba_id"], only_final)
+    print(f"{os.path.basename(__file__)}: Generating thread data for {event.summary} - Final Version: {str(was_final)}")
+
     if playoff_data[0]:
-        headline, body, win = format_post(event_data, playoff_data=playoff_data)
+        win = format_post(event, playoff_data=playoff_data)
     else:
-        headline, body, win = format_post(event_data)
+        win = format_post(event)
 
     # Game final, no need for a future edit
     if was_final and not was_prev_post:
-        post_game_thread = post_new_thread(headline, body, event_data['Type'])
+        post_game_thread = post_new_thread(event)
+        add_post_to_event_and_update(event, post_game_thread)
+
     # Game final after initial post
     elif was_final and was_prev_post:
-        post_game_thread = edit_existing_thread(prev_post, body)
+        post_game_thread = edit_existing_thread(event)
+        add_post_to_event_and_update(event, post_game_thread)
+
     # Game finished but not final, initial post
     else:
-        initial_post = post_new_thread(headline, body, event_data['Type'])
-        post_game_thread = initial_post
-        post_game_thread_handler(event_data, playoff_data, only_final=True, was_prev_post=True, prev_post=initial_post)
+        initial_post = post_new_thread(event)
+        add_post_to_event_and_update(event, initial_post)
+        post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
 
-    return headline, body, win, post_game_thread
+    return win
