@@ -22,25 +22,41 @@ reddit.validate_on_submit = True
 subreddit = reddit.subreddit(TARGET_SUB)
 
 
-def new_thread(event):
-    """Posts new thread. Uses PRAW settings from env & config.py. Unstickies any other thread with "THREAD" in the
-    title. Stickies new thread and sorts by "new".
+def get_thread(post_id):
+    """Find thread by ID
 
-    :param event: Event object
+    :param post_id: ID of post to be found
+    :type post_id: str
+    :returns: found post
+    :rtype: class praw.models.reddit.submission.Submission
+    """
+    return reddit.submission(id=post_id)
+
+
+def new_thread(event):
+    """Posts new thread. Uses PRAW settings from env & config.py. Unstickies previous post or any other thread with
+    "THREAD" in the title. Stickies new thread and sorts by "new".
+
+    :param event: event object
     :type event: class gcsa.event.Event
-    :returns: Reddit thread object after creation
+    :returns: reddit thread object after creation
     :rtype: class praw.models.reddit.submission.Submission
     """
 
     # Unsticky the correct post
-    top2_posts = subreddit.hot(limit=2)
+    try:
+        prev_post = get_thread(event.meta['prev_post_id'])
+        prev_post.mod.sticky(state=False)
+        print(f"{os.path.basename(__file__)}: Unstickied {prev_post.title}")
+    except KeyError:
+        top2_posts = subreddit.hot(limit=2)
 
-    for post in top2_posts:
-        if post.stickied:
-            if "THREAD" in post.title:
-                post.mod.sticky(state=False)
-                print(f"{os.path.basename(__file__)}: Unstickied {post.title}")
-                break
+        for post in top2_posts:
+            if post.stickied:
+                if "THREAD" in post.title:
+                    post.mod.sticky(state=False)
+                    print(f"{os.path.basename(__file__)}: Unstickied {post.title}")
+                    break
 
     post = subreddit.submit(event.summary, event.body, flair_id=FLAIRS[event.meta['event_type']], send_replies=False)
     post.mod.sticky(bottom=False)
@@ -53,9 +69,9 @@ def new_thread(event):
 def edit_thread(post_obj, body):
     """Edits body of existing thread
 
-    :param post_obj: Existing thread to be edited
+    :param post_obj: existing thread to be edited
     :type post_obj: class praw.models.reddit.submission.Submission
-    :param body: New body to post
+    :param body: new body to post
     :type body: str
     :returns: None
     :rtype: NoneType

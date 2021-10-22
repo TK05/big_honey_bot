@@ -35,6 +35,7 @@ def make_post(event, playoff_data_arr):
         # Update event object
         setattr(event, 'post', post)
         event.meta['event_type'] = 'active'
+        event.meta['reddit_id'] = post.id
         update_event(event)
 
     elif event.meta['event_type'] == 'post':
@@ -116,8 +117,9 @@ while bot_running:
         except AttributeError:
             pass
 
-        # next_event will become the active_post, finish the existing active_post
+        # next_event will become the active_post, add prev post reference finish the existing active_post
         if active_post:
+            next_event.meta['prev_post_id'] = active_post.post.id
             active_post = end_active_post(active_post)
 
         # If in playoffs, update playoff series before posting

@@ -117,6 +117,7 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
 
     def add_post_to_event_and_update(event_obj, post):
         setattr(event_obj, 'post', post)
+        event.meta['reddit_id'] = post.id
         event.meta['event_type'] = 'active'
         update_event(event_obj)
 
