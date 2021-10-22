@@ -96,8 +96,7 @@ def format_post(event, playoff_data=None):
 def post_new_thread(event):
     """Posts a new thread, returns a Submission object for editing later."""
 
-    post = new_thread(event.summary, event.body, event.meta['event_type'])
-    print(f"{os.path.basename(__file__)}: Thread posted to r/{TARGET_SUB}")
+    post = new_thread(event)
 
     return post
 
@@ -106,7 +105,6 @@ def edit_existing_thread(event):
     """Edits an existing thread given a Submission object."""
 
     edit_thread(event.post, event.body)
-    print(f"{os.path.basename(__file__)}: Thread id: '{event.post.id}' edited on r/{TARGET_SUB}")
 
     return event.post
 

@@ -182,6 +182,6 @@ def game_thread_handler(event, playoff_data):
         generate_game_body(event)
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
-    thread_obj = new_thread(event.summary, event.body, event.meta['event_type'])
+    thread_obj = new_thread(event)
 
     return thread_obj
