@@ -52,9 +52,8 @@ def check_active_post(post):
     event = get_event(post.id)
 
     if not hash_match(event.body, event.meta['body_hash']):
-        print(f"{os.path.basename(__file__)}: Update to active post body, updated @ {event.updated.strftime('%b %d, %H:%M')}")
+        print(f"{os.path.basename(__file__)}: Update to active post body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
         edit_thread(post.post, event.body)
-        print(f"{os.path.basename(__file__)}: Active post updated: ID {post.post.id}")
         update_event(event)
         print(f"{os.path.basename(__file__)}: Event updated: {event.summary}")
         updated_event = get_event(post.id)
@@ -146,10 +145,8 @@ while bot_running:
 
     # Not time to post and no active_post
     else:
-        # TODO: This will probably run many times at 4am, fix
-        # Update sidebar every day ~4am
-        if int(datetime.now(tz=TIMEZONE).strftime('%H')) == 4:
-            update_sidebar()
+        # Update sidebar every hour while no active post
+        update_sidebar()
 
         # Determine wait time
         try:
