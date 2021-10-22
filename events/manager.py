@@ -1,8 +1,8 @@
 import json
 import re
+import os
 from abc import ABC
 from html.parser import HTMLParser
-import re
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
@@ -48,6 +48,7 @@ def get_event(event_id):
     service = create_service()
     event = service.get_event(event_id)
     add_meta_and_body(event)
+    print(f"{os.path.basename(__file__)}: Event found: {event.id} - {event.summary}")
 
     return event
 
@@ -71,6 +72,7 @@ def find_event(query):
 def create_event(event_data):
     service = create_service()
     service.add_event(event_data)
+    print(f"{os.path.basename(__file__)}: Event created: {event_data.summary}")
 
 
 def update_event(event):
@@ -84,16 +86,19 @@ def update_event(event):
     event.description = f"{description_tags['meta_start']}{json.dumps(event.meta)}{description_tags['meta_end']}" \
                         f"{description_tags['body_start']}{event.body}{description_tags['body_end']}"
     service.update_event(event)
+    print(f"{os.path.basename(__file__)}: Event updated: {event.id} - {event.summary}")
 
 
 def update_event_serial(event_json):
     service = create_service()
     service.update_event(EventSerializer.to_object(event_json))
+    print(f"{os.path.basename(__file__)}: Event serial updated")
 
 
 def delete_event(event):
     service = create_service()
     service.delete_event(event)
+    print(f"{os.path.basename(__file__)}: Event deleted: {event.id} - {event.summary}")
 
 
 def delete_all_events():
