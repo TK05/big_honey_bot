@@ -6,12 +6,12 @@ import pytz
 
 from config import setup
 from threads.game.game_thread import game_thread_handler
-from bots.thread_handler_bot import edit_thread
+from bots.thread_handler_bot import edit_thread, get_thread
 from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
 from sidebar.update_sidebar import update_sidebar
 from playoffs.playoff_data import get_series_status
-from events.manager import get_event, get_next_event, update_event
+from events.manager import get_event, get_next_event, update_event, find_event
 from tools.toolkit import hash_match
 
 
@@ -77,6 +77,36 @@ def update_playoff_data():
     pass
 
 
+def get_active_post_after_restart(ne):
+    # Get previous post
+    try:
+        prev_post = get_thread(ne.meta['prev_post_id'])
+    except KeyError:
+        print(f"{os.path.basename(__file__)}: Found no prev_post_id from next_event.meta")
+        return None
+
+    if not prev_post:
+        print(f"{os.path.basename(__file__)}: Found no previous post")
+        return None
+
+    # Find previous event from title of previous post
+    try:
+        prev_event = find_event(query=prev_post.title, past=(datetime.now() - timedelta(days=7)))
+    except StopIteration:
+        print(f"{os.path.basename(__file__)}: Could not find event from prev_post")
+        return None
+
+    # If previous event still active, set post attribute and return event
+    if prev_event.meta['event_type'] == 'active':
+        setattr(prev_event, 'post', prev_post)
+        print(f"{os.path.basename(__file__)}: Previous event still active - {prev_event.summary}")
+        return prev_event
+    # Else, previous post no longer active so keep active_post None
+    else:
+        print(f"{os.path.basename(__file__)}: Previous event is no longer active")
+        return None
+
+
 # TODO: if in playoffs, update calendar event w/ series status from here
 # Update playoff data at each restart
 if IN_PLAYOFFS:
@@ -92,18 +122,29 @@ game_thread = None
 post_game_thread = None
 active_post = None
 bot_running = True
+run_once = True
 
 while bot_running:
 
     next_event = get_next_event()
 
     if not next_event or next_event.meta['event_type'] == 'done':
-        print(f"{os.path.basename(__file__)}: All events finished posting.... exiting".upper())
+        print(f"{os.path.basename(__file__)}: All events finished posting.... exiting")
         bot_running = False
         break
 
+    # Handle instance restart midseason by getting and setting active post
+    if run_once:
+        run_once = False
+        active_post = get_active_post_after_restart(next_event)
+
     current_utc = datetime.timestamp(datetime.now())
     seconds_till_post = int(datetime.timestamp(next_event.start)) - int(current_utc)
+
+    # Catch when no active_post but next_event is active
+    if not active_post and next_event.meta['event_type'] == 'active':
+        active_post = next_event
+        setattr(active_post, 'post', get_thread(next_event.meta['reddit_id']))
 
     # Time to post next_event and correct event_type
     if seconds_till_post <= 0 and next_event.meta['event_type'] in ["pre", "game", "post"]:

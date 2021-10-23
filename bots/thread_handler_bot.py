@@ -1,5 +1,6 @@
 import os
 import praw
+import prawcore.exceptions
 
 from config import setup
 
@@ -27,10 +28,16 @@ def get_thread(post_id):
 
     :param post_id: ID of post to be found
     :type post_id: str
-    :returns: found post
-    :rtype: class praw.models.reddit.submission.Submission
+    :returns: post if found else None
+    :rtype: class praw.models.reddit.submission.Submission or NoneType
     """
-    return reddit.submission(id=post_id)
+    post = reddit.submission(id=post_id)
+
+    try:
+        post.title
+        return post
+    except prawcore.exceptions.NotFound:
+        return None
 
 
 def new_thread(event):
