@@ -54,7 +54,7 @@ def new_thread(event):
     try:
         prev_post = get_thread(event.meta['prev_post_id'])
         prev_post.mod.sticky(state=False)
-        print(f"{os.path.basename(__file__)}: Unstickied {prev_post.title}")
+        print(f"{os.path.basename(__file__)}: Unstickied previous post - {prev_post.title}")
     except KeyError:
         top2_posts = subreddit.hot(limit=2)
 
@@ -62,7 +62,7 @@ def new_thread(event):
             if post.stickied:
                 if "THREAD" in post.title:
                     post.mod.sticky(state=False)
-                    print(f"{os.path.basename(__file__)}: Unstickied {post.title}")
+                    print(f"{os.path.basename(__file__)}: Unstickied - {post.title}")
                     break
 
     post = subreddit.submit(event.summary, event.body, flair_id=FLAIRS[event.meta['event_type']], send_replies=False)
