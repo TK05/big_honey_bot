@@ -63,8 +63,10 @@ def get_next_event():
 
 def find_event(query, past=None):
     service = create_service()
+    event = next(service.get_events(time_min=past, query=query))
+    add_meta_and_body(event)
 
-    return next(service.get_events(time_min=past, query=query))
+    return event
 
 
 def create_event(event_data):

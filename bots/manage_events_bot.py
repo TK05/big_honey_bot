@@ -11,7 +11,7 @@ from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
 from sidebar.update_sidebar import update_sidebar
 from playoffs.playoff_data import get_series_status
-from events.manager import get_event, get_next_event, update_event, find_event
+from events.manager import get_event, get_next_event, update_event
 from tools.toolkit import hash_match
 
 
@@ -37,6 +37,7 @@ def make_post(event, playoff_data_arr):
         event.meta['event_type'] = 'active'
         event.meta['reddit_id'] = post.id
         update_event(event)
+        print(f"{os.path.basename(__file__)}: Event updated after init post: {event.id} - {event.summary}")
 
     elif event.meta['event_type'] == 'post':
         # TODO: Refactor this logic and in
@@ -52,11 +53,16 @@ def check_active_post(post):
 
     event = get_event(post.id)
 
+    # Catch when event type manually set to done
+    if event.meta['event_type'] == 'done':
+        print(f"{os.path.basename(__file__)}: Event manually set to done, ending active post: {event.id} - {event.summary}")
+        return None
+
     if not hash_match(event.body, event.meta['body_hash']):
         print(f"{os.path.basename(__file__)}: Update to active post body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
         edit_thread(post.post, event.body)
         update_event(event)
-        print(f"{os.path.basename(__file__)}: Event updated: {event.summary}")
+        print(f"{os.path.basename(__file__)}: Event updated with body changes: {event.id} - {event.summary}")
         updated_event = get_event(post.id)
         setattr(updated_event, 'post', post.post)
     else:
@@ -70,6 +76,8 @@ def check_active_post(post):
 def end_active_post(post):
     post.meta['event_type'] = 'done'
     update_event(post)
+    print(f"{os.path.basename(__file__)}: Event updated, active post set to done: {post.id} - {post.summary}")
+
     return None
 
 
@@ -78,26 +86,20 @@ def update_playoff_data():
 
 
 def get_active_post_after_restart(ne):
-    # Get previous post
+
     try:
-        prev_post = get_thread(ne.meta['prev_post_id'])
+        prev_event = get_event(ne.meta['prev_event_id'])
     except KeyError:
-        print(f"{os.path.basename(__file__)}: Found no prev_post_id from next_event.meta")
+        print(f"{os.path.basename(__file__)}: Found no prev_event_id from next_event.meta")
         return None
 
-    if not prev_post:
+    if not prev_event:
         print(f"{os.path.basename(__file__)}: Found no previous post")
-        return None
-
-    # Find previous event from title of previous post
-    try:
-        prev_event = find_event(query=prev_post.title, past=(datetime.now() - timedelta(days=7)))
-    except StopIteration:
-        print(f"{os.path.basename(__file__)}: Could not find event from prev_post")
         return None
 
     # If previous event still active, set post attribute and return event
     if prev_event.meta['event_type'] == 'active':
+        prev_post = get_thread(prev_event.meta['reddit_id'])
         setattr(prev_event, 'post', prev_post)
         print(f"{os.path.basename(__file__)}: Previous event still active - {prev_event.summary}")
         return prev_event
@@ -105,6 +107,17 @@ def get_active_post_after_restart(ne):
     else:
         print(f"{os.path.basename(__file__)}: Previous event is no longer active")
         return None
+
+
+def set_prev_event_id(ne, ap):
+    try:
+        ne.meta['prev_event_id']
+    except KeyError:
+        if ap:
+            ne.meta['prev_event_id'] = ap.id
+            ne.meta['prev_post_id'] = ap.post.id
+            update_event(ne)
+            print(f"{os.path.basename(__file__)}: Event updated with previous event meta: {ap.id} {ne.id}")
 
 
 # TODO: if in playoffs, update calendar event w/ series status from here
@@ -122,7 +135,7 @@ game_thread = None
 post_game_thread = None
 active_post = None
 bot_running = True
-run_once = True
+do_once = True
 
 while bot_running:
 
@@ -133,18 +146,16 @@ while bot_running:
         bot_running = False
         break
 
+    # Ensure prev_event_id set on next_event, try and set prev_post_id as well
+    set_prev_event_id(next_event, active_post)
+
     # Handle instance restart midseason by getting and setting active post
-    if run_once:
-        run_once = False
+    if do_once:
+        do_once = False
         active_post = get_active_post_after_restart(next_event)
 
     current_utc = datetime.timestamp(datetime.now())
     seconds_till_post = int(datetime.timestamp(next_event.start)) - int(current_utc)
-
-    # Catch when no active_post but next_event is active
-    if not active_post and next_event.meta['event_type'] == 'active':
-        active_post = next_event
-        setattr(active_post, 'post', get_thread(next_event.meta['reddit_id']))
 
     # Time to post next_event and correct event_type
     if seconds_till_post <= 0 and next_event.meta['event_type'] in ["pre", "game", "post"]:
@@ -160,7 +171,6 @@ while bot_running:
 
         # next_event will become the active_post, add prev post reference finish the existing active_post
         if active_post:
-            next_event.meta['prev_post_id'] = active_post.post.id
             active_post = end_active_post(active_post)
 
         # If in playoffs, update playoff series before posting
