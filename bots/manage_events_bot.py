@@ -65,6 +65,7 @@ def check_active_post(post):
         print(f"{os.path.basename(__file__)}: Event updated with body changes: {event.id} - {event.summary}")
         return event
     else:
+        print(f"{os.path.basename(__file__)}: No changes to active post: {event.id}")
         return post
 
 
@@ -180,7 +181,8 @@ while bot_running:
     elif active_post:
         # End active posts 6 hours after posting
         if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=6)):
-            end_active_post(active_post)
+            print(f"{os.path.basename(__file__)}: active_post active longer than 6 hours, setting to done")
+            active_post = end_active_post(active_post)
         else:
             active_post = check_active_post(active_post)
             time.sleep(30)
