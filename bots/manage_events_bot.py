@@ -11,7 +11,7 @@ from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
 from sidebar.update_sidebar import update_sidebar
 from playoffs.playoff_data import get_series_status
-from events.manager import get_event, get_next_event, update_event
+from events.manager import get_event, get_next_event, update_event, get_previous_event
 from tools.toolkit import hash_match
 
 
@@ -30,12 +30,10 @@ def make_post(event, playoff_data_arr):
         print(f"{os.path.basename(__file__)}: Custom body detected, updated @ {event.updated.strftime('%b %d, %H:%M')}")
 
     if event.meta['event_type'] in ['pre', 'game']:
-        post = game_thread_handler(event, playoff_data_arr)
+        game_thread_handler(event, playoff_data_arr)
 
         # Update event object
-        setattr(event, 'post', post)
         event.meta['event_type'] = 'active'
-        event.meta['reddit_id'] = post.id
         update_event(event)
         print(f"{os.path.basename(__file__)}: Event updated after init post: {event.id} - {event.summary}")
 
@@ -50,6 +48,7 @@ def make_post(event, playoff_data_arr):
 
 
 def check_active_post(post):
+    # TODO: Maybe think about rolling back changes to event title after post is made so event always matches post
 
     event = get_event(post.id)
 
@@ -60,17 +59,13 @@ def check_active_post(post):
 
     if not hash_match(event.body, event.meta['body_hash']):
         print(f"{os.path.basename(__file__)}: Update to active post body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
-        edit_thread(post.post, event.body)
+        setattr(event, 'post', post.post)
+        edit_thread(event)
         update_event(event)
         print(f"{os.path.basename(__file__)}: Event updated with body changes: {event.id} - {event.summary}")
-        updated_event = get_event(post.id)
-        setattr(updated_event, 'post', post.post)
+        return event
     else:
-        updated_event = post
-
-    # TODO: Maybe think about rolling back changes to event title after post is made so event always matches post
-
-    return updated_event
+        return post
 
 
 def end_active_post(post):
@@ -85,17 +80,19 @@ def update_playoff_data():
     pass
 
 
-def get_active_post_after_restart(ne):
+def check_if_last_event_still_active(po_data):
 
-    try:
-        prev_event = get_event(ne.meta['prev_event_id'])
-    except KeyError:
-        print(f"{os.path.basename(__file__)}: Found no prev_event_id from next_event.meta")
-        return None
+    prev_event = get_previous_event()
 
     if not prev_event:
         print(f"{os.path.basename(__file__)}: Found no previous post")
         return None
+
+    # If previous event type is still post, game watch ongoing; restart game watch
+    if prev_event.meta['event_type'] == 'post':
+        print(f"{os.path.basename(__file__)}: prev_event was type post")
+        ap = make_post(prev_event, po_data)
+        return ap
 
     # If previous event still active, set post attribute and return event
     if prev_event.meta['event_type'] == 'active':
@@ -107,17 +104,6 @@ def get_active_post_after_restart(ne):
     else:
         print(f"{os.path.basename(__file__)}: Previous event is no longer active")
         return None
-
-
-def set_prev_event_id(ne, ap):
-    try:
-        ne.meta['prev_event_id']
-    except KeyError:
-        if ap:
-            ne.meta['prev_event_id'] = ap.id
-            ne.meta['prev_post_id'] = ap.post.id
-            update_event(ne)
-            print(f"{os.path.basename(__file__)}: Event updated with previous event meta: {ap.id} {ne.id}")
 
 
 # TODO: if in playoffs, update calendar event w/ series status from here
@@ -135,7 +121,7 @@ game_thread = None
 post_game_thread = None
 active_post = None
 bot_running = True
-do_once = True
+skip = False
 
 while bot_running:
 
@@ -146,46 +132,45 @@ while bot_running:
         bot_running = False
         break
 
-    # Ensure prev_event_id set on next_event, try and set prev_post_id as well
-    set_prev_event_id(next_event, active_post)
+    # If in playoffs, update playoff series before posting
+    if IN_PLAYOFFS:
+        playoff_data = [IN_PLAYOFFS, playoff_game_num, playoff_record, playoff_round]
+    else:
+        playoff_data = [IN_PLAYOFFS]
 
-    # Handle instance restart midseason by getting and setting active post
-    if do_once:
-        do_once = False
-        active_post = get_active_post_after_restart(next_event)
-
-    current_utc = datetime.timestamp(datetime.now())
-    seconds_till_post = int(datetime.timestamp(next_event.start)) - int(current_utc)
-
-    # Time to post next_event and correct event_type
-    if seconds_till_post <= 0 and next_event.meta['event_type'] in ["pre", "game", "post"]:
-
+    if active_post:
+        # Set prev_post_id on next_event
+        setattr(next_event, 'prev_post_id', active_post.meta['reddit_id'])
         # Catch when active_post & next_event are same (next_event not updated in time)
         try:
             if active_post.id == next_event.id:
                 print(f"{os.path.basename(__file__)}: ap==ne, ap:{active_post.id} - ne:{next_event.id}, sleeping 30")
                 time.sleep(30)
-                break
+                skip = True
         except AttributeError:
             pass
+
+    # Ensure active_post is correct
+    else:
+        active_post = check_if_last_event_still_active(playoff_data)
+
+    current_utc = datetime.timestamp(datetime.now())
+    seconds_till_post = int(datetime.timestamp(next_event.start)) - int(current_utc)
+
+    # If skip, next_event was same as active_event, grab next_event again
+    if skip:
+        skip = False
+
+    # Time to post next_event and correct event_type
+    elif seconds_till_post <= 0 and next_event.meta['event_type'] in ["pre", "game", "post"]:
 
         # next_event will become the active_post, add prev post reference finish the existing active_post
         if active_post:
             active_post = end_active_post(active_post)
 
-        # If in playoffs, update playoff series before posting
-        if IN_PLAYOFFS:
-            playoff_data = [IN_PLAYOFFS, playoff_game_num, playoff_record, playoff_round]
-        else:
-            playoff_data = [IN_PLAYOFFS]
-
         # Send event to appropriate thread handler
-        if next_event.meta['event_type'] in ['pre', 'game']:
+        if next_event.meta['event_type'] in ['pre', 'game', 'post']:
             active_post = make_post(next_event, playoff_data)
-        elif next_event.meta['event_type'] == 'post':
-            make_post(next_event, playoff_data)
-            # event_type already set to active, set to done
-            active_post = end_active_post(next_event)
         else:
             print(f"{os.path.basename(__file__)}: next_event.meta['event_type'] is invalid")
 
@@ -193,8 +178,12 @@ while bot_running:
 
     # There is an active post, check for updates to it
     elif active_post:
-        active_post = check_active_post(active_post)
-        time.sleep(30)
+        # End active posts 6 hours after posting
+        if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=6)):
+            end_active_post(active_post)
+        else:
+            active_post = check_active_post(active_post)
+            time.sleep(30)
 
     # Not time to post and no active_post
     else:

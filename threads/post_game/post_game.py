@@ -93,33 +93,11 @@ def format_post(event, playoff_data=None):
     return win
 
 
-def post_new_thread(event):
-    """Posts a new thread, returns a Submission object for editing later."""
-
-    post = new_thread(event)
-
-    return post
-
-
-def edit_existing_thread(event):
-    """Edits an existing thread given a Submission object."""
-
-    edit_thread(event.post, event.body)
-
-    return event.post
-
-
 def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
     """Wait for game completion and, upon completion, create headline and body reflecting game result.
 
     If data returned is not the final boxscore, function will recursive call itself to later return
     finalized data to edit the thread."""
-
-    def add_post_to_event_and_update(event_obj, post):
-        setattr(event_obj, 'post', post)
-        event.meta['reddit_id'] = post.id
-        event.meta['event_type'] = 'active'
-        update_event(event_obj)
 
     print(f"{os.path.basename(__file__)}: Sending to game_status_check, final version only: {str(only_final)}")
     was_final = status_check(event.meta["nba_id"], only_final)
@@ -130,20 +108,22 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
     else:
         win = format_post(event)
 
-    # Game final, no need for a future edit
-    if was_final and not was_prev_post:
-        post_game_thread = post_new_thread(event)
-        add_post_to_event_and_update(event, post_game_thread)
+    if was_final:
+        # Game final after initial post
+        if was_prev_post:
+            edit_thread(event)
+        # Game final, no need for a future edit
+        else:
+            new_thread(event)
 
-    # Game final after initial post
-    elif was_final and was_prev_post:
-        post_game_thread = edit_existing_thread(event)
-        add_post_to_event_and_update(event, post_game_thread)
+        event.meta['event_type'] = 'active'
+        update_event(event)
 
-    # Game finished but not final, initial post
+    # Game finished but not final, create thread and rerun for only_final
     else:
-        initial_post = post_new_thread(event)
-        add_post_to_event_and_update(event, initial_post)
+        new_thread(event)
+        event.meta['event_type'] = 'active'
+        update_event(event)
         post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
 
     return win

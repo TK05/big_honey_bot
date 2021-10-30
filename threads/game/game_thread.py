@@ -168,8 +168,8 @@ def game_thread_handler(event, playoff_data):
     :type event: gcsa.event.Event
     :param playoff_data: TODO
     :type playoff_data: TODO
-    :returns: Reddit thread object after creation
-    :rtype: praw.models.reddit.submission.Submission
+    :returns: None
+    :rtype: NoneType
     """
 
     if playoff_data[0]:
@@ -182,6 +182,4 @@ def game_thread_handler(event, playoff_data):
         generate_game_body(event)
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
-    thread_obj = new_thread(event)
-
-    return thread_obj
+    new_thread(event)

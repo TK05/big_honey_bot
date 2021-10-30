@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 from abc import ABC
@@ -41,6 +42,19 @@ def get_all_events():
     service = create_service()
 
     return service.get_events(order_by='startTime', single_events=True)
+
+
+def get_previous_event():
+    service = create_service()
+    events = service.get_events((datetime.datetime.now() - datetime.timedelta(days=30)),
+                                datetime.datetime.now(), order_by='startTime', single_events=True)
+    last_event = None
+    for event in events:
+        last_event = event
+
+    add_meta_and_body(last_event)
+
+    return last_event
 
 
 def get_event(event_id):

@@ -46,43 +46,41 @@ def new_thread(event):
 
     :param event: event object
     :type event: class gcsa.event.Event
-    :returns: reddit thread object after creation
-    :rtype: class praw.models.reddit.submission.Submission
+    :returns: None
+    :rtype: NoneType
     """
 
     # Unsticky the correct post
     try:
-        prev_post = get_thread(event.meta['prev_post_id'])
+        prev_post = get_thread(event.prev_post_id)
         prev_post.mod.sticky(state=False)
         print(f"{os.path.basename(__file__)}: Unstickied previous post - {prev_post.title}")
-    except KeyError:
+    except AttributeError:
         top2_posts = subreddit.hot(limit=2)
 
         for post in top2_posts:
-            if post.stickied:
-                if "THREAD" in post.title:
-                    post.mod.sticky(state=False)
-                    print(f"{os.path.basename(__file__)}: Unstickied - {post.title}")
-                    break
+            if post.author.name == USERNAME:
+                post.mod.sticky(state=False)
+                print(f"{os.path.basename(__file__)}: Unstickied - {post.title}")
+                break
 
     post = subreddit.submit(event.summary, event.body, flair_id=FLAIRS[event.meta['event_type']], send_replies=False)
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
     print(f"{os.path.basename(__file__)}: Thread posted to r/{TARGET_SUB} - {post.id}")
 
-    return post
+    setattr(event, 'post', post)
+    event.meta['reddit_id'] = post.id
 
 
-def edit_thread(post_obj, body):
+def edit_thread(event):
     """Edits body of existing thread
 
-    :param post_obj: existing thread to be edited
-    :type post_obj: class praw.models.reddit.submission.Submission
-    :param body: new body to post
-    :type body: str
+    :param event: event object
+    :type event: class gcsa.event.Event
     :returns: None
     :rtype: NoneType
     """
 
-    post_obj.edit(body)
-    print(f"{os.path.basename(__file__)}: Thread updated on r/{TARGET_SUB} - {post_obj.id}")
+    event.post.edit(event.body)
+    print(f"{os.path.basename(__file__)}: Thread updated on r/{TARGET_SUB} - {event.post.id}")
