@@ -65,7 +65,6 @@ def check_active_post(post):
         print(f"{os.path.basename(__file__)}: Event updated with body changes: {event.id} - {event.summary}")
         return event
     else:
-        print(f"{os.path.basename(__file__)}: No changes to active post: {event.id}")
         return post
 
 
@@ -184,6 +183,7 @@ while bot_running:
             print(f"{os.path.basename(__file__)}: active_post active longer than 6 hours, setting to done")
             active_post = end_active_post(active_post)
         else:
+            print(f"{os.path.basename(__file__)}: ne: {next_event.summary[30]}... ap: {active_post.summary[:30]}...")
             active_post = check_active_post(active_post)
             time.sleep(30)
 
