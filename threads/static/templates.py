@@ -121,7 +121,7 @@ class Game(object):
     def headline(thr_type, our_team, our_wins, our_loss, home_away, opp, opp_wins, opp_loss, date, time):
 
         if thr_type == 'pre':
-            headline = "GAME DAY THREAD: "
+            headline = "GDT: "
         else:
             headline = "GAME THREAD: "
 
@@ -141,14 +141,14 @@ class Game(object):
         return headline
 
     @staticmethod
-    def pre_game_body(time, tz, url, arena, city, tv, radio):
+    def pre_game_body(time, tz, url, arena, city, tv, radio, previews):
         body = (
             f"**When:** [{time} {tz}]"
             f"({url}) *(click for local time)*\n\n"
             f"**Where:** {arena} - {city}\n\n"
             f"**TV:** {tv}\n\n"
             f"**Radio:** {radio}\n\n***\n\n"
-            f"**Previews:** \n\n"
+            f"**Previews:** {previews}\n\n"
             f"**Podcasts:** \n\n***\n\n"
             f"**Daily Listening:** \n"
         )

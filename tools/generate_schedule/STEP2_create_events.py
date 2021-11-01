@@ -42,7 +42,7 @@ def create_pre_game_event(schedule):
         new_schedule[new_utc]['end']['timeZone'] = TIMEZONE
 
         home_away = "vs." if event_data['home_away'] == 'home' else '@'
-        headline = f"GAME DAY THREAD: {setup['team']} {description_tags['our_record']} {home_away} {event_data['opponent']} {description_tags['opp_record']} | {description_tags['date_and_time']}"
+        headline = f"GDT: {setup['team']} {description_tags['our_record']} {home_away} {event_data['opponent']} {description_tags['opp_record']} | {description_tags['date_and_time']}"
         new_schedule[new_utc]['summary'] = headline
 
         game_time = " ".join(event_data['game_start'].split(" ")[1:])
@@ -53,7 +53,8 @@ def create_pre_game_event(schedule):
             arena=event_data['arena'],
             city=event_data['city'],
             tv=event_data['tv'],
-            radio=event_data['radio']
+            radio=event_data['radio'],
+            previews=f"[nba.com]({nba_link('preview', event_data['nba_id'])})"
         )
         new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
 
@@ -169,9 +170,11 @@ def espn_link(link_type, espn_id):
 def nba_link(link_type, nba_id):
     """types: none is boxscore, shotchart"""
 
-    link = f"https://stats.nba.com/game/{nba_id}"
+    link = f"https://www.nba.com/game/{nba_id}"
     if link_type == 'shot':
-        link += '/shotchart'
+        link += '/game-charts#game-charts'
+    elif link_type == 'box':
+        link += '/box-score#box-score'
 
     return link
 

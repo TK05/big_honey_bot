@@ -64,6 +64,7 @@ def new_thread(event):
                 print(f"{os.path.basename(__file__)}: Unstickied - {post.title}")
                 break
 
+    # TODO: prawcore.exceptions.BadRequest: received 400 HTTP response
     post = subreddit.submit(event.summary, event.body, flair_id=FLAIRS[event.meta['event_type']], send_replies=False)
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
