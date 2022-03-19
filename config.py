@@ -10,7 +10,7 @@ setup = {
     # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/1',  # Preseason
     'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/2',  # Regular Season
     # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/3',  # Postseason
-    'nba_url': 'https://www.nba.com/nuggets/schedule',  # nba.com team schedule
+    'nba_url': 'https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json',  # nba.com json schedule
     'user_agent': 'BigHoneyBot_by_TK05',
     'flairs': {     # Subreddit specific link_flair IDs
         'pre': '51a03fc6-3e0c-11e9-8856-0e97475b835e',
