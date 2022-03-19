@@ -54,7 +54,7 @@ def create_pre_game_event(schedule):
             city=event_data['city'],
             tv=event_data['tv'],
             radio=event_data['radio'],
-            previews=f"[nba.com]({nba_link('preview', event_data['nba_id'])})"
+            previews=f"[Game Notes](https://www.nba.com/gamenotes/{setup['team'].lower()}.pdf), [nba.com]({nba_link('preview', event_data['nba_id'])})"
         )
         new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
 
