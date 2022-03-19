@@ -20,6 +20,7 @@ def update_calendar(schedule):
         }
 
         service.add_event(EventSerializer.to_object(cal_event))
+        print(event_data)
 
 
 if __name__ == '__main__':
