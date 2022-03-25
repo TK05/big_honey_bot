@@ -85,35 +85,42 @@ def update_tripdub():
 
 
 def update_playoff(conf_data, team_seed):
-    """Calculates magic numbers for both playoffs and current seed."""
+    """Calculates magic numbers for playoffs, play-ins and current seed."""
 
     tf_wins = int(conf_data[team_seed]['win'])
-    ninth_losses = int(conf_data[8]['loss'])
-    po_code_1 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'P' for playoffs?
-    # po_code_2 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'x' for playoffs?
-    play_magic_num = 83 - tf_wins - ninth_losses
+    seventh_losses = int(conf_data[6]['loss'])
+    eleventh_losses = int(conf_data[10]['loss'])
+    po_code_1 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'P' for playoffs? 'C' for conf champs?
+    play_in_magic_num = 83 - tf_wins - eleventh_losses
+    playoff_magic_num = 83 - tf_wins - seventh_losses
 
-    if po_code_1 != '':
-        playoffs_clinched = True
-    else:
-        playoffs_clinched = False
+    def generate_subs(p_type, t_seed):
+        p_sub = f'{p_type} **CLINCHED!**'
+        s_sub = ''
 
-    play_sub = f'Playoff Magic #: {play_magic_num}'
-    seed_sub = ''
-
-    if playoffs_clinched:
-        play_sub = f'Playoffs **CLINCHED!**'
-
-        for seed in range(7, team_seed, -1):
+        for seed in range(5 if p_type == 'Playoffs' else 10, t_seed, -1):
             seed_losses = int(conf_data[seed]['loss'])
             seed_magic_num = 83 - tf_wins - seed_losses
-            seed_sub = f'#{seed} Seed Magic #: {seed_magic_num}'
+            s_sub = f'#{seed} Seed Magic #: {seed_magic_num}'
             if seed_magic_num > 0:
                 break
             else:
-                seed_sub = f'#{team_seed + 1} Seed: CLINCHED!'
+                s_sub = f'#{team_seed + 1} Seed: CLINCHED!'
 
-    return play_sub, seed_sub
+        return p_sub, s_sub
+
+    p2_sub = ''
+    p3_sub = ''
+
+    if po_code_1 in ['P', 'C'] or playoff_magic_num < 0:
+        p1_sub, p2_sub = generate_subs('Playoffs', team_seed)
+    elif play_in_magic_num < 0:
+        p1_sub, p3_sub = generate_subs('Play-ins', team_seed)
+        p2_sub = f'Playoff Magic #: {playoff_magic_num}'
+    else:
+        p1_sub = f'Play-in Magic #: {play_in_magic_num}'
+
+    return p1_sub, p2_sub, p3_sub
 
 
 def update_munder():
@@ -157,16 +164,18 @@ def update_sidebar():
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     # tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
     munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
-    play_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
-    seed_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
+    p1_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
+    p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
+    p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
 
     conf_data, team_seed, record_sub = update_record()
     old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
 
     if PLAYOFF_WATCH:
-        play_sub, seed_sub = update_playoff(conf_data, team_seed)
-        old_reddit_sidebar = play_regex.sub(play_sub, old_reddit_sidebar)
-        old_reddit_sidebar = seed_regex.sub(seed_sub, old_reddit_sidebar)
+        p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
+        old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
+        old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
+        old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
 
     # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
     old_reddit_sidebar = munder_regex.sub(update_munder(), old_reddit_sidebar)
@@ -188,9 +197,10 @@ def update_sidebar():
     new_text = record_regex.sub(record_sub, new_text)
 
     if PLAYOFF_WATCH:
-        play_sub, seed_sub = update_playoff(conf_data, team_seed)
-        new_text = play_regex.sub(play_sub, new_text)
-        new_text = seed_regex.sub(seed_sub, new_text)
+        p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
+        new_text = p1_regex.sub(p1_sub, new_text)
+        new_text = p2_regex.sub(p2_sub, new_text)
+        new_text = p3_regex.sub(p3_sub, new_text)
 
     # new_text = tripdub_regex.sub(update_tripdub(), new_text)
     new_text = munder_regex.sub(update_munder(), new_text)
