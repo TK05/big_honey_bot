@@ -9,11 +9,20 @@ from bots.thread_handler_bot import new_thread, edit_thread
 from threads.static.headlines import headlines
 from threads.static.headlines_playoffs import po_headlines
 from threads.static.templates import PostGame
-from events.manager import update_event
+from events.manager import update_event, get_event
 
 
 TEAM = setup['team']
 TARGET_SUB = os.environ['TARGET_SUB']
+
+
+def format_date_and_time(time_in):
+    try:
+        date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
+    except ValueError:
+        date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
+
+    return date_out
 
 
 def post_game_headline(opp_team, game_start, result, margin, final_score):
@@ -22,25 +31,14 @@ def post_game_headline(opp_team, game_start, result, margin, final_score):
     Thread title will be randomly selected from post_game_headlines.json based on win/loss and margin.
     """
 
-    def format_date_and_time(time_in):
-        try:
-            date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
-            time_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%-I:%M %p')
-        except ValueError:
-            date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
-            time_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%#I:%M %p')
-
-        return date_out, time_out
-
-    date_str, time_str = format_date_and_time(game_start)
-    date = f'{date_str} - {time_str}'
+    date_str = format_date_and_time(game_start)
 
     for score, lines in headlines[result].items():
         if margin < int(score):
             rand = random.randrange(len(headlines[result][score]))
             template = headlines[result][score][rand]
 
-            return f"POST GAME THREAD: {template.format(TEAM, opp_team, final_score, date)}"
+            return f"POST GAME THREAD: {template.format(TEAM, opp_team, final_score, date_str)}"
 
 
 def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
@@ -81,7 +79,25 @@ def format_post(event, playoff_data=None):
 
     bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
 
-    if playoff_data:
+    # Check for custom win/lose title from event
+    custom_title = str()
+    outcome_key = 'win' if win else 'lose'
+    event_new = get_event(event.id)
+
+    try:
+        custom_title = event_new.meta[outcome_key]
+        print(f"{os.path.basename(__file__)}: Custom post game title detected: {custom_title}")
+    except KeyError:
+        pass
+
+    if custom_title:
+        custom_title = custom_title.replace('***team***', TEAM)
+        custom_title = custom_title.replace('***opponent***', event.meta['opponent'])
+        custom_title = custom_title.replace('***margin***', str(margin))
+        custom_title = custom_title.replace('***score***', final_score)
+        custom_title = custom_title.replace('***date***', format_date_and_time(event.meta['game_start']))
+        event.summary = custom_title
+    elif playoff_data:
         event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, margin, final_score, playoff_data)
     else:
         event.summary = post_game_headline(event.meta['opponent'], event.meta['game_start'], str(win), margin, final_score)
