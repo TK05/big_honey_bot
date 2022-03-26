@@ -38,8 +38,17 @@ def make_post(event, playoff_data_arr):
         print(f"{os.path.basename(__file__)}: Event updated after init post: {event.id} - {event.summary}")
 
     elif event.meta['event_type'] == 'post':
-        # TODO: Refactor this logic and in
+        # TODO: Refactor this logic. Why return win? Handle for playoffs
         win = post_game_thread_handler(event, playoff_data_arr)
+
+        # Generate thread stats after post game thread is posted
+        if THREAD_STATS:
+            try:
+                prev_game_event = get_previous_event(penultimate=True)
+                prev_post = get_thread(prev_game_event.meta['reddit_id'])
+                generate_stats_comment(game_thread=prev_post, post_game_thread=event.post)
+            except Exception as e:
+                print(f"Error caught while generating thread stats: {e}")
 
     else:
         print(f"{os.path.basename(__file__)}: Unhandled event_type: {event.meta['event_type']}")

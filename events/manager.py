@@ -44,17 +44,19 @@ def get_all_events():
     return service.get_events(order_by='startTime', single_events=True)
 
 
-def get_previous_event():
+def get_previous_event(penultimate=False):
     service = create_service()
     events = service.get_events((datetime.datetime.now() - datetime.timedelta(days=30)),
                                 datetime.datetime.now(), order_by='startTime', single_events=True)
-    last_event = None
-    for event in events:
-        last_event = event
 
-    add_meta_and_body(last_event)
+    # Return penultimate event if requested, else return last event
+    event = None
+    for event in list(events)[:-1 if penultimate else None]:
+        pass
 
-    return last_event
+    add_meta_and_body(event)
+
+    return event
 
 
 def get_event(event_id):
