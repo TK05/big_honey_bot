@@ -57,8 +57,6 @@ def make_post(event, playoff_data_arr):
 
 
 def check_active_post(post):
-    # TODO: Maybe think about rolling back changes to event title after post is made so event always matches post
-
     event = get_event(post.id)
 
     # Catch when event type manually set to done
@@ -187,12 +185,12 @@ while bot_running:
 
     # There is an active post, check for updates to it
     elif active_post:
-        # End active posts 6 hours after posting
-        if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=6)):
+        # End active posts 12 hours after posting
+        if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=12)):
             print(f"{os.path.basename(__file__)}: active_post active longer than 6 hours, setting to done")
             active_post = end_active_post(active_post)
         else:
-            print(f"{os.path.basename(__file__)}: ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
+            # print(f"{os.path.basename(__file__)}: ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
             active_post = check_active_post(active_post)
             time.sleep(30)
 
