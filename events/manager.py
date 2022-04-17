@@ -44,6 +44,18 @@ def get_all_events():
     return service.get_events(order_by='startTime', single_events=True)
 
 
+def get_all_events_with_meta():
+    service = create_service()
+    events = service.get_events(order_by='startTime', single_events=True)
+    all_events = []
+
+    for event in events:
+        add_meta_and_body(event)
+        all_events.append(event)
+
+    return all_events
+
+
 def get_previous_event(penultimate=False):
     service = create_service()
     events = service.get_events((datetime.datetime.now() - datetime.timedelta(days=30)),
