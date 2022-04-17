@@ -4,5 +4,4 @@
 /venv
 *.html
 /tools/tmp/*
-/tools/json_output/schedule_scrape_output.json
-/tools/json_output/all_events.json
+/tools/json_output/*
