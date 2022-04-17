@@ -6,6 +6,7 @@ import pytz
 
 from config import setup
 from threads.game.game_thread import game_thread_handler
+from threads.off_day.off_day import off_day_thread_handler
 from bots.thread_handler_bot import edit_thread, get_thread
 from threads.post_game.post_game import post_game_thread_handler
 from threads.post_game.thread_stats import generate_stats_comment
@@ -49,6 +50,14 @@ def make_post(event, playoff_data_arr):
                 generate_stats_comment(game_thread=prev_post, post_game_thread=event.post)
             except Exception as e:
                 print(f"Error caught while generating thread stats: {e}")
+
+    elif event.meta['event_type'] == 'off':
+        off_day_thread_handler(event)
+
+        # Update event object
+        event.meta['event_type'] = 'active'
+        update_event(event)
+        print(f"{os.path.basename(__file__)}: Event updated after init post: {event.id} - {event.summary}")
 
     else:
         print(f"{os.path.basename(__file__)}: Unhandled event_type: {event.meta['event_type']}")
@@ -129,6 +138,7 @@ post_game_thread = None
 active_post = None
 bot_running = True
 skip = False
+upcoming_event_types = ['pre', 'game', 'post', 'off']
 
 while bot_running:
 
@@ -169,14 +179,14 @@ while bot_running:
         skip = False
 
     # Time to post next_event and correct event_type
-    elif seconds_till_post <= 0 and next_event.meta['event_type'] in ["pre", "game", "post"]:
+    elif seconds_till_post <= 0 and next_event.meta['event_type'] in upcoming_event_types:
 
         # next_event will become the active_post, add prev post reference finish the existing active_post
         if active_post:
             active_post = end_active_post(active_post)
 
         # Send event to appropriate thread handler
-        if next_event.meta['event_type'] in ['pre', 'game', 'post']:
+        if next_event.meta['event_type'] in upcoming_event_types:
             active_post = make_post(next_event, playoff_data)
         else:
             print(f"{os.path.basename(__file__)}: next_event.meta['event_type'] is invalid")
@@ -187,7 +197,7 @@ while bot_running:
     elif active_post:
         # End active posts 12 hours after posting
         if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=12)):
-            print(f"{os.path.basename(__file__)}: active_post active longer than 6 hours, setting to done")
+            print(f"{os.path.basename(__file__)}: active_post active longer than 12 hours, setting to done")
             active_post = end_active_post(active_post)
         else:
             # print(f"{os.path.basename(__file__)}: ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
