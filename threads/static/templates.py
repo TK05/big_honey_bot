@@ -209,14 +209,14 @@ class Game(object):
     def betting_head_and_fmt():
         betting_header = (
             f"##Betting Odds\n\n"
-            f"|**Moneyline**|**Over/Under**|\n"
-            f"|:--:|:--:|\n")
+            f"|**Moneyline**|**Spread**|**Over/Under**|\n"
+            f"|:--:|:--:|:--:|\n")
 
         return betting_header
 
     @staticmethod
     def betting_rows(betting_odds):
-        return f'|{betting_odds[0]}|{betting_odds[1]}|'
+        return f'|{betting_odds[0]}|{betting_odds[1]}|{betting_odds[2]}|'
 
 
 class ThreadStats(object):

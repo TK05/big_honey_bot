@@ -5,15 +5,15 @@ from parsel import Selector
 def line_inj_odds(team_name):
     """Scrapes for lineups, injuries and odds.
 
-    Arguments: team name (from config)
-    Return: team_lineups -> nested list of lineups with name, position and designation, [away, home]
-            team_injuries -> nested list of injuries with name and status, [away, home]
-            betting_data -> [moneyline, over/under]
+    :param team_name: Team name to search for
+    :type team_name: str
+    :returns Lineups, injuries and odds for both teams
+    :rtype: list[list[lineups], list[injuries], list[odds]]
     """
 
     team_lineups = [[], []]
     team_injuries = [[], []]
-    betting_data = ['N/A', 'N/A']
+    betting_data = ['N/A', 'N/A', 'N/A']
 
     response = Selector(text=requests.get("https://www.rotowire.com/basketball/nba-lineups.php").text)
     all_games = response.xpath('.//div[@class="lineup is-nba"]')
@@ -51,11 +51,11 @@ def line_inj_odds(team_name):
             des = lineups.xpath(f'./li[{injury}]/span[1]/text()').get()
             team_injuries[side].append((name, des))
 
-    ml = game.xpath(f'./div[2]/div[4]/div/div/div[1]/text()').get()
-    ml = ' '.join(ml.split())
-    ou = game.xpath(f'./div[2]/div[4]/div/div/div[2]/text()').get()
-    ou = ' '.join(ou.split())
+    ml = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[1]/span[1]/text()').get()
+    spread = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[2]/span[1]/text()').get()
+    ou = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[3]/span[1]/text()').get()
+    ou = ou.strip(' Pts')
 
-    betting_data = [ml, ou]
+    betting_data = [ml, spread, ou]
 
     return team_lineups, team_injuries, betting_data
