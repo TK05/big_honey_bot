@@ -56,6 +56,12 @@ def create_pre_game_event(schedule):
             radio=event_data['radio'],
             previews=f"[Game Notes](https://www.nba.com/gamenotes/{setup['team'].lower()}.pdf), [nba.com]({nba_link('preview', event_data['nba_id'])})"
         )
+        new_schedule[new_utc]['description'] = f"{new_schedule[new_utc]['description']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['starters']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['injuries']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['odds']}\n\n&nbsp;\n\n" \
+                                               f"{description_tags['referees']}\n"
+
         new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
 
         new_schedule[new_utc]['meta']['title_hash'] = create_hash(new_schedule[new_utc]['summary'])

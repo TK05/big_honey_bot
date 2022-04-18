@@ -178,7 +178,7 @@ def game_thread_handler(event, playoff_data):
     else:
         generate_title(event)
 
-    if event.meta['event_type'] == 'game':
+    if event.meta['event_type'] in ['pre', 'game']:
         generate_game_body(event)
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
