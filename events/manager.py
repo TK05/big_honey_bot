@@ -30,7 +30,7 @@ def add_meta_and_body(event):
             event = set_meta_and_body(event)
         # Handle when event touched via UI and description gets populated with HTML tags
         except json.JSONDecodeError:
-            desc_re = re.sub('<br\s*?>', '\n', event.description)
+            desc_re = re.sub('<br\s*?\/?>', '\n', event.description)
             desc_tag = HTMLFilter()
             desc_tag.feed(desc_re)
             event.description = desc_tag.text
@@ -56,9 +56,9 @@ def get_all_events_with_meta():
     return all_events
 
 
-def get_previous_event(penultimate=False):
+def get_previous_event(penultimate=False, days=30):
     service = create_service()
-    events = service.get_events((datetime.datetime.now() - datetime.timedelta(days=30)),
+    events = service.get_events((datetime.datetime.now() - datetime.timedelta(days=days)),
                                 datetime.datetime.now(), order_by='startTime', single_events=True)
 
     # Return penultimate event if requested, else return last event
