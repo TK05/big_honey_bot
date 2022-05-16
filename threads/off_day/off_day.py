@@ -20,23 +20,32 @@ def generate_thread_body(event=None):
     req = requests.get('https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=basketball&league=nba&region=us&lang=en&contentorigin=espn&buyWindow=1m&showAirings=buy,live,replay&showZipLookup=true&tz=America/New_York').json()
     games = sorted(req['sports'][0]['leagues'][0]['events'], key=lambda i: i['id'])
 
-    body = f"|Today's Games||||\n" \
+    body = f"|Upcoming Games||||\n" \
            f"|:--|:--|:--|:--|\n"
+
+    games_today = False
 
     for game in games:
         time = datetime.strptime(game['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
+
+        if time.astimezone(tz=pytz.timezone(setup['timezone'])).date() == datetime.now(tz=pytz.timezone(setup['timezone'])).date():
+            games_today = True
+        try:
+            date_local = f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%-m/%-d'))}"
+        except ValueError:
+            date_local = f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%#m/%#d'))}"
         time_local = f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%#I:%M %p %Z'))}"
         time_link = f"https://dateful.com/time-zone-converter?t=" \
                     f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%#I:%M %p'))}" \
                     f"&tz={setup['location']}&"
-        time_fmt = f"[{time_local}]({time_link})"
+        time_fmt = f"{date_local} - [{time_local}]({time_link})"
         teams = f"{game['name']}"
         series = f"{game['note']}, {game['seriesSummary']}"
         nba_link = f"[ESPN](https://www.espn.com/nba/game?gameId={game['id']})"
         body += f"|{teams}|{time_fmt}|{series}|{nba_link}|\n"
 
-    if len(games) == 0:
-        body = "No games scheduled today"
+    if not games_today or len(games) == 0:
+        body = "No games scheduled today\n\n&nbsp;\n\n" + body
 
     if not event:
         print(body)
