@@ -40,8 +40,13 @@ def generate_thread_body(event=None):
                     f"&tz={setup['location']}&"
         time_fmt = f"{date_local} - [{time_local}]({time_link})"
         teams = f"{game['name']}"
-        series = f"{game['note']}, {game['seriesSummary']}"
         nba_link = f"[ESPN](https://www.espn.com/nba/game?gameId={game['id']})"
+
+        try:
+            series = f"{game['note']}, {game['seriesSummary']}"
+        except KeyError:
+            series = f"{game['note']}"
+
         body += f"|{teams}|{time_fmt}|{series}|{nba_link}|\n"
 
     if not games_today or len(games) == 0:
