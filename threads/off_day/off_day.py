@@ -2,10 +2,12 @@ import os
 from datetime import datetime
 import requests
 import pytz
+from parsel import Selector
 
 from bots.thread_handler_bot import new_thread
 from config import setup
 from tools.toolkit import description_tags
+from data.static.data import lookup_by_loc
 
 
 def generate_thread_body(event=None):
@@ -17,40 +19,73 @@ def generate_thread_body(event=None):
     :returns: Nothing, modifies event in place
     :rtype: None
     """
-    req = requests.get('https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=basketball&league=nba&region=us&lang=en&contentorigin=espn&buyWindow=1m&showAirings=buy,live,replay&showZipLookup=true&tz=America/New_York').json()
-    games = sorted(req['sports'][0]['leagues'][0]['events'], key=lambda i: i['id'])
 
-    body = f"|Upcoming Games||||\n" \
-           f"|:--|:--|:--|:--|\n"
+    response = requests.get('https://www.espn.com/nba/schedule').text
+    response_selector = Selector(text=response)
+    games_raw = response_selector.xpath('.//div[@class="mt3"]/div')
 
-    games_today = False
+    body_rows = []
+    games_today = []
 
-    for game in games:
-        time = datetime.strptime(game['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
+    for game in games_raw:
 
-        if time.astimezone(tz=pytz.timezone(setup['timezone'])).date() == datetime.now(tz=pytz.timezone(setup['timezone'])).date():
-            games_today = True
+        # skip when game complete
+        if game.xpath('.//tr[@class="Table__TR Table__even"]/th[2]/div/text()').get() == "result":
+            continue
+
+        game_base = game.xpath('.//tr[@class="Table__TR Table__TR--sm Table__even"]/td')
+
+        date_str = game.xpath('.//div[@class="Table__Title"]/text()').get().strip()
+        time_str = game_base[2].xpath('.//a[@class="AnchorLink"]/text()').get()
+        time = pytz.timezone('US/Eastern').localize(datetime.strptime(f"{date_str} {time_str}", '%A, %b %d, %Y %I:%M %p'))
+        time_tz = time.astimezone(pytz.timezone(setup['timezone']))
+
         try:
-            date_local = f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%-m/%-d'))}"
+            date_local = f"{datetime.strftime(time_tz, format('%-m/%-d'))}"
         except ValueError:
-            date_local = f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%#m/%#d'))}"
-        time_local = f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%#I:%M %p %Z'))}"
+            date_local = f"{datetime.strftime(time_tz, format('%#m/%#d'))}"
+
+        time_local = f"{datetime.strftime(time_tz, format('%#I:%M %p %Z'))}"
         time_link = f"https://dateful.com/time-zone-converter?t=" \
-                    f"{datetime.strftime(time.astimezone(pytz.timezone(setup['timezone'])), format('%#I:%M %p'))}" \
+                    f"{datetime.strftime(time_tz, format('%#I:%M %p'))}" \
                     f"&tz={setup['location']}&"
         time_fmt = f"{date_local} - [{time_local}]({time_link})"
-        teams = f"{game['name']}"
-        nba_link = f"[ESPN](https://www.espn.com/nba/game?gameId={game['id']})"
 
-        try:
-            series = f"{game['note']}, {game['seriesSummary']}"
-        except KeyError:
-            series = f"{game['note']}"
+        away_team = game_base[0].xpath('.//a[@class="AnchorLink"]/text()').get()
+        home_team = game_base[1].xpath('.//a[@class="AnchorLink"]/text()').get()
+        game_note = game_base[0].xpath('.//span[contains(@class, "gameNote")]/text()').get()
+        espn_id = game_base[2].xpath('.//a[@class="AnchorLink"]/@href').get()
+        espn_link = f"[ESPN](https://www.espn.com{espn_id})"
 
-        body += f"|{teams}|{time_fmt}|{series}|{nba_link}|\n"
+        net_con = game_base[3].xpath('.//div[contains(@class, "network-container")]')
 
-    if not games_today or len(games) == 0:
-        body = "No games scheduled today\n\n&nbsp;\n\n" + body
+        if net_con.xpath('.//div[@class="Image__Wrapper Image__Wrapper--relative"]'):
+            # network identified by logo (ESPN brand)
+            tv = net_con.xpath('.//div[@class="Image__Wrapper Image__Wrapper--relative"]/img/@alt').get()
+        else:
+            # network identified by text
+            tv = net_con.xpath('.//div[contains(@class, "network-name")]/text()').get()
+
+        if time_tz.date() == datetime.now(tz=pytz.timezone(setup['timezone'])).date():
+            games_today.append(f"|{away_team} {lookup_by_loc[away_team][0]} @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
+        else:
+            body_rows.append(f"|{away_team} {lookup_by_loc[away_team][0]} @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
+
+    # build body based on today and upcoming games
+    body = ""
+    if games_today:
+        body += f"|Today's Games|||||\n" \
+               f"|:--|:--|:--|:--|:--|\n"
+        for game in games_today:
+            body += f"{game}"
+        body += "\n&nbsp;\n\n"
+    else:
+        body += "No games scheduled today\n\n&nbsp;\n\n"
+    if body_rows:
+        body += f"|Upcoming Games|||||\n" \
+               f"|:--|:--|:--|:--|:--|\n"
+        for game in body_rows:
+            body += f"{game}"
 
     if not event:
         print(body)

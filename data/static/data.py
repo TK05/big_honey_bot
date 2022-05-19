@@ -31,3 +31,38 @@ team_lookup = {
     "Raptors": ["torontoraptors", 'TOR'],
     "Wizards": ["washingtonwizards", 'WAS']
 }
+
+lookup_by_loc = {
+    "Dallas": ["Mavericks", "DAL"],
+    "Denver": ["Nuggets", "DEN"],
+    "Golden State": ["Warriors", "GSW"],
+    "Houston": ["Rockets", "HOU"],
+    # TODO: Check LA teams in future
+    "Los Angeles": ["Clippers", "LAC"],
+    "LAL": ["Lakers", "LAL"],
+    "Memphis": ["Grizzlies", "MEM"],
+    "Minnesota": ["Timberwolves", "MIN"],
+    "New Orleans": ["Pelicans", "NOP"],
+    "Oklahoma City": ["Thunder", "OKC"],
+    "Phoenix": ["Suns", "PHX"],
+    "Portland": ["Trail Blazers", "POR"],
+    "Sacramento": ["Kings", "SAC"],
+    "San Antonio": ["Spurs", "SAS"],
+    "Utah": ["Jazz", "UTA"],
+    "Atlanta": ["Hawks", "ATL"],
+    "Boston": ["Celtics", "BOS"],
+    "Brooklyn": ["Nets", "BKN"],
+    "Charlotte": ["Hornets", "CHA"],
+    "Chicago": ["Bulls", "CHI"],
+    "Cleveland": ["Cavaliers", "CLE"],
+    "Detroit": ["Pistons", "DET"],
+    "Indiana": ["Pacers", "IND"],
+    "Miami": ["Heat", "MIA"],
+    "Milwaukee": ["Bucks", "MIL"],
+    "Knicks": ["nyknicks", 'NYK'],
+    "New York": ["Knicks", "NYK"],
+    "Orlando": ["Magic", "ORL"],
+    "Philadelphia": ["76ers", "PHI"],
+    "Toronto": ["Raptors", "TOR"],
+    "Washington": ["Wizards", "WAS"]
+}
