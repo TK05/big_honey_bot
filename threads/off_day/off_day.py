@@ -37,7 +37,7 @@ def generate_thread_body(event=None):
 
         date_str = game.xpath('.//div[@class="Table__Title"]/text()').get().strip()
         time_str = game_base[2].xpath('.//a[@class="AnchorLink"]/text()').get()
-        time = pytz.timezone('US/Eastern').localize(datetime.strptime(f"{date_str} {time_str}", '%A, %b %d, %Y %I:%M %p'))
+        time = pytz.timezone('US/Eastern').localize(datetime.strptime(f"{date_str} {time_str}", '%A, %B %d, %Y %I:%M %p'))
         time_tz = time.astimezone(pytz.timezone(setup['timezone']))
 
         try:
@@ -69,7 +69,15 @@ def generate_thread_body(event=None):
         if time_tz.date() == datetime.now(tz=pytz.timezone(setup['timezone'])).date():
             games_today.append(f"|{away_team} {lookup_by_loc[away_team][0]} @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
         else:
-            body_rows.append(f"|{away_team} {lookup_by_loc[away_team][0]} @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
+            # Catch when home or away team is none/tbd
+            if not home_team:
+                body_rows.append(
+                    f"|{away_team} {lookup_by_loc[away_team][0]} @ TBD|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
+            elif not away_team:
+                body_rows.append(
+                    f"|TBD @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
+            else:
+                body_rows.append(f"|{away_team} {lookup_by_loc[away_team][0]} @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
 
     # build body based on today and upcoming games
     body = ""
