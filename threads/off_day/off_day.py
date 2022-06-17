@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from distutils.util import strtobool
 import requests
 import pytz
 from parsel import Selector
@@ -9,6 +10,9 @@ from config import setup
 from tools.toolkit import description_tags
 from data.static.data import lookup_by_loc
 from threads.off_day.static_events import events as se
+
+
+IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
 
 
 def get_espn_games():
@@ -77,14 +81,12 @@ def get_espn_games():
     return body_rows, games_today
 
 
-def generate_thread_body(event=None, in_playoffs=True, include_static=False):
+def generate_thread_body(event=None, include_static=False):
     """Generates off day thread body based on that days games. Replaces placeholder tags with
     this generated data.
 
     :param event: Event to generate thread body for
     :type event: gcsa.event.Event
-    :param in_playoffs: True will include upcoming playoff games
-    :type in_playoffs: bool
     :param include_static: True includes static events from threads.static_events dict
     :type include_static: bool
     :returns: Nothing, modifies event in place
@@ -94,7 +96,7 @@ def generate_thread_body(event=None, in_playoffs=True, include_static=False):
     body = ""
 
     # build body based on today and upcoming games
-    if in_playoffs:
+    if IN_PLAYOFFS:
         upcoming_games, games_today = get_espn_games()
 
         if games_today:
@@ -156,7 +158,7 @@ def off_day_thread_handler(event):
     :rtype: NoneType
     """
 
-    generate_thread_body(event, in_playoffs=True, include_static=True)
+    generate_thread_body(event, include_static=True)
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
     new_thread(event)

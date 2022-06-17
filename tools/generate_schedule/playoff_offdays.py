@@ -10,15 +10,13 @@ from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
 TIMEZONE = setup['timezone']
-START_DATE = date(2022, 4, 16)
-END_DATE = date(2022, 6, 20)
 
 
-def create_schedule():
+def create_schedule(start, end, playoffs=True):
     now = datetime.now(tz=ZoneInfo(TIMEZONE))
     pgpt = setup['pre_game_post_time'].split(':')
     new_schedule = {}
-    for d in range((END_DATE - now.date()).days):
+    for d in range((end - now.date()).days):
         post_date = now + timedelta(days=d+1)
         post_time = datetime(
             year=post_date.year,
@@ -45,11 +43,17 @@ def create_schedule():
         new_schedule[post_stamp]['end']['timeZone'] = TIMEZONE
         new_schedule[post_stamp]['location'] = 'Parts Unknown'
 
-        delta = post_date.date() - START_DATE
+        delta = post_date.date() - start
         if post_date.weekday() == 4:
-            headline = f"Playoffs Day {delta.days + 1} - Free Talk Friday | {post_date.strftime('%b %#d, %Y')}"
+            if playoffs:
+                headline = f"Playoffs Day {delta.days + 1} - Free Talk Friday | {post_date.strftime('%b %#d, %Y')}"
+            else:
+                headline = f"Off-Season Day {delta.days + 1} - Free Talk Friday | {post_date.strftime('%b %#d, %Y')}"
         else:
-            headline = f"Playoffs Day {delta.days + 1} - Discussion Thread | {post_date.strftime('%b %#d, %Y')}"
+            if playoffs:
+                headline = f"Playoffs Day {delta.days + 1} - Discussion Thread | {post_date.strftime('%b %#d, %Y')}"
+            else:
+                headline = f"Off-Season Day {delta.days + 1} - Discussion Thread | {post_date.strftime('%b %#d, %Y')}"
         new_schedule[post_stamp]['summary'] = headline
         new_schedule[post_stamp]['description'] = f"{description_tags['daily_games']}"
 
@@ -68,8 +72,10 @@ def create_schedule():
 
 
 if __name__ == '__main__':
+    start_date = date(2022, 6, 17)
+    end_date = date(2022, 10, 28)
 
-    schedule = create_schedule()
+    schedule = create_schedule(start_date, end_date, playoffs=False)
     update_calendar(schedule)
 
     try:
