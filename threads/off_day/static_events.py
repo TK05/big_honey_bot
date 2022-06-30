@@ -9,6 +9,13 @@ events = {
             "nba.com": "https://www.nba.com/draft/2022"
         }
      },
+    181: {
+        "start_doy": 181,
+        "end_doy": 181,
+        "date_str": "June 30",
+        "desc": "Teams may begin negotiating with free agents (beginning at 6PM ET)",
+        "links": {}
+    },
     183: {
         "start_doy": 183,
         "end_doy": 184,
@@ -23,11 +30,18 @@ events = {
         "desc": "SLC Summer League - (Grizzlies, Thunder, 76ers, Jazz)",
         "links": {}
     },
+    187: {
+        "start_doy": 187,
+        "end_doy": 187,
+        "date_str": "July 6",
+        "desc": "Teams may begin signing free agents to contracts (12:01PM ET)",
+        "links": {}
+    },
     188: {
         "start_doy": 188,
         "end_doy": 198,
         "date_str": "July 7-17",
-        "desc": "NBA Summer League in Las Vegas",
+        "desc": "NBA2K23 Summer League in Las Vegas (All 30 teams)",
         "links": {
             "nba.com": "https://nbaevents.nba.com/events/nba-summer-league"
         }
@@ -67,5 +81,12 @@ events = {
         "links": {
             "nba.com": "https://nbaevents.nba.com/events/nba-summer-league"
         }
+    },
+    252: {
+        "start_doy": 252,
+        "end_doy": 253,
+        "date_str": "September 9-10",
+        "desc": "Naismith Memorial Basketball Hall of Fame Enshrinement Weekend (Springfield, MA)",
+        "links": {}
     }
 }
