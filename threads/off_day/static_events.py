@@ -86,7 +86,7 @@ events = {
         "start_doy": 229,
         "end_doy": 229,
         "date_str": "August 17",
-        "desc": "Serbia @ Slovenia | NT Friendly - 12:15AM MDT - Ljubjana, Slovenia",
+        "desc": "Serbia @ Slovenia - NT Friendly - 12:15AM MDT - Ljubjana, Slovenia",
         "links": {
             "local time": "https://dateful.com/time-zone-converter?t=12:15%20AM&tz=Denver&"
         }
@@ -95,7 +95,7 @@ events = {
         "start_doy": 231,
         "end_doy": 231,
         "date_str": "August 19",
-        "desc": "Serbia vs. Italy | NT Friendly - 10:00AM MDT - Hamburg, Germany",
+        "desc": "Serbia vs. Italy - NT Friendly - 10:00AM MDT - Hamburg, Germany",
         "links": {
             "local time": "https://dateful.com/time-zone-converter?t=10:00%20AM&tz=Denver&"
         }
@@ -104,7 +104,7 @@ events = {
         "start_doy": 232,
         "end_doy": 232,
         "date_str": "August 20",
-        "desc": "Serbia vs. Czech Republic | NT Friendly - 10:00AM MDT - Hamburg, Germany",
+        "desc": "Serbia vs. Czech Republic - NT Friendly - 10:00AM MDT - Hamburg, Germany",
         "links": {
             "local time": "https://dateful.com/time-zone-converter?t=10:00%20AM&tz=Denver&"
         }
@@ -113,7 +113,7 @@ events = {
         "start_doy": 232,
         "end_doy": 232,
         "date_str": "August 20",
-        "desc": "Serbia @ Germany | NT Friendly - 12:30AM MDT - Hamburg, Germany",
+        "desc": "Serbia @ Germany - NT Friendly - 12:30AM MDT - Hamburg, Germany",
         "links": {
             "local time": "https://dateful.com/time-zone-converter?t=12:30%20AM&tz=Denver&"
         }
@@ -122,14 +122,14 @@ events = {
         "start_doy": 237,
         "end_doy": 237,
         "date_str": "August 25",
-        "desc": "Serbia vs. Greece | World Cup Qualifier - Belgrade, Serbia",
+        "desc": "Serbia vs. Greece - World Cup Qualifier - Belgrade, Serbia",
         "links": {}
     },
     240: {
         "start_doy": 240,
         "end_doy": 240,
         "date_str": "August 28",
-        "desc": "Serbia @ Turkey | World Cup Qualifier - Istanbul, Turkey",
+        "desc": "Serbia @ Turkey - World Cup Qualifier - Istanbul, Turkey",
         "links": {}
     },
     252: {
