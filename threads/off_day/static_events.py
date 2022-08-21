@@ -122,21 +122,32 @@ events = {
         "start_doy": 237,
         "end_doy": 237,
         "date_str": "August 25",
-        "desc": "Serbia vs. Greece - World Cup Qualifier - Belgrade, Serbia",
-        "links": {}
+        "desc": "Serbia vs. Greece - World Cup Qualifier - 10:00AM MDT - Belgrade, Serbia",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=10:00%20AM&tz=Denver&"
+        }
     },
     240: {
         "start_doy": 240,
         "end_doy": 240,
         "date_str": "August 28",
-        "desc": "Serbia @ Turkey - World Cup Qualifier - Istanbul, Turkey",
-        "links": {}
+        "desc": "Serbia @ Turkey - World Cup Qualifier - 9:00AM MDT - Istanbul, Turkey",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=9:00%20AM&tz=Denver&"
+        }
     },
     252: {
         "start_doy": 252,
         "end_doy": 253,
         "date_str": "September 9-10",
         "desc": "Naismith Memorial Basketball Hall of Fame Enshrinement Weekend (Springfield, MA)",
+        "links": {}
+    },
+    291: {
+        "start_doy": 291,
+        "end_doy": 291,
+        "date_str": "October 18",
+        "desc": "NBA regular season begins",
         "links": {}
     }
 }
