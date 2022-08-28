@@ -136,6 +136,51 @@ events = {
             "local time": "https://dateful.com/time-zone-converter?t=9:00%20AM&tz=Denver&"
         }
     },
+    245: {
+        "start_doy": 245,
+        "end_doy": 245,
+        "date_str": "September 2",
+        "desc": "Serbia vs. Netherlands - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=1:00%20PM&tz=Denver&"
+        }
+    },
+    246.1: {
+        "start_doy": 246,
+        "end_doy": 246,
+        "date_str": "September 3",
+        "desc": "Serbia vs. Czech Republic - Eurobasket '22 - 9:30AM MDT - Prague, Czech Republic",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=9:30%20AM&tz=Denver&"
+        }
+    },
+    246.2: {
+        "start_doy": 246,
+        "end_doy": 246,
+        "date_str": "September 3",
+        "desc": "Serbia vs. Finland - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=1:00%20PM&tz=Denver&"
+        }
+    },
+    249: {
+        "start_doy": 249,
+        "end_doy": 249,
+        "date_str": "September 6",
+        "desc": "Serbia vs. Isreal - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=1:00%20PM&tz=Denver&"
+        }
+    },
+    251: {
+        "start_doy": 251,
+        "end_doy": 251,
+        "date_str": "September 8",
+        "desc": "Serbia vs. Poland - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
+        "links": {
+            "local time": "https://dateful.com/time-zone-converter?t=1:00%20PM&tz=Denver&"
+        }
+    },
     252: {
         "start_doy": 252,
         "end_doy": 253,
