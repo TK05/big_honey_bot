@@ -12,9 +12,10 @@ from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 TIMEZONE = setup['timezone']
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
+platform_day_fmt = "%#d" if platform.system() == 'Windows' else '%-d'
 
 
-def create_schedule(start, end, playoffs=True):
+def create_schedule(start, end, playoffs=True, count_down=False):
     now = datetime.now(tz=ZoneInfo(TIMEZONE))
     pgpt = setup['pre_game_post_time'].split(':')
     new_schedule = {}
@@ -45,17 +46,25 @@ def create_schedule(start, end, playoffs=True):
         new_schedule[post_stamp]['end']['timeZone'] = TIMEZONE
         new_schedule[post_stamp]['location'] = 'Parts Unknown'
 
-        delta = post_date.date() - start
+        if count_down:
+            delta_days = (end - post_date.date()).days
+        else:
+            delta_days = (post_date.date() - start).days + 1
+
         if post_date.weekday() == 4:
             if playoffs:
-                headline = f"Playoffs Day {delta.days + 1} - Free Talk Friday | {post_date.strftime('%b %#d, %Y')}"
+                headline = f"Playoffs Day {delta_days} - Free Talk Friday | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
+            elif count_down:
+                headline = f"{delta_days} Days Until Tip-Off - Free Talk Friday | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
             else:
-                headline = f"Off-Season Day {delta.days + 1} - Free Talk Friday | {post_date.strftime('%b %#d, %Y')}"
+                headline = f"Off-Season Day {delta_days} - Free Talk Friday | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
         else:
             if playoffs:
-                headline = f"Playoffs Day {delta.days + 1} - Discussion Thread | {post_date.strftime('%b %#d, %Y')}"
+                headline = f"Playoffs Day {delta_days} - Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
+            elif count_down:
+                headline = f"{delta_days} Days Until Tip-Off - Off-Season Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
             else:
-                headline = f"Off-Season Day {delta.days + 1} - Discussion Thread | {post_date.strftime('%b %#d, %Y')}"
+                headline = f"Off-Season Day {delta_days} - Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
         new_schedule[post_stamp]['summary'] = headline
         new_schedule[post_stamp]['description'] = f"{description_tags['daily_games']}"
 
@@ -75,9 +84,9 @@ def create_schedule(start, end, playoffs=True):
 
 if __name__ == '__main__':
     start_date = date(2022, 6, 17)
-    end_date = date(2022, 10, 28)
+    end_date = date(2022, 10, 19)
 
-    schedule = create_schedule(start_date, end_date, playoffs=False)
+    schedule = create_schedule(start_date, end_date, playoffs=False, count_down=True)
     update_calendar(schedule)
 
     try:
