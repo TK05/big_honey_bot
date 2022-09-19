@@ -4,6 +4,7 @@ from distutils.util import strtobool
 import requests
 import pytz
 from parsel import Selector
+import platform
 
 from bots.thread_handler_bot import new_thread
 from config import setup
@@ -13,6 +14,7 @@ from threads.off_day.static_events import events as se
 
 
 IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
+platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 
 
 def get_espn_games():
@@ -42,9 +44,9 @@ def get_espn_games():
         except ValueError:
             date_local = f"{datetime.strftime(time_tz, format('%#m/%#d'))}"
 
-        time_local = f"{datetime.strftime(time_tz, format('%#I:%M %p %Z'))}"
+        time_local = f"{datetime.strftime(time_tz, format(f'{platform_hr_min_fmt} %p %Z'))}"
         time_link = f"https://dateful.com/time-zone-converter?t=" \
-                    f"{datetime.strftime(time_tz, format('%#I:%M %p'))}" \
+                    f"{datetime.strftime(time_tz, format(f'{platform_hr_min_fmt} %p'))}" \
                     f"&tz={setup['location']}&"
         time_fmt = f"{date_local} - [{time_local}]({time_link})"
 
