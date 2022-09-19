@@ -3,6 +3,7 @@ import os
 import copy
 import json
 import pytz
+import platform
 
 from config import setup
 from data.static.data import team_lookup
@@ -11,6 +12,7 @@ from tools.toolkit import create_hash, description_tags
 
 
 TIMEZONE = setup['timezone']
+platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 
 
 def create_pre_game_event(schedule):
@@ -30,7 +32,7 @@ def create_pre_game_event(schedule):
         new_schedule[new_utc]['meta']['event_type'] = 'pre'
 
         post_date = datetime.fromtimestamp(int(new_utc))
-        loc_time_str = datetime.strftime(post_date.astimezone(tz=pytz.timezone(TIMEZONE)), format('%#I:%M %p'))
+        loc_time_str = datetime.strftime(post_date.astimezone(tz=pytz.timezone(TIMEZONE)), format(f'{platform_hr_min_fmt} %p'))
         new_schedule[new_utc]['meta']['post_time'] = loc_time_str
 
         # Format Google Cal Event
@@ -77,7 +79,7 @@ def create_game_event(schedule):
 
         new_utc = str(int(old_utc) - 60*60)     # Offset time 1 hour prior to game start time
         post_date = datetime.fromtimestamp(int(new_utc))
-        loc_time_str = datetime.strftime(post_date.astimezone(tz=pytz.timezone(TIMEZONE)), format('%#I:%M %p'))
+        loc_time_str = datetime.strftime(post_date.astimezone(tz=pytz.timezone(TIMEZONE)), format(f'{platform_hr_min_fmt} %p'))
 
         new_schedule[new_utc] = {}
         new_schedule[new_utc]['meta'] = event_data
@@ -100,7 +102,7 @@ def create_game_event(schedule):
         new_schedule[new_utc]['summary'] = headline
 
         # Format a few times based on popular time zones in the subreddit
-        time_fmt = '%#I:%M %p %Z'
+        time_fmt = f'{platform_hr_min_fmt} %p %Z'
         dt_obj = datetime.fromtimestamp(int(old_utc))
         est_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('US/Eastern')), format(time_fmt))} - Kitchener"
         mst_time = f"{datetime.strftime(dt_obj.astimezone(pytz.timezone('US/Mountain')), format(time_fmt))} - Denver"
@@ -143,7 +145,7 @@ def post_game_edit(schedule):
         new_schedule[utc]['meta']['event_type'] = 'post'
 
         game_time = datetime.fromtimestamp(int(utc))
-        loc_time_str = datetime.strftime(game_time.astimezone(tz=pytz.timezone(TIMEZONE)), format('%#I:%M %p'))
+        loc_time_str = datetime.strftime(game_time.astimezone(tz=pytz.timezone(TIMEZONE)), format(f'{platform_hr_min_fmt} %p'))
         new_schedule[utc]['meta']['post_time'] = loc_time_str
 
         # Format Google Cal Event

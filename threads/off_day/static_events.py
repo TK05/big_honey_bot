@@ -188,6 +188,34 @@ events = {
         "desc": "Naismith Memorial Basketball Hall of Fame Enshrinement Weekend (Springfield, MA)",
         "links": {}
     },
+    270: {
+        "start_doy": 270,
+        "end_doy": 270,
+        "date_str": "September 27",
+        "desc": "NBA training camps open",
+        "links": {}
+    },
+    273: {
+        "start_doy": 273,
+        "end_doy": 273,
+        "date_str": "September 30",
+        "desc": "NBA preseason games begin",
+        "links": {}
+    },
+    287: {
+        "start_doy": 287,
+        "end_doy": 287,
+        "date_str": "October 14",
+        "desc": "NBA preseason ends",
+        "links": {}
+    },
+    290: {
+        "start_doy": 290,
+        "end_doy": 290,
+        "date_str": "October 17",
+        "desc": "Rosters set for start of 2022-23 NBA regular season (5pm ET)",
+        "links": {}
+    },
     291: {
         "start_doy": 291,
         "end_doy": 291,

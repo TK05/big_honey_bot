@@ -1,5 +1,6 @@
 import os
 import json
+import platform
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
@@ -10,6 +11,7 @@ from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
 TIMEZONE = setup['timezone']
+platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 
 
 def create_schedule(start, end, playoffs=True):
@@ -31,7 +33,7 @@ def create_schedule(start, end, playoffs=True):
         new_schedule[post_stamp] = {}
         new_schedule[post_stamp]['meta'] = {}
         new_schedule[post_stamp]['meta']['event_type'] = 'off'
-        loc_time_str = datetime.strftime(post_time, format('%#I:%M %p'))
+        loc_time_str = datetime.strftime(post_time, format(f'{platform_hr_min_fmt} %p'))
         new_schedule[post_stamp]['meta']['post_time'] = loc_time_str
 
         # Format Google Cal Event
