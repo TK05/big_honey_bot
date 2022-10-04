@@ -106,13 +106,11 @@ class Game(object):
             f"##General Information\n\n"
             f"**TIME**|**MEDIA**|**LOCATION**|\n"
             f"|:--|:--|:--|\n"
-            f"{times[0]}|**TV:** {tv}|{arena}|\n"
-            f"{times[1]}|**Radio:** {radio}|{city}|\n"
-            f"{times[2]}|**Streams:** [NBAbite](https://nbabite.com)|**Team Subreddits**|\n"
-            f"{times[3]}|**NBA** [Boxscore]({nba_links[0]}) - "
-            f"[Shotchart]({nba_links[1]})| r/{subreddits[0]}|\n"
-            f"{times[4]}|**ESPN** [Boxscore]({espn_links[0]}) - "
-            f"[Gamecast]({espn_links[1]})| r/{subreddits[1]}\n"
+            f"{times[0]}|**NBA** [Boxscore]({nba_links[0]}) - [Shotchart]({nba_links[1]})|{arena}|\n"
+            f"{times[1]}|**ESPN** [Boxscore]({espn_links[0]}) - [Gamecast]({espn_links[1]})|{city}|\n"
+            f"{times[2]}|**TV:** {tv}|**Team Subreddits**|\n"
+            f"{times[3]}|**Radio:** {radio}| r/{subreddits[0]}|\n"
+            f"{times[4]}|**Streams:** [NBAbite](https://nbabite.com)| r/{subreddits[1]}\n"
         )
 
         return table
