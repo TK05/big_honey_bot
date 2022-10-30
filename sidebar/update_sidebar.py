@@ -5,6 +5,8 @@ from datetime import datetime
 import requests
 import praw
 from parsel import Selector
+from nba_api.stats.endpoints import leaguestandingsv3
+from nba_api.stats.static import teams
 
 from config import setup
 
@@ -33,29 +35,27 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
 def update_record():
     """Grabs team's record and standing from nba.com."""
 
-    # TODO: This URL could be invalid in the future.
-    id_response = requests.get(f"https://data.nba.net/prod/v2/{setup['season']}/teams.json").json()
+    team_focus_id = teams.find_teams_by_nickname(TEAM)[0]['id']
+    standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
 
-    team_focus_id = conf_data = team_seed = tf_wins = tf_loss = team_conf = 0
+    for i, h in enumerate(standings['resultSets'][0]['headers']):
+        if h == 'Record':
+            rec_idx = i
+        elif h == 'TeamID':
+            id_idx = i
+        elif h == 'PlayoffRank':
+            rank_idx = i
+        elif h == 'Conference':
+            conf_idx = i
 
-    # Get Team_ID needed to lookup records
-    for team in id_response['league']['standard']:
-        if team['nickname'] == TEAM:
-            team_focus_id = team['teamId']
-            team_conf = team['confName']
-            break
+    # iterate over results for record of both teams
+    for team in standings['resultSets'][0]['rowSet']:
+        if team[id_idx] == team_focus_id:
+            tf_rec = team[rec_idx]
+            tf_rank = team[rank_idx]
+            tf_conf = team[conf_idx]
 
-    rec_response = requests.get("https://data.nba.net/prod//v1/current/standings_conference.json").json()
-
-    for conf in rec_response['league']['standard']['conference'].values():
-        for seed, team in enumerate(conf):
-            if team_focus_id == team['teamId']:
-                tf_wins = team['win']
-                tf_loss = team['loss']
-                conf_data = conf
-                team_seed = seed
-
-    return conf_data, team_seed, f"Record: {tf_wins} - {tf_loss} | #{team_seed + 1} in the {team_conf}"
+    return f"Record: {tf_rec} | #{tf_rank} in the {tf_conf}"
 
 
 def update_tripdub():
@@ -84,6 +84,7 @@ def update_tripdub():
     return f"Nikola Jokić TD-to-Dunk Ratio: {trip_dub}:{dunks}"
 
 
+# TODO: Fix for 2022-23
 def update_playoff(conf_data, team_seed):
     """Calculates magic numbers for playoffs, play-ins and current seed."""
 
@@ -168,14 +169,15 @@ def update_sidebar():
     p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
     p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
 
-    conf_data, team_seed, record_sub = update_record()
+    record_sub = update_record()
     old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
 
-    if PLAYOFF_WATCH:
-        p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
-        old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
-        old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
-        old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
+    # TODO: Fix for 2022-23
+    # if PLAYOFF_WATCH:
+    #     p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
+    #     old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
+    #     old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
+    #     old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
 
     # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
     old_reddit_sidebar = munder_regex.sub(update_munder(), old_reddit_sidebar)
@@ -196,11 +198,12 @@ def update_sidebar():
 
     new_text = record_regex.sub(record_sub, new_text)
 
-    if PLAYOFF_WATCH:
-        p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
-        new_text = p1_regex.sub(p1_sub, new_text)
-        new_text = p2_regex.sub(p2_sub, new_text)
-        new_text = p3_regex.sub(p3_sub, new_text)
+    # TODO: Fix for 2022-23
+    # if PLAYOFF_WATCH:
+    #     p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
+    #     new_text = p1_regex.sub(p1_sub, new_text)
+    #     new_text = p2_regex.sub(p2_sub, new_text)
+    #     new_text = p3_regex.sub(p3_sub, new_text)
 
     # new_text = tripdub_regex.sub(update_tripdub(), new_text)
     new_text = munder_regex.sub(update_munder(), new_text)
