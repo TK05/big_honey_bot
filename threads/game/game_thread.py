@@ -3,6 +3,8 @@ import os
 import re
 import requests
 from parsel import Selector
+from nba_api.stats.endpoints import leaguestandingsv3
+from nba_api.stats.static import teams
 
 from config import setup
 from bots.thread_handler_bot import new_thread
@@ -36,32 +38,29 @@ def generate_title(event):
 
         return date, time
 
-    id_response = requests.get("https://data.nba.net/prod/v2/2018/teams.json").json()
+    team_focus_id = teams.find_teams_by_nickname(TEAM)[0]['id']
+    opp_team_id = teams.find_teams_by_nickname(event.meta['opponent'])[0]['id']
 
-    team_focus_id = opp_team_id = tf_wins = tf_loss = opp_wins = opp_loss = 0
+    standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
 
-    # Get and set nba.com Team_ID's needed to lookup records
-    for team in id_response['league']['standard']:
-        if team['nickname'] == TEAM and team['isNBAFranchise']:
-            team_focus_id = team['teamId']
-        if team['nickname'] == event.meta['opponent'] and team['isNBAFranchise']:
-            opp_team_id = team['teamId']
+    # find index for 'Record' header
+    for i, h in enumerate(standings['resultSets'][0]['headers']):
+        if h == 'Record':
+            rec_idx = i
+        elif h == 'TeamID':
+            id_idx = i
 
-    rec_response = requests.get("https://data.nba.net/prod//v1/current/standings_conference.json").json()
-
-    for conf in rec_response['league']['standard']['conference'].values():
-        for team in conf:
-            if team_focus_id == team['teamId']:
-                tf_wins = team['win']
-                tf_loss = team['loss']
-            elif opp_team_id == team['teamId']:
-                opp_wins = team['win']
-                opp_loss = team['loss']
+    # iterate over results for record of both teams
+    for team in standings['resultSets'][0]['rowSet']:
+        if team[id_idx] == team_focus_id:
+            tf_rec = team[rec_idx]
+        elif team[id_idx] == opp_team_id:
+            opp_rec = team[rec_idx]
 
     date_str, time_str = format_date_and_time(event.meta['game_start'])
 
-    event.summary = event.summary.replace(description_tags['our_record'], f'({tf_wins}-{tf_loss})')
-    event.summary = event.summary.replace(description_tags['opp_record'], f'({opp_wins}-{opp_loss})')
+    event.summary = event.summary.replace(description_tags['our_record'], f'({tf_rec})')
+    event.summary = event.summary.replace(description_tags['opp_record'], f'({opp_rec})')
     event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
 
 
