@@ -147,31 +147,14 @@ def update_playoff(standings):
     return p1_sub, p2_sub, p3_sub
 
 
-def update_munder():
-    """Grab all game results from espn and count munders"""
+def update_munder(standings):
 
-    response = requests.get(setup['espn_url']).text
+    tf_conf, tf_rank = get_team_conf_and_rank(standings)
+    tf_gp = standings[tf_conf][tf_rank]['WINS'] + standings[tf_conf][tf_rank]['LOSSES']
+    opp_score_100 = standings[tf_conf][tf_rank]['OppScore100PTS']
+    games_over_100 = sum([int(i) for i in opp_score_100.split('-')])
 
-    response_selector = Selector(text=response)
-    games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
-    munder_count = 0
-
-    for game in games_raw:
-        result = game.xpath('./td[@class="Table__TD"][3]/span[1]/text()').get()
-
-        if result in ['W', 'L']:
-            if result == 'W':
-                opp_idx = 1
-            else:
-                opp_idx = 0
-            score_raw = game.xpath('./td[@class="Table__TD"][3]/span[2]/a/text()').get()
-            score_raw = score_raw.split(' ')[0]
-            opp_score = int(score_raw.split('-')[opp_idx])
-
-            if opp_score < 100:
-                munder_count += 1
-
-    return f"Munders: {munder_count}"
+    return f"Munders: {tf_gp - games_over_100}"
 
 
 def update_sidebar():
