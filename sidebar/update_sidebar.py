@@ -187,7 +187,7 @@ def update_sidebar():
         old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
 
     # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
-    old_reddit_sidebar = munder_regex.sub(update_munder(), old_reddit_sidebar)
+    old_reddit_sidebar = munder_regex.sub(update_munder(standings), old_reddit_sidebar)
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(old_reddit_sidebar)
@@ -212,7 +212,7 @@ def update_sidebar():
         new_text = p3_regex.sub(p3_sub, new_text)
 
     # new_text = tripdub_regex.sub(update_tripdub(), new_text)
-    new_text = munder_regex.sub(update_munder(), new_text)
+    new_text = munder_regex.sub(update_munder(standings), new_text)
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
     new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
