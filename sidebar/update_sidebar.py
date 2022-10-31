@@ -32,28 +32,47 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
                      user_agent=USER_AGENT)
 
 
-def update_record():
-    """Grabs team's record and standing from nba.com."""
+def get_standings():
+    raw_standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
+    headers = raw_standings['resultSets'][0]['headers']
+    standings = {'West': {}, 'East': {}}
 
-    team_focus_id = teams.find_teams_by_nickname(TEAM)[0]['id']
-    standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
-
-    for i, h in enumerate(standings['resultSets'][0]['headers']):
-        if h == 'Record':
-            rec_idx = i
-        elif h == 'TeamID':
-            id_idx = i
+    for i, h in enumerate(headers):
+        if h == 'Conference':
+            conf_idx = i
         elif h == 'PlayoffRank':
             rank_idx = i
-        elif h == 'Conference':
-            conf_idx = i
 
-    # iterate over results for record of both teams
-    for team in standings['resultSets'][0]['rowSet']:
-        if team[id_idx] == team_focus_id:
-            tf_rec = team[rec_idx]
-            tf_rank = team[rank_idx]
-            tf_conf = team[conf_idx]
+    for stats in raw_standings['resultSets'][0]['rowSet']:
+        conf = stats[conf_idx]
+        rank = stats[rank_idx]
+        standings[conf][rank] = {}
+
+        for i, stat in enumerate(stats):
+            standings[conf][rank][headers[i]] = stat
+
+    return standings
+
+
+def get_team_conf_and_rank(standings, tf_id=None):
+
+    if not tf_id:
+        tf_id = teams.find_teams_by_nickname(TEAM)[0]['id']
+
+    for conf in standings.keys():
+        for rank, team in standings[conf].items():
+            if team['TeamID'] == tf_id:
+                tf_rank = rank
+                tf_conf = conf
+                break
+
+    return tf_conf, tf_rank
+
+
+def update_record(standings):
+
+    tf_conf, tf_rank = get_team_conf_and_rank(standings)
+    tf_rec = standings[tf_conf][tf_rank]['Record']
 
     return f"Record: {tf_rec} | #{tf_rank} in the {tf_conf}"
 
@@ -84,39 +103,44 @@ def update_tripdub():
     return f"Nikola Jokić TD-to-Dunk Ratio: {trip_dub}:{dunks}"
 
 
-# TODO: Fix for 2022-23
-def update_playoff(conf_data, team_seed):
+# TODO: Validate for 2022-23
+def update_playoff(standings):
     """Calculates magic numbers for playoffs, play-ins and current seed."""
 
-    tf_wins = int(conf_data[team_seed]['win'])
-    seventh_losses = int(conf_data[6]['loss'])
-    eleventh_losses = int(conf_data[10]['loss'])
-    po_code_1 = conf_data[team_seed]['clinchedPlayoffsCode']    # 'P' for playoffs? 'C' for conf champs?
+    tf_conf, tf_rank = get_team_conf_and_rank(standings)
+    tf_wins = standings[tf_conf][tf_rank]['WINS']
+    tf_losses = standings[tf_conf][tf_rank]['LOSSES']
+    tf_po_code = standings[tf_conf][tf_rank]['ClinchIndicator'] # TODO: Check these when they become active
+
+    # Get data for 7th and 11th seed in same conference
+    seventh_losses = standings[tf_conf][7]['LOSSES']
+    eleventh_losses = standings[tf_conf][11]['LOSSES']
+
     play_in_magic_num = 83 - tf_wins - eleventh_losses
     playoff_magic_num = 83 - tf_wins - seventh_losses
 
-    def generate_subs(p_type, t_seed):
+    def generate_subs(p_type):
         p_sub = f'{p_type} **CLINCHED!**'
         s_sub = ''
 
-        for seed in range(5 if p_type == 'Playoffs' else 10, t_seed, -1):
-            seed_losses = int(conf_data[seed]['loss'])
+        for seed in range(5 if p_type == 'Playoffs' else 10, tf_rank, -1):
+            seed_losses = standings[tf_conf][seed]['LOSSES']
             seed_magic_num = 83 - tf_wins - seed_losses
             s_sub = f'#{seed} Seed Magic #: {seed_magic_num}'
             if seed_magic_num > 0:
                 break
             else:
-                s_sub = f'#{team_seed + 1} Seed: CLINCHED!'
+                s_sub = f'#{tf_rank + 1} Seed: CLINCHED!'
 
         return p_sub, s_sub
 
     p2_sub = ''
     p3_sub = ''
 
-    if po_code_1 in ['P', 'C'] or playoff_magic_num < 0:
-        p1_sub, p2_sub = generate_subs('Playoffs', team_seed)
+    if tf_po_code in ['P', 'C'] or playoff_magic_num < 0:
+        p1_sub, p2_sub = generate_subs('Playoffs')
     elif play_in_magic_num < 0:
-        p1_sub, p3_sub = generate_subs('Play-ins', team_seed)
+        p1_sub, p3_sub = generate_subs('Play-ins', tf_rank)
         p2_sub = f'Playoff Magic #: {playoff_magic_num}'
     else:
         p1_sub = f'Play-in Magic #: {play_in_magic_num}'
@@ -159,6 +183,8 @@ def update_sidebar():
 
     print(f"{os.path.basename(__file__)}: Updating sidebar @ {datetime.now().strftime('%H:%M')}")
 
+    standings = get_standings()
+
     # Old Reddit
     old_reddit_sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
 
@@ -169,15 +195,14 @@ def update_sidebar():
     p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
     p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
 
-    record_sub = update_record()
+    record_sub = update_record(standings)
     old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
 
-    # TODO: Fix for 2022-23
-    # if PLAYOFF_WATCH:
-    #     p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
-    #     old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
-    #     old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
-    #     old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
+    if PLAYOFF_WATCH:
+        p1_sub, p2_sub, p3_sub = update_playoff(standings)
+        old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
+        old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
+        old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
 
     # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
     old_reddit_sidebar = munder_regex.sub(update_munder(), old_reddit_sidebar)
@@ -198,12 +223,11 @@ def update_sidebar():
 
     new_text = record_regex.sub(record_sub, new_text)
 
-    # TODO: Fix for 2022-23
-    # if PLAYOFF_WATCH:
-    #     p1_sub, p2_sub, p3_sub = update_playoff(conf_data, team_seed)
-    #     new_text = p1_regex.sub(p1_sub, new_text)
-    #     new_text = p2_regex.sub(p2_sub, new_text)
-    #     new_text = p3_regex.sub(p3_sub, new_text)
+    if PLAYOFF_WATCH:
+        p1_sub, p2_sub, p3_sub = update_playoff(standings)
+        new_text = p1_regex.sub(p1_sub, new_text)
+        new_text = p2_regex.sub(p2_sub, new_text)
+        new_text = p3_regex.sub(p3_sub, new_text)
 
     # new_text = tripdub_regex.sub(update_tripdub(), new_text)
     new_text = munder_regex.sub(update_munder(), new_text)
