@@ -109,7 +109,6 @@ def update_playoff(standings):
 
     tf_conf, tf_rank = get_team_conf_and_rank(standings)
     tf_wins = standings[tf_conf][tf_rank]['WINS']
-    tf_losses = standings[tf_conf][tf_rank]['LOSSES']
     tf_po_code = standings[tf_conf][tf_rank]['ClinchIndicator'] # TODO: Check these when they become active
 
     # Get data for 7th and 11th seed in same conference
