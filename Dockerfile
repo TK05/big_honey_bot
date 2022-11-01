@@ -1,6 +1,6 @@
 FROM python:3.10-slim
+ADD . /app
 WORKDIR /app
-COPY . /app/
 RUN pip install -r requirements.txt
 ENV PYTHONPATH /app
-CMD ["python", "/app/bots/manage_events_bot.py"]
+CMD ["python", "-u", "/app/bots/manage_events_bot.py"]
