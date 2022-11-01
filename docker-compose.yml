@@ -1,0 +1,12 @@
+version: '3'
+services:
+  big-honey-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - UPDATE_SIDEBAR=True
+      - THREAD_STATS=True
+      - IN_PLAYOFFS=False
+      - PLAYOFF_WATCH=False
