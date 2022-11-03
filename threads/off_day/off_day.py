@@ -11,10 +11,82 @@ from config import setup
 from tools.toolkit import description_tags
 from data.static.data import lookup_by_loc
 from threads.off_day.static_events import events as se
+from threads.game.lineup_injury_odds import line_inj_odds
 
 
 IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
-platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
+IS_OFFSEASON = bool(strtobool(os.getenv('IS_OFFSEASON', "False")))
+platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else "%-I:%M"
+platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
+
+
+def get_nba_games():
+    all_games = requests.get(setup['nba_url']).json()
+
+    def get_game_data(game, for_team=''):
+        game_data = []
+        time_utc = datetime.strptime(game['gameDateTimeUTC'], '%Y-%m-%dT%H:%M:%SZ')
+        time_local_dt = time_utc.replace(tzinfo=pytz.utc).astimezone(pytz.timezone(setup['timezone']))
+        date_local = time_local_dt.strftime(platform_mo_day_fmt)
+        time_local = f"{datetime.strftime(time_local_dt, format(f'{platform_hr_min_fmt} %p %Z'))}"
+        time_link = f"https://dateful.com/time-zone-converter?t=" \
+                    f"{datetime.strftime(time_local_dt, format(f'{platform_hr_min_fmt} %p'))}" \
+                    f"&tz={setup['location']}&"
+        game_data.append(f"{date_local} - [{time_local}]({time_link})" if for_team else f"[{time_local}]({time_link})")
+        game_data.append(f"{game['awayTeam']['teamName']} @ {game['homeTeam']['teamName']}")
+        nat_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['nationalTvBroadcasters']]
+
+        if for_team:
+
+            home_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['homeTvBroadcasters']]
+            away_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['awayTvBroadcasters']]
+            tv_ordered = [nat_tv, home_tv] if for_team == 'home' else [nat_tv, away_tv]
+            game_data.append(", ".join([i for s in tv_ordered for i in s]))
+        else:
+            odds = line_inj_odds(game['homeTeam']['teamName'])[-1]
+            game_data.append(" ".join(odds) if "N/A" not in odds else "")
+            game_data.append(", ".join(nat_tv))
+
+        return game_data
+
+    def get_teams_next_games(start, n=5):
+        games = []
+
+        for date in all_games['leagueSchedule']['gameDates'][start:]:
+            for game in date['games']:
+                if setup['team'] in [game['awayTeam']['teamName'], game['homeTeam']['teamName']]:
+                    loc = 'home' if setup['team'] == game['homeTeam']['teamName'] else 'away'
+                    games.append(get_game_data(game, for_team=loc))
+                    n -= 1
+            if n == 0:
+                break
+
+        return games
+
+    def get_days_games():
+        games = []
+
+        for i, date in enumerate(all_games['leagueSchedule']['gameDates']):
+            day = datetime.strptime(date['gameDate'], '%m/%d/%Y %I:%M:%S %p').date()
+
+            if datetime.now().date() == day:
+                for game in date['games']:
+                    games.append(get_game_data(game))
+
+                return i + 1, games
+
+    idx, todays_games_list = get_days_games()
+    team_next_games_list = get_teams_next_games(idx)
+    todays_games = []
+    team_games = []
+
+    for g in todays_games_list:
+        todays_games.append(f'|{"|".join(g)}|')
+
+    for g in team_next_games_list:
+        team_games.append(f'|{"|".join(g)}|')
+
+    return todays_games, team_games
 
 
 def get_espn_games():
@@ -39,10 +111,7 @@ def get_espn_games():
             datetime.strptime(f"{date_str} {time_str}", '%A, %B %d, %Y %I:%M %p'))
         time_tz = time.astimezone(pytz.timezone(setup['timezone']))
 
-        try:
-            date_local = f"{datetime.strftime(time_tz, format('%-m/%-d'))}"
-        except ValueError:
-            date_local = f"{datetime.strftime(time_tz, format('%#m/%#d'))}"
+        date_local = f"{datetime.strftime(time_tz, format(platform_mo_day_fmt))}"
 
         time_local = f"{datetime.strftime(time_tz, format(f'{platform_hr_min_fmt} %p %Z'))}"
         time_link = f"https://dateful.com/time-zone-converter?t=" \
@@ -116,7 +185,7 @@ def generate_thread_body(event=None, include_static=False):
                 body += f"{game}"
 
     # build second table of static events if include_static
-    if include_static:
+    if not IS_OFFSEASON and include_static:
         body += f"\n&nbsp;\n\n" \
                 f"|Upcoming Events|||\n" \
                 f"|:--|:--|:--|\n"
@@ -144,6 +213,19 @@ def generate_thread_body(event=None, include_static=False):
             body = f"{top}" \
                    f"\n&nbsp;\n\n" \
                    f"{body}"
+    else:
+        todays_games, team_games = get_nba_games()
+        body += f"|{setup['team']} Next {len(team_games)}|||\n" \
+                f"|:--|:--|:--|\n"
+        for game in team_games:
+            body += f"{game}\n"
+
+        body += f"\n&nbsp;\n\n"
+
+        body += f"|Today's Games||||\n" \
+                f"|:--|:--|:--|:--|\n"
+        for game in todays_games:
+            body += f"{game}\n"
 
     if not event:
         print(body)
@@ -160,7 +242,7 @@ def off_day_thread_handler(event):
     :rtype: NoneType
     """
 
-    generate_thread_body(event, include_static=True)
+    generate_thread_body(event, include_static=False)
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
     new_thread(event)
@@ -168,3 +250,27 @@ def off_day_thread_handler(event):
 
 if __name__ == "__main__":
     generate_thread_body()
+
+"""
+Four states of off day types
+    Off day during season
+            IN_OFFSEASON=False
+            IN_PLAYOFFS=False
+        Get that days games (nba_url)
+        Get Nuggets next game
+        Get Nuggets streak stats (from leaguestandings)
+    Off day during playoffs, still in
+            IN_OFFSEASON=False
+            IN_PLAYOFFS=True
+        Get that days playoff games
+        Get stats for current Nuggets series
+    Off day during, not in
+            IN_OFFSEASON=True
+            IN_PLAYOFFS=True
+        Get that days playoff games
+    Off day during off season
+            IN_OFFSEASON=True
+            IN_PLAYOFFS=False
+        Get static events
+
+"""
