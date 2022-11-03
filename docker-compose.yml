@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  big-honey-bot:
+    container_name: big-honey-bot
+    build:
+      context: .
+    deploy:
+      restart_policy:
+        condition: on-failure
+    env_file:
+      - ./.env
+    environment:
+      - UPDATE_SIDEBAR=True
+      - THREAD_STATS=True
+      - IN_PLAYOFFS=False
+      - PLAYOFF_WATCH=False
