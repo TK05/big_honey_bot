@@ -65,15 +65,23 @@ def get_nba_games():
 
     def get_days_games():
         games = []
+        today = datetime.now().date()
+        i = 0
 
-        for i, date in enumerate(all_games['leagueSchedule']['gameDates']):
+        for date in all_games['leagueSchedule']['gameDates']:
             day = datetime.strptime(date['gameDate'], '%m/%d/%Y %I:%M:%S %p').date()
 
-            if datetime.now().date() == day:
+            if today == day:
                 for game in date['games']:
                     games.append(get_game_data(game))
+                break
+            # handle days w/ no games (not in league schedule)
+            elif day > today:
+                break
+            else:
+                i += 1
 
-                return i + 1, games
+        return i + 1, games
 
     idx, todays_games_list = get_days_games()
     team_next_games_list = get_teams_next_games(idx)
@@ -215,17 +223,19 @@ def generate_thread_body(event=None, include_static=False):
                    f"{body}"
     else:
         todays_games, team_games = get_nba_games()
-        body += f"|{setup['team']} Next {len(team_games)}|||\n" \
-                f"|:--|:--|:--|\n"
-        for game in team_games:
-            body += f"{game}\n"
 
-        body += f"\n&nbsp;\n\n"
+        if team_games:
+            body += f"|{setup['team']} Next {len(team_games)}|||\n" \
+                    f"|:--|:--|:--|\n"
+            for game in team_games:
+                body += f"{game}\n"
 
-        body += f"|Today's Games||||\n" \
-                f"|:--|:--|:--|:--|\n"
-        for game in todays_games:
-            body += f"{game}\n"
+        if todays_games:
+            body += f"\n&nbsp;\n\n"
+            body += f"|Today's Games||||\n" \
+                    f"|:--|:--|:--|:--|\n"
+            for game in todays_games:
+                body += f"{game}\n"
 
     if not event:
         print(body)
