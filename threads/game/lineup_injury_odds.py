@@ -49,7 +49,8 @@ def line_inj_odds(team_name):
         for injury in range(8, len(lineup_len) + 1):
             name = lineups.xpath(f'./li[{injury}]/a[1]/text()').get()
             des = lineups.xpath(f'./li[{injury}]/span[1]/text()').get()
-            team_injuries[side].append((name, des))
+            if name and des:
+                team_injuries[side].append((name, des))
 
     ml = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[1]/span[1]/text()').get()
     spread = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[2]/span[1]/text()').get()
