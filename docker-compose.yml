@@ -14,3 +14,4 @@ services:
       - THREAD_STATS=True
       - IN_PLAYOFFS=False
       - PLAYOFF_WATCH=False
+      - IS_OFFSEASON=False
