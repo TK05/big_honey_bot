@@ -7,6 +7,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    labels:
+      - "com.centurylinklabs.watchtower.monitor-only=true"
     env_file:
       - ./.env
     environment:
