@@ -69,7 +69,7 @@ def get_nba_games():
         i = 0
 
         for date in all_games['leagueSchedule']['gameDates']:
-            day = datetime.strptime(date['gameDate'], '%m/%d/%Y %I:%M:%S %p').date()
+            day = datetime.strptime(date['gameDate'], '%m/%d/%Y %H:%M:%S').date()
 
             if today == day:
                 for game in date['games']:
