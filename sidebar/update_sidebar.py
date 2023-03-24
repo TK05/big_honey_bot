@@ -125,11 +125,11 @@ def update_playoff(standings):
         for seed in range(5 if p_type == 'Playoffs' else 10, tf_rank, -1):
             seed_losses = standings[tf_conf][seed]['LOSSES']
             seed_magic_num = 83 - tf_wins - seed_losses
-            s_sub = f'#{seed} Seed Magic #: {seed_magic_num}'
+            s_sub = f'#{seed - 1} Seed Magic #: {seed_magic_num}'
             if seed_magic_num > 0:
                 break
             else:
-                s_sub = f'#{tf_rank + 1} Seed: CLINCHED!'
+                s_sub = f'#{tf_rank} Seed: CLINCHED!'
 
         return p_sub, s_sub
 
