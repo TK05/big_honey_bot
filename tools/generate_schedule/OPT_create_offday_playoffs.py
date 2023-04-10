@@ -11,7 +11,8 @@ from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
 TIMEZONE = setup['timezone']
-INCLUDE_OFFDAYS = True
+IN_SEASON_OFFDAYS = False
+IN_PLAYOFFS = True
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 platform_day_fmt = "%#d" if platform.system() == 'Windows' else '%-d'
 
@@ -141,14 +142,28 @@ def create_in_season_schedule(curr_sch):
 
 
 if __name__ == '__main__':
-    if INCLUDE_OFFDAYS:
+    if IN_SEASON_OFFDAYS:
         with open('../json_output/all_events.json', 'r') as f:
             raw_schedule = json.load(f)
         schedule = create_in_season_schedule(raw_schedule)
         update_calendar(schedule)
+    elif IN_PLAYOFFS:
+        start_date = date(2023, 4, 15)
+        end_date = date(2023, 6, 18)
+
+        schedule = create_schedule(start_date, end_date)
+        update_calendar(schedule)
+
+        try:
+            os.mkdir('../json_output')
+        except FileExistsError:
+            pass
+
+        with open('../json_output/off_day_events.json', 'w') as f:
+            json.dump(dict(sorted(schedule.items())), f, indent=4)
     else:
-        start_date = date(2022, 6, 17)
-        end_date = date(2022, 10, 19)
+        start_date = date(2023, 4, 9)
+        end_date = date(2023, 6, 18)
 
         schedule = create_schedule(start_date, end_date, playoffs=False, count_down=True)
         update_calendar(schedule)
