@@ -39,8 +39,7 @@ def make_post(event, po_data):
         print(f"{os.path.basename(__file__)}: Event updated after init post: {event.id} - {event.summary}")
 
     elif event.meta['event_type'] == 'post':
-        # TODO: Refactor this logic. Why return win? Handle for playoffs
-        win = post_game_thread_handler(event, playoff_data_arr)
+        post_game_thread_handler(event, po_data)
 
         # Generate thread stats after post game thread is posted
         if THREAD_STATS:
@@ -149,7 +148,7 @@ while bot_running:
         bot_running = False
         break
 
-    # If in playoffs, update playoff series before posting
+    # Update playoff series before posting
     playoff_data = get_playoff_data()
 
     if active_post:

@@ -74,11 +74,12 @@ def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
     return headline
 
 
-def format_post(event, playoff_data=None):
+def format_post(event, playoff_data):
     """Create body of post-game thread as markdown text."""
 
     bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
 
+    # TODO: Make this work and accept custom win/loss titles
     # Check for custom win/lose title from event
     custom_title = str()
     outcome_key = 'win' if win else 'lose'
@@ -106,8 +107,6 @@ def format_post(event, playoff_data=None):
 
     event.body = f"{top_links}\n\n&nbsp;\n\n{bs_tables}"
 
-    return win
-
 
 def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
     """Wait for game completion and, upon completion, create headline and body reflecting game result.
@@ -119,10 +118,7 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
     was_final = status_check(event.meta["nba_id"], only_final)
     print(f"{os.path.basename(__file__)}: Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
-    if playoff_data[0]:
-        win = format_post(event, playoff_data=playoff_data)
-    else:
-        win = format_post(event)
+    format_post(event)
 
     if was_final:
         # Game final after initial post
@@ -141,5 +137,3 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
         event.meta['event_type'] = 'active'
         update_event(event)
         post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
-
-    return win
