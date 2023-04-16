@@ -12,7 +12,9 @@ description_tags = {
     "injuries": "{injuries}",
     "odds": "{odds}",
     "referees": "{referees}",
-    "daily_games": "{daily_games}"
+    "daily_games": "{daily_games}",
+    "playoff_series": "{playoff_series}",
+    "playoff_teams": "{playoff_teams}"
 }
 
 
