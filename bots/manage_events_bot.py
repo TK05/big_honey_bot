@@ -23,7 +23,7 @@ IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
 TIMEZONE = pytz.timezone(setup['timezone'])
 
 
-def make_post(event, playoff_data_arr):
+def make_post(event, po_data):
 
     if not hash_match(event.summary, event.meta['title_hash']):
         print(f"{os.path.basename(__file__)}: Custom title detected: {event.summary}")
@@ -31,7 +31,7 @@ def make_post(event, playoff_data_arr):
         print(f"{os.path.basename(__file__)}: Custom body detected, updated @ {event.updated.strftime('%b %d, %H:%M')}")
 
     if event.meta['event_type'] in ['pre', 'game']:
-        game_thread_handler(event, playoff_data_arr)
+        game_thread_handler(event, po_data)
 
         # Update event object
         event.meta['event_type'] = 'active'
@@ -92,8 +92,12 @@ def end_active_post(post):
     return None
 
 
-def update_playoff_data():
-    pass
+def get_playoff_data():
+    if IN_PLAYOFFS:
+        playoff_round, playoff_game_num, playoff_record = get_series_status()
+        return [playoff_round, playoff_game_num, playoff_record]
+    else:
+        return None
 
 
 def check_if_last_event_still_active(po_data):
@@ -122,12 +126,8 @@ def check_if_last_event_still_active(po_data):
         return None
 
 
-# TODO: if in playoffs, update calendar event w/ series status from here
 # Update playoff data at each restart
-if IN_PLAYOFFS:
-    playoff_round, playoff_game_num, playoff_record = get_series_status()
-else:
-    playoff_round = playoff_game_num = playoff_record = None
+playoff_data = get_playoff_data()
 
 # Update sidebar at each restart
 update_sidebar()
@@ -150,10 +150,7 @@ while bot_running:
         break
 
     # If in playoffs, update playoff series before posting
-    if IN_PLAYOFFS:
-        playoff_data = [IN_PLAYOFFS, playoff_game_num, playoff_record, playoff_round]
-    else:
-        playoff_data = [IN_PLAYOFFS]
+    playoff_data = get_playoff_data()
 
     if active_post:
         # Set prev_post_id on next_event
