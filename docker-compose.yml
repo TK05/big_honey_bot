@@ -12,7 +12,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - UPDATE_SIDEBAR=True
+      - UPDATE_SIDEBAR=False
       - THREAD_STATS=True
       - IN_PLAYOFFS=False
       - PLAYOFF_WATCH=False
