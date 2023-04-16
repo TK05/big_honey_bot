@@ -2,16 +2,21 @@ import requests
 
 from config import setup
 
+
 TEAM = setup['team']
 SEASON = setup['season']
 
-# TODO: This URL could be invalid in the future.
-url = f'https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/{SEASON}/scores/00_playoff_bracket.json'
+nba_api_playoff_url = f'https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/{SEASON}/scores/00_playoff_bracket.json'
 
 
 def get_series_status():
+    """
+    Gets playoff series status given TEAM configured
+    :returns: (current round (int), game number (int), series record [list])
+    :rtype: tuple
+    """
 
-    response = requests.get(url).json()
+    response = requests.get(nba_api_playoff_url).json()
 
     for each_round in response['pb']['r']:
         current_round = each_round['id']
