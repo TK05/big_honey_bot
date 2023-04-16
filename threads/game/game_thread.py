@@ -18,6 +18,17 @@ TEAM = setup['team']
 LOCATION = setup['location']
 
 
+def format_date_and_time(game_start):
+    try:
+        date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
+        time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%-I:%M %p')
+    except ValueError:
+        date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
+        time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%#I:%M %p')
+
+    return date, time
+
+
 def generate_title(event):
     """Generates thread title based on event and team data. Generates and formats team records, date and time
     to replace placeholder tags from event title.
@@ -27,16 +38,6 @@ def generate_title(event):
     :returns: Nothing, modifies event in place
     :rtype: None
     """
-
-    def format_date_and_time(game_start):
-        try:
-            date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
-            time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%-I:%M %p')
-        except ValueError:
-            date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
-            time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%#I:%M %p')
-
-        return date, time
 
     team_focus_id = teams.find_teams_by_nickname(TEAM)[0]['id']
     opp_team_id = teams.find_teams_by_nickname(event.meta['opponent'])[0]['id']
@@ -64,8 +65,17 @@ def generate_title(event):
     event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
 
 
-def playoff_headline(event_data, playoff_data):
-    """Generate a thread title for playoff game threads."""
+def playoff_headline(event, playoff_data):
+    """Generates a playoff thread title based on event and team data. Generates and formats team records, date and time
+    to replace placeholder tags from event title.
+
+    :param event: Event to generate thread title for
+    :type event: gcsa.event.Event
+    :param playoff_data: List of playoff data
+    :type event: tuple
+    :returns: Nothing, modifies event in place
+    :rtype: None
+    """
 
     def home_away_fix(home_away):
         if home_away == 'home':
@@ -74,25 +84,22 @@ def playoff_headline(event_data, playoff_data):
             return '@'
 
     team_wins, opp_wins = playoff_data[2]
+    series_str = f"R{playoff_data[0]}G{playoff_data[1]}"
+    teams_str = f"{TEAM} {home_away_fix(event.meta['home_away'])} {event.meta['opponent']}"
 
-    if event_data['Type'] == 'pre':
-        headline = "GAME DAY THREAD: "
-    else:
-        headline = "GAME THREAD: "
+    if playoff_data[1] != 1:
+        if team_wins > opp_wins:
+            teams_str += f" | {TEAM} Lead {team_wins}-{opp_wins}"
+        elif team_wins < opp_wins:
+            teams_str += f" | {TEAM} Trail {team_wins}-{opp_wins}"
+        else:
+            teams_str += f" | Series Tied {team_wins}-{opp_wins}"
 
-    headline += f"ROUND {playoff_data[3]}, GAME {playoff_data[1]} - " \
-                f"{TEAM} {home_away_fix(event_data['home_away'])} {event_data['Opponent']}"
+    date_str, time_str = format_date_and_time(event.meta['game_start'])
 
-    if team_wins > opp_wins:
-        headline += f" | {TEAM} Lead {team_wins}-{opp_wins}"
-    elif team_wins < opp_wins:
-        headline += f" | {TEAM} Trail {team_wins}-{opp_wins}"
-    else:
-        headline += f" | Series Tied {team_wins}-{opp_wins}"
-
-    headline += f" | {event_data['Date_Str']} - {event_data['Time']}"
-
-    return headline
+    event.summary = event.summary.replace(description_tags['playoff_series'], series_str)
+    event.summary = event.summary.replace(description_tags['playoff_teams'], teams_str)
+    event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
 
 
 def generate_game_body(event):
@@ -165,14 +172,13 @@ def game_thread_handler(event, playoff_data):
 
     :param event: Event to generate thread for
     :type event: gcsa.event.Event
-    :param playoff_data: TODO
-    :type playoff_data: TODO
+    :param playoff_data: List of playoff data if in playoffs;
+    :type playoff_data: list or NoneType
     :returns: None
     :rtype: NoneType
     """
 
-    if playoff_data[0]:
-        # TODO: Update for playoffs
+    if playoff_data:
         playoff_headline(event, playoff_data)
     else:
         generate_title(event)
