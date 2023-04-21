@@ -190,7 +190,7 @@ def generate_thread_body(event=None, include_static=False):
 
         if todays_games:
             body += f"\n&nbsp;\n\n"
-            body += f"|Today's PLayoff Games||||\n" \
+            body += f"|Today's Playoff Games||||\n" \
                     f"|:--|:--|:--|:--|:--|:--|\n"
             for game in todays_games:
                 body += f"{game}\n"
