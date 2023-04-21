@@ -41,7 +41,7 @@ def post_game_headline(opp_team, game_start, result, margin, final_score):
             return f"POST GAME THREAD: {template.format(TEAM, opp_team, final_score, date_str)}"
 
 
-def playoff_headline(opp_team, date, win, margin, final_score, playoff_data):
+def playoff_headline(opp_team, date, win, final_score, playoff_data):
     """Generate a post game thread title based on game result for playoff game."""
 
     team_wins, opp_wins = playoff_data[2]
@@ -99,7 +99,7 @@ def format_post(event, playoff_data):
         custom_title = custom_title.replace('***date***', format_date_and_time(event.meta['game_start']))
         event.summary = custom_title
     elif playoff_data:
-        event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, margin, final_score, playoff_data)
+        event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, final_score, playoff_data)
     else:
         event.summary = post_game_headline(event.meta['opponent'], event.meta['game_start'], str(win), margin, final_score)
 
@@ -118,7 +118,7 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
     was_final = status_check(event.meta["nba_id"], only_final)
     print(f"{os.path.basename(__file__)}: Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
-    format_post(event)
+    format_post(event, playoff_data)
 
     if was_final:
         # Game final after initial post
