@@ -41,9 +41,10 @@ def post_game_headline(opp_team, game_start, result, margin, final_score):
             return f"POST GAME THREAD: {template.format(TEAM, opp_team, final_score, date_str)}"
 
 
-def playoff_headline(opp_team, date, win, final_score, playoff_data):
+def playoff_headline(opp_team, game_start, win, final_score, playoff_data):
     """Generate a post game thread title based on game result for playoff game."""
 
+    date_str = format_date_and_time(game_start)
     team_wins, opp_wins = playoff_data[2]
 
     if win:
@@ -53,11 +54,11 @@ def playoff_headline(opp_team, date, win, final_score, playoff_data):
 
     if team_wins >= 4:
         headline = po_headlines['clinch']
-        return headline.format(final_score, TEAM.upper(), opp_team.upper(), team_wins, opp_wins, date)
+        return headline.format(final_score, TEAM.upper(), opp_team.upper(), team_wins, opp_wins, date_str)
 
     if opp_wins >= 4:
         headline = po_headlines['over']
-        return headline.format(final_score, TEAM, playoff_data[1], opp_team, date)
+        return headline.format(final_score, TEAM, playoff_data[1], opp_team, date_str)
 
     if win:
         headline = po_headlines['win'].format(TEAM.upper(), playoff_data[1], ('!' * int(team_wins)), final_score)
@@ -65,11 +66,11 @@ def playoff_headline(opp_team, date, win, final_score, playoff_data):
         headline = po_headlines['lose'].format(TEAM.upper(), playoff_data[1], final_score)
 
     if team_wins > opp_wins:
-        headline += po_headlines['leading'].format(opp_team, team_wins, opp_wins, date)
+        headline += po_headlines['leading'].format(opp_team, team_wins, opp_wins, date_str)
     elif team_wins < opp_wins:
-        headline += po_headlines['trailing'].format(opp_team, team_wins, opp_wins, date)
+        headline += po_headlines['trailing'].format(opp_team, team_wins, opp_wins, date_str)
     else:
-        headline += po_headlines['tied'].format(opp_team, team_wins, opp_wins, date)
+        headline += po_headlines['tied'].format(opp_team, team_wins, opp_wins, date_str)
 
     return headline
 
