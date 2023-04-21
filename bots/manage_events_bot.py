@@ -94,6 +94,7 @@ def end_active_post(post):
 def get_playoff_data():
     if IN_PLAYOFFS:
         playoff_round, playoff_game_num, playoff_record = get_series_status()
+        print(f"{os.path.basename(__file__)}: IN_PLAYOFFS: {playoff_round, playoff_game_num, playoff_record}")
         return [playoff_round, playoff_game_num, playoff_record]
     else:
         return None
