@@ -20,7 +20,7 @@ platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else "%-I:%M"
 platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
 
 
-def get_nba_games():
+def get_nba_games(playoffs=False):
     all_games = requests.get(setup['nba_url']).json()
 
     def get_game_data(game, for_team=''):
@@ -37,12 +37,16 @@ def get_nba_games():
         nat_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['nationalTvBroadcasters']]
 
         if for_team:
-
+            if playoffs:
+                game_data.insert(0, game['seriesGameNumber'])
             home_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['homeTvBroadcasters']]
             away_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['awayTvBroadcasters']]
             tv_ordered = [nat_tv, home_tv] if for_team == 'home' else [nat_tv, away_tv]
             game_data.append(", ".join([i for s in tv_ordered for i in s]))
         else:
+            if playoffs:
+                game_data.insert(0, game['seriesGameNumber'])
+                game_data.append(game['seriesText'])
             odds = line_inj_odds(game['homeTeam']['teamName'])[-1]
             game_data.append(" ".join(odds) if "N/A" not in odds else "")
             game_data.append(", ".join(nat_tv))
@@ -176,21 +180,20 @@ def generate_thread_body(event=None, include_static=False):
 
     # build body based on today and upcoming games
     if IN_PLAYOFFS:
-        upcoming_games, games_today = get_espn_games()
+        todays_games, team_games = get_nba_games(playoffs=True)
 
-        if games_today:
-            body += f"|Today's Games|||||\n" \
-                   f"|:--|:--|:--|:--|:--|\n"
-            for game in games_today:
-                body += f"{game}"
-            body += "\n&nbsp;\n\n"
-        else:
-            body += "No games scheduled today\n\n&nbsp;\n\n"
-        if upcoming_games:
-            body += f"|Upcoming Games|||||\n" \
-                   f"|:--|:--|:--|:--|:--|\n"
-            for game in upcoming_games:
-                body += f"{game}"
+        if team_games:
+            body += f"|Upcoming {setup['team']} Playoff Games|||\n" \
+                    f"|:--|:--|:--|:--|\n"
+            for game in team_games:
+                body += f"{game}\n"
+
+        if todays_games:
+            body += f"\n&nbsp;\n\n"
+            body += f"|Today's PLayoff Games||||\n" \
+                    f"|:--|:--|:--|:--|:--|:--|\n"
+            for game in todays_games:
+                body += f"{game}\n"
 
     # build second table of static events if include_static
     if not IS_OFFSEASON and include_static:
