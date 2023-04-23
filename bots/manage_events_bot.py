@@ -88,13 +88,10 @@ def end_active_post(post):
     update_event(post)
     print(f"{os.path.basename(__file__)}: Event updated, active post set to done: {post.id} - {post.summary}")
 
-    return None
-
 
 def get_playoff_data():
     if IN_PLAYOFFS:
         playoff_round, playoff_game_num, playoff_record = get_series_status()
-        print(f"{os.path.basename(__file__)}: IN_PLAYOFFS: {playoff_round, playoff_game_num, playoff_record}")
         return [playoff_round, playoff_game_num, playoff_record]
     else:
         return None
@@ -128,6 +125,7 @@ def check_if_last_event_still_active(po_data):
 
 # Update playoff data at each restart
 playoff_data = get_playoff_data()
+print(f"{os.path.basename(__file__)}: IN_PLAYOFFS: {playoff_data}")
 
 # Update sidebar at each restart
 update_sidebar()
@@ -180,7 +178,7 @@ while bot_running:
 
         # next_event will become the active_post, add prev post reference finish the existing active_post
         if active_post:
-            active_post = end_active_post(active_post)
+            end_active_post(active_post)
 
         # Send event to appropriate thread handler
         if next_event.meta['event_type'] in upcoming_event_types:
@@ -195,7 +193,7 @@ while bot_running:
         # End active posts 12 hours after posting
         if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=12)):
             print(f"{os.path.basename(__file__)}: active_post active longer than 12 hours, setting to done")
-            active_post = end_active_post(active_post)
+            end_active_post(active_post)
         else:
             # print(f"{os.path.basename(__file__)}: ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
             active_post = check_active_post(active_post)
