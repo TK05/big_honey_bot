@@ -51,24 +51,28 @@ def get_nba_games(playoffs=False):
             game_data.append(" ".join(odds) if "N/A" not in odds else "")
             game_data.append(", ".join(nat_tv))
 
-        return game_data
+        return time_utc, game_data
 
     def get_teams_next_games(start, n=5):
         games = []
+        sort_order = []
 
         for date in all_games['leagueSchedule']['gameDates'][start:]:
             for game in date['games']:
                 if setup['team'] in [game['awayTeam']['teamName'], game['homeTeam']['teamName']]:
                     loc = 'home' if setup['team'] == game['homeTeam']['teamName'] else 'away'
-                    games.append(get_game_data(game, for_team=loc))
+                    sort_time, game_data = get_game_data(game, for_team=loc)
+                    sort_order.append(sort_time)
+                    games.append(game_data)
                     n -= 1
             if n == 0:
                 break
 
-        return games
+        return [game for _, game in sorted(zip(sort_order, games))]
 
     def get_days_games():
         games = []
+        sort_order = []
         today = datetime.now().date()
         i = 0
 
@@ -77,7 +81,9 @@ def get_nba_games(playoffs=False):
 
             if today == day:
                 for game in date['games']:
-                    games.append(get_game_data(game))
+                    sort_time, game_data = get_game_data(game)
+                    sort_order.append(sort_time)
+                    games.append(game_data)
                 break
             # handle days w/ no games (not in league schedule)
             elif day > today:
@@ -85,7 +91,7 @@ def get_nba_games(playoffs=False):
             else:
                 i += 1
 
-        return i + 1, games
+        return i + 1, [game for _, game in sorted(zip(sort_order, games))]
 
     idx, todays_games_list = get_days_games()
     team_next_games_list = get_teams_next_games(idx)
