@@ -19,7 +19,7 @@ from tools.toolkit import hash_match
 UPDATE_SIDEBAR = bool(strtobool(os.getenv('UPDATE_SIDEBAR', "False")))
 THREAD_STATS = bool(strtobool(os.getenv('THREAD_STATS', "False")))
 IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
-
+# TODO: Determine IN_PLAYOFFS, PLAYOFF_WATCH and IS_OFFSEASON from external sources, remove from config
 TIMEZONE = pytz.timezone(setup['timezone'])
 
 
