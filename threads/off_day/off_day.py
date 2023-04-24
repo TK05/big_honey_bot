@@ -170,81 +170,87 @@ def get_espn_games():
     return body_rows, games_today
 
 
-def generate_thread_body(event=None, include_static=False):
+def generate_thread_body(event=None):
     """Generates off day thread body based on that days games. Replaces placeholder tags with
     this generated data.
 
     :param event: Event to generate thread body for
     :type event: gcsa.event.Event
-    :param include_static: True includes static events from threads.static_events dict
-    :type include_static: bool
     :returns: Nothing, modifies event in place
     :rtype: None
     """
 
-    body = ""
-
-    # build body based on today and upcoming games
-    if IN_PLAYOFFS:
-        todays_games, team_games = get_nba_games(playoffs=True)
-
-        if team_games:
-            body += f"|Upcoming {setup['team']} Playoff Games|||\n" \
-                    f"|:--|:--|:--|:--|\n"
-            for game in team_games:
-                body += f"{game}\n"
-
-        if todays_games:
-            body += f"\n&nbsp;\n\n"
-            body += f"|Today's Playoff Games||||\n" \
-                    f"|:--|:--|:--|:--|:--|:--|\n"
-            for game in todays_games:
-                body += f"{game}\n"
-
-    # build second table of static events if include_static
-    if not IS_OFFSEASON and include_static:
-        body += f"\n&nbsp;\n\n" \
-                f"|Upcoming Events|||\n" \
-                f"|:--|:--|:--|\n"
-
+    def get_static_events():
         def format_links(links):
             return ', '.join(f"[{k}]({v})" for k, v in links.items())
 
+        upcoming_events = []
         events_today = []
         current_doy = int(datetime.strftime(datetime.now(), "%j"))
 
         for i in sorted(se.keys()):
             if se[i]["start_doy"] <= current_doy <= se[i]["end_doy"]:
-                events_today.append(f"|{se[i]['desc']}|{se[i]['date_str']}|{format_links(se[i]['links'])}|\n")
+                events_today.append(f"|{se[i]['desc']}|{se[i]['date_str']}|{format_links(se[i]['links'])}|")
             elif i < current_doy:
                 pass
             else:
-                body += f"|{se[i]['desc']}|{se[i]['date_str']}|{format_links(se[i]['links'])}|\n"
+                upcoming_events.append(f"|{se[i]['desc']}|{se[i]['date_str']}|{format_links(se[i]['links'])}|")
+
+        if upcoming_events:
+            upcoming_events = ["|Upcoming Events|||", "|:--|:--|:--|", upcoming_events]
 
         if events_today:
-            top = f"|Today's Events|||\n" \
-                  f"|:--|:--|:--|\n"
-            for ev in events_today:
-                top += f"{ev}"
+            events_today = ["|Today's Events|||", "|:--|:--|:--|", events_today]
 
-            body = f"{top}" \
-                   f"\n&nbsp;\n\n" \
-                   f"{body}"
-    else:
-        todays_games, team_games = get_nba_games()
+        return events_today, upcoming_events
 
-        if team_games:
-            body += f"|{setup['team']} Next {len(team_games)}|||\n" \
-                    f"|:--|:--|:--|\n"
-            for game in team_games:
-                body += f"{game}\n"
+    body_events = []
+    todays_games, team_games = get_nba_games(playoffs=IN_PLAYOFFS)
 
-        if todays_games:
-            body += f"\n&nbsp;\n\n"
-            body += f"|Today's Games||||\n" \
-                    f"|:--|:--|:--|:--|\n"
-            for game in todays_games:
-                body += f"{game}\n"
+    if team_games:
+        if IN_PLAYOFFS:
+            row_to_add = [f"|Upcoming {setup['team']} Playoff Games|||", "|:--|:--|:--|:--|", []]
+        else:
+            row_to_add = [f"|{setup['team']} Next {len(team_games)}|||", "|:--|:--|:--|", []]
+
+        for game in team_games:
+            row_to_add[-1].append(game)
+
+        body_events.insert(0, row_to_add)
+
+    if todays_games:
+        if IN_PLAYOFFS:
+            row_to_add = ["|Today's Playoff Games||||", "|:--|:--|:--|:--|:--|:--|", []]
+        else:
+            row_to_add = ["|Today's Games||||", "|:--|:--|:--|", []]
+
+        for game in todays_games:
+            row_to_add[-1].append(game)
+
+        body_events.insert(1, row_to_add)
+
+    if IS_OFFSEASON:  # include static events
+        static_top, static_bottom = get_static_events()
+
+        if static_top:
+            body_events.insert(1, static_top)
+
+        if static_bottom:
+            body_events.append(static_bottom)
+
+    body = ""
+
+    if body_events:
+        separator = "\n\n&nbsp;\n\n"
+
+        for table in body_events[:-1]:
+            body += f"{table[0]}\n{table[1]}\n"
+            body += "\n".join(table[2])
+            body += separator
+
+        # avoid adding separator to end of body
+        body += f"{body_events[-1][0]}\n{body_events[-1][1]}\n"
+        body += "\n".join(body_events[-1][2])
 
     if not event:
         print(body)
@@ -261,7 +267,7 @@ def off_day_thread_handler(event):
     :rtype: NoneType
     """
 
-    generate_thread_body(event, include_static=False)
+    generate_thread_body(event)
 
     print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
     new_thread(event)
@@ -269,27 +275,3 @@ def off_day_thread_handler(event):
 
 if __name__ == "__main__":
     generate_thread_body()
-
-"""
-Four states of off day types
-    Off day during season
-            IN_OFFSEASON=False
-            IN_PLAYOFFS=False
-        Get that days games (nba_url)
-        Get Nuggets next game
-        Get Nuggets streak stats (from leaguestandings)
-    Off day during playoffs, still in
-            IN_OFFSEASON=False
-            IN_PLAYOFFS=True
-        Get that days playoff games
-        Get stats for current Nuggets series
-    Off day during, not in
-            IN_OFFSEASON=True
-            IN_PLAYOFFS=True
-        Get that days playoff games
-    Off day during off season
-            IN_OFFSEASON=True
-            IN_PLAYOFFS=False
-        Get static events
-
-"""
