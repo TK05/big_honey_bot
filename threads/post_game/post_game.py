@@ -80,19 +80,13 @@ def format_post(event, playoff_data):
 
     bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
 
-    # TODO: Make this work and accept custom win/loss titles
-    # Check for custom win/lose title from event
-    custom_title = str()
+    # Check for custom win/lose title from event.meta
     outcome_key = 'win' if win else 'lose'
     event_new = get_event(event.id)
-
-    try:
-        custom_title = event_new.meta[outcome_key]
-        print(f"{os.path.basename(__file__)}: Custom post game title detected: {custom_title}")
-    except KeyError:
-        pass
+    custom_title = event_new.meta.get(outcome_key)
 
     if custom_title:
+        print(f"{os.path.basename(__file__)}: Custom post game title detected: {custom_title}")
         custom_title = custom_title.replace('***team***', TEAM)
         custom_title = custom_title.replace('***opponent***', event.meta['opponent'])
         custom_title = custom_title.replace('***margin***', str(margin))

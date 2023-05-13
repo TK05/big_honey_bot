@@ -11,8 +11,20 @@ from threads.static.templates import Game
 from tools.toolkit import create_hash, description_tags
 
 
+IN_PLAYOFFS = True
 TIMEZONE = setup['timezone']
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
+
+
+def create_headline(event_type_str, event_data):
+    home_away = "vs." if event_data['home_away'] == 'home' else '@'
+    if event_type_str == 'POST GAME THREAD':
+        return f"POST GAME THREAD: {setup['team']} {home_away} {event_data['opponent']}"
+    else:
+        if IN_PLAYOFFS:
+            return f"{event_type_str}: {description_tags['playoff_series']} - {description_tags['playoff_teams']} | {description_tags['date_and_time']}"
+        else:
+            return f"{event_type_str}: {setup['team']} {description_tags['our_record']} {home_away} {event_data['opponent']} {description_tags['opp_record']} | {description_tags['date_and_time']}"
 
 
 def create_pre_game_event(schedule):
@@ -42,10 +54,7 @@ def create_pre_game_event(schedule):
         new_schedule[new_utc]['end'] = {}
         new_schedule[new_utc]['end']['dateTime'] = datetime.fromtimestamp((int(new_utc) + 61), tz=pytz.timezone(TIMEZONE)).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['end']['timeZone'] = TIMEZONE
-
-        home_away = "vs." if event_data['home_away'] == 'home' else '@'
-        headline = f"GDT: {setup['team']} {description_tags['our_record']} {home_away} {event_data['opponent']} {description_tags['opp_record']} | {description_tags['date_and_time']}"
-        new_schedule[new_utc]['summary'] = headline
+        new_schedule[new_utc]['summary'] = create_headline('GDT', event_data)
 
         game_time = " ".join(event_data['game_start'].split(" ")[1:])
         new_schedule[new_utc]['description'] = Game.pre_game_body(
@@ -94,12 +103,8 @@ def create_game_event(schedule):
         new_schedule[new_utc]['end'] = {}
         new_schedule[new_utc]['end']['dateTime'] = datetime.fromtimestamp((int(new_utc) + 61), tz=pytz.timezone(TIMEZONE)).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['end']['timeZone'] = TIMEZONE
-
         new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
-
-        home_away = "vs." if event_data['home_away'] == 'home' else '@'
-        headline = f"GAME THREAD: {setup['team']} {description_tags['our_record']} {home_away} {event_data['opponent']} {description_tags['opp_record']} | {description_tags['date_and_time']}"
-        new_schedule[new_utc]['summary'] = headline
+        new_schedule[new_utc]['summary'] = create_headline('GAME THREAD', event_data)
 
         # Format a few times based on popular time zones in the subreddit
         time_fmt = f'{platform_hr_min_fmt} %p %Z'
@@ -155,13 +160,13 @@ def post_game_edit(schedule):
         new_schedule[utc]['end'] = {}
         new_schedule[utc]['end']['dateTime'] = datetime.fromtimestamp((int(utc) + 61), tz=pytz.timezone(TIMEZONE)).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[utc]['end']['timeZone'] = TIMEZONE
-
         new_schedule[utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
-
-        home_away = "vs." if event_data['home_away'] == 'home' else '@'
-        headline = f"POST GAME THREAD: {setup['team']} {home_away} {event_data['opponent']}"
-        new_schedule[utc]['summary'] = headline
+        new_schedule[utc]['summary'] = create_headline('POST GAME THREAD', event_data)
         new_schedule[utc]['description'] = "TBD"
+
+        # Custom post game titles; see threads.post_game.post_game.format_post for details
+        new_schedule[utc]['meta']['win'] = ""
+        new_schedule[utc]['meta']['lose'] = ""
 
         new_schedule[utc]['meta']['title_hash'] = create_hash(new_schedule[utc]['summary'])
         new_schedule[utc]['meta']['body_hash'] = create_hash(new_schedule[utc]['description'])
