@@ -91,7 +91,7 @@ def get_nba_games(playoffs=False):
             else:
                 i += 1
 
-        return i + 1, [game for _, game in sorted(zip(sort_order, games))]
+        return i, [game for _, game in sorted(zip(sort_order, games))]
 
     idx, todays_games_list = get_days_games()
     team_next_games_list = get_teams_next_games(idx)
