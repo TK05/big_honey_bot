@@ -12,7 +12,7 @@ from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 TIMEZONE = setup['timezone']
 IN_SEASON_OFFDAYS = False
-IN_PLAYOFFS = True
+IN_PLAYOFFS = False
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 platform_day_fmt = "%#d" if platform.system() == 'Windows' else '%-d'
 
@@ -59,14 +59,14 @@ def create_schedule(start, end, playoffs=True, count_down=False):
             elif count_down:
                 headline = f"{delta_days} Days Until Tip-Off - Free Talk Friday | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
             else:
-                headline = f"Off-Season Day {delta_days} - Free Talk Friday | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
+                headline = f"Nuggets Reign - Day {delta_days} | Free Talk Friday | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
         else:
             if playoffs:
                 headline = f"Playoffs Day {delta_days} - Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
             elif count_down:
                 headline = f"{delta_days} Days Until Tip-Off - Off-Season Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
             else:
-                headline = f"Off-Season Day {delta_days} - Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
+                headline = f"Nuggets Reign - Day {delta_days} | Discussion Thread | {post_date.strftime(f'%b {platform_day_fmt}, %Y')}"
         new_schedule[post_stamp]['summary'] = headline
         new_schedule[post_stamp]['description'] = f"{description_tags['daily_games']}"
 
@@ -162,10 +162,10 @@ if __name__ == '__main__':
         with open('../json_output/off_day_events.json', 'w') as f:
             json.dump(dict(sorted(schedule.items())), f, indent=4)
     else:
-        start_date = date(2023, 4, 9)
-        end_date = date(2023, 6, 18)
+        start_date = date(2023, 6, 13)
+        end_date = date(2023, 10, 10)
 
-        schedule = create_schedule(start_date, end_date, playoffs=False, count_down=True)
+        schedule = create_schedule(start_date, end_date, playoffs=False, count_down=False)
         update_calendar(schedule)
 
         try:

@@ -1,25 +1,46 @@
 # datetime.strftime(datetime.strptime("July 02, 2022", "%B %d, %Y"), "%j")
 events = {
-    136: {
-        "start_doy": 136,
-        "end_doy": 136,
-        "date_str": "May 16",
-        "desc": "NBA Draft Lottery 2023",
-        "links": {}
+    188: {
+        "start_doy": 188,
+        "end_doy": 198,
+        "date_str": "July 7-17",
+        "desc": "NBA Summer League 2023 (Las Vegas, NV)",
+        "links": {"NBA.com": "https://www.nba.com/summer-league/2023"}
      },
-    163: {
-        "start_doy": 163,
-        "end_doy": 163,
-        "date_str": "June 12",
-        "desc": "NBA Draft Early Entry Entrant Withdrawal Deadline (5 p.m. ET)",
+    190: {
+        "start_doy": 190,
+        "end_doy": 190,
+        "date_str": "July 9",
+        "desc": "Nuggets vs. Hawks - 7:30 PM MT",
+        "links": {"ESPN": "https://www.espn.com/nba-summer-league/game?gameId=401558329&league=nba-summer-las-vegas"}
+    },
+    193: {
+        "start_doy": 193,
+        "end_doy": 193,
+        "date_str": "July 12",
+        "desc": "Nuggets vs. Jazz - 7:30 PM MT",
+        "links": {"ESPN": "https://www.espn.com/nba-summer-league/game?gameId=401558349&league=nba-summer-las-vegas"}
+    },
+    195: {
+        "start_doy": 195,
+        "end_doy": 195,
+        "date_str": "July 14",
+        "desc": "Nuggets vs. Heat - 7:00 PM MT",
+        "links": {"ESPN": "https://www.espn.com/nba-summer-league/game?gameId=401558364&league=nba-summer-las-vegas"}
+    },
+    223: {
+        "start_doy": 223,
+        "end_doy": 224,
+        "date_str": "August 11-12",
+        "desc": "Naismith Memorial Basketball Hall of Fame Enshrinement Weekend (Springfield, MA)",
         "links": {}
     },
-    173: {
-        "start_doy": 173,
-        "end_doy": 173,
-        "date_str": "June 22",
-        "desc": "NBA Draft 2023",
-        "links": {}
+    237: {
+        "start_doy": 237,
+        "end_doy": 253,
+        "date_str": "August 25 - September 10",
+        "desc": "FIBA Basketball World Cup (Philippines / Japan / Indonesia)",
+        "links": {"FIBA.basketball": "https://www.fiba.basketball/basketballworldcup/2023"}
     },
     # 186: {
     #     "start_doy": 186,
