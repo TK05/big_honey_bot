@@ -1,18 +1,18 @@
 from datetime import datetime
-import os
 import copy
-import json
 import pytz
 import platform
 
 from config import setup
 from data.static.data import team_lookup
 from threads.static.templates import Game
-from tools.toolkit import create_hash, description_tags
+from tools.toolkit import create_hash, description_tags, get_dict_from_json_file, write_dict_to_json_file
 
 
-IN_PLAYOFFS = True
+IN_PLAYOFFS = False
 TIMEZONE = setup['timezone']
+PRE_FILE_NAME = 'schedule_scrape_output.json'
+POST_FILE_NAME = 'all_events.json'
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 
 
@@ -194,8 +194,7 @@ def nba_link(link_type, nba_id):
 
 if __name__ == '__main__':
 
-    with open('../json_output/schedule_scrape_output.json', 'r') as f:
-        raw_schedule = json.load(f)
+    raw_schedule = get_dict_from_json_file(PRE_FILE_NAME)
 
     schedule_pre_game = create_pre_game_event(copy.deepcopy(raw_schedule))
     schedule_game = create_game_event(copy.deepcopy(raw_schedule))
@@ -206,10 +205,4 @@ if __name__ == '__main__':
     ordered_schedule.update(schedule_game)
     ordered_schedule.update(schedule_post_game)
 
-    try:
-        os.mkdir('../json_output')
-    except FileExistsError:
-        pass
-
-    with open('../json_output/all_events.json', 'w') as f:
-        json.dump(dict(sorted(ordered_schedule.items())), f, indent=4)
+    write_dict_to_json_file(POST_FILE_NAME, dict(sorted(ordered_schedule.items())))

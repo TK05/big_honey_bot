@@ -1,15 +1,16 @@
 import os
 from datetime import datetime
 import pprint
-import json
 import requests
 from parsel import Selector
 import pytz
 
 from config import DEBUG, setup  # When DEBUG; save json & html
+from tools.toolkit import write_dict_to_json_file, get_dict_from_json_file
 
 TIMEZONE = setup['timezone']
 SCRAPE_YEAR = setup['season']
+FILE_NAME = 'schedule_scrape_output.json'
 
 
 def espn_schedule_scrape():
@@ -21,7 +22,7 @@ def espn_schedule_scrape():
             utc, game date, espn id
     """
 
-    response = request_schedule(setup['espn_url'], 'espn_schedule.html')
+    response = request_schedule(setup['espn_url'], setup['espn_headers'], 'espn_schedule.html')
 
     response_selector = Selector(text=response)
     games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
@@ -49,13 +50,7 @@ def espn_schedule_scrape():
         game_id_raw = game_id_url.split('/')
         espn_data[utc_key]['espn_id'] = game_id_raw[-1]
 
-        try:
-            os.mkdir('../json_output')
-        except FileExistsError:
-            pass
-
-        with open(f'../json_output/schedule_scrape_output.json', 'w') as f:
-            json.dump(espn_data, f, indent=4)
+        write_dict_to_json_file(FILE_NAME, espn_data)
 
         if DEBUG:
             pprint.pprint(espn_data)
@@ -109,23 +104,18 @@ def nba_com_schedule_scrap():
             rad_ordered = [nat_rad, home_rad] if setup['team'] == home_team else [nat_rad, away_rad]
             nbacom_data[utc_key]['radio'] = ", ".join([i for s in rad_ordered for i in s])
 
-    if not os.path.exists('../json_output/schedule_scrape_output.json'):
-        json_file = {}
-    else:
-        with open('../json_output/schedule_scrape_output.json', 'r') as f:
-            json_file = json.load(f)
+    sch_dict = get_dict_from_json_file(FILE_NAME)
 
     # update json file using utc_key as key
     for utc_key, game_dict in nbacom_data.items():
         for data_key, data in game_dict.items():
             try:
-                json_file[utc_key][data_key] = data
+                sch_dict[utc_key][data_key] = data
             except KeyError:
                 # 2020 catch for scrimmage games not on both sites
                 pass
 
-    with open('../json_output/schedule_scrape_output.json', 'w') as f:
-        json.dump(json_file, f, indent=4)
+    write_dict_to_json_file(FILE_NAME, sch_dict)
 
     if DEBUG:
         pprint.pprint(nbacom_data)
@@ -176,7 +166,7 @@ def espn_convert_date_time(date_in, time_in):
     return int(site_dt.timestamp()), loc_str
 
 
-def request_schedule(url, file_name):
+def request_schedule(url, headers, file_name):
 
     # import from file_name if it exists, otherwise scrape page using requests
     if DEBUG:
@@ -195,7 +185,7 @@ def request_schedule(url, file_name):
         f.write(response)
 
     else:
-        response = requests.get(url).text
+        response = requests.get(url, headers=headers).text
 
     return response
 

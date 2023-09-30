@@ -2,7 +2,9 @@ import json
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
-from tools.toolkit import description_tags
+from tools.toolkit import description_tags, get_dict_from_json_file
+
+FILE_NAME = 'all_events.json'
 
 
 def update_calendar(schedule):
@@ -25,6 +27,5 @@ def update_calendar(schedule):
 
 if __name__ == '__main__':
 
-    with open('../json_output/all_events.json', 'r') as file:
-        raw_schedule = json.load(file)
-        update_calendar(raw_schedule)
+    schedule_in = get_dict_from_json_file(FILE_NAME)
+    update_calendar(schedule_in)

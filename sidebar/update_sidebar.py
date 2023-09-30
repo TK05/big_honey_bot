@@ -1,7 +1,9 @@
 import os
 import re
 from distutils.util import strtobool
-from datetime import datetime
+from datetime import datetime, date, timedelta
+from zoneinfo import ZoneInfo
+
 import requests
 import praw
 from parsel import Selector
@@ -14,6 +16,7 @@ from config import setup
 USER_AGENT = setup['user_agent']
 YEAR = setup['season']
 TEAM = setup['team']
+TIMEZONE = setup['timezone']
 
 UPDATE_SIDEBAR = bool(strtobool(os.getenv('UPDATE_SIDEBAR', "False")))
 PLAYOFF_WATCH = bool(strtobool(os.getenv('PLAYOFF_WATCH', "False")))
@@ -157,6 +160,14 @@ def update_munder(standings):
     return f"Munders: {tf_gp - games_over_100}"
 
 
+def update_reign():
+    start_date = date(2023, 6, 13)
+    date_now = datetime.now(tz=ZoneInfo(TIMEZONE)).date()
+    reign_days = (date_now - start_date + timedelta(days=1)).days
+
+    return f"World Champs Reign Day #{reign_days}"
+
+
 def update_sidebar():
     """Updates sidebar for both new and old reddit."""
 
@@ -171,7 +182,8 @@ def update_sidebar():
     old_reddit_sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
-    # tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
+    reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
+    tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
     munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
     p1_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
     p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
@@ -179,15 +191,15 @@ def update_sidebar():
 
     record_sub = update_record(standings)
     old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
+    old_reddit_sidebar = reign_regex.sub(update_reign(), old_reddit_sidebar)
+    # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
+    # old_reddit_sidebar = munder_regex.sub(update_munder(standings), old_reddit_sidebar)
 
     if PLAYOFF_WATCH:
         p1_sub, p2_sub, p3_sub = update_playoff(standings)
         old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
         old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
         old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
-
-    # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
-    old_reddit_sidebar = munder_regex.sub(update_munder(standings), old_reddit_sidebar)
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(old_reddit_sidebar)
@@ -204,15 +216,15 @@ def update_sidebar():
     new_text = new_reddit_sidebar.text
 
     new_text = record_regex.sub(record_sub, new_text)
+    new_text = reign_regex.sub(update_reign(), new_text)
+    # new_text = tripdub_regex.sub(update_tripdub(), new_text)
+    # new_text = munder_regex.sub(update_munder(standings), new_text)
 
     if PLAYOFF_WATCH:
         p1_sub, p2_sub, p3_sub = update_playoff(standings)
         new_text = p1_regex.sub(p1_sub, new_text)
         new_text = p2_regex.sub(p2_sub, new_text)
         new_text = p3_regex.sub(p3_sub, new_text)
-
-    # new_text = tripdub_regex.sub(update_tripdub(), new_text)
-    new_text = munder_regex.sub(update_munder(standings), new_text)
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
     new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)

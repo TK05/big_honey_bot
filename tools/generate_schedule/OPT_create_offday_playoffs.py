@@ -1,18 +1,18 @@
-import os
-import json
 import platform
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
 from events.manager import get_all_events_with_meta
 from config import setup
-from tools.toolkit import description_tags, create_hash
+from tools.toolkit import description_tags, create_hash, write_dict_to_json_file, get_dict_from_json_file
 from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
 TIMEZONE = setup['timezone']
 IN_SEASON_OFFDAYS = False
 IN_PLAYOFFS = False
+FILE_NAME_IN = 'all_events.json'
+FILE_NAME_OUT = 'off_day_events.json'
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 platform_day_fmt = "%#d" if platform.system() == 'Windows' else '%-d'
 
@@ -143,8 +143,7 @@ def create_in_season_schedule(curr_sch):
 
 if __name__ == '__main__':
     if IN_SEASON_OFFDAYS:
-        with open('../json_output/all_events.json', 'r') as f:
-            raw_schedule = json.load(f)
+        raw_schedule = get_dict_from_json_file(FILE_NAME_IN)
         schedule = create_in_season_schedule(raw_schedule)
         update_calendar(schedule)
     elif IN_PLAYOFFS:
@@ -154,24 +153,12 @@ if __name__ == '__main__':
         schedule = create_schedule(start_date, end_date)
         update_calendar(schedule)
 
-        try:
-            os.mkdir('../json_output')
-        except FileExistsError:
-            pass
-
-        with open('../json_output/off_day_events.json', 'w') as f:
-            json.dump(dict(sorted(schedule.items())), f, indent=4)
+        write_dict_to_json_file(FILE_NAME_OUT, dict(sorted(schedule.items())))
     else:
-        start_date = date(2023, 6, 13)
-        end_date = date(2023, 10, 10)
+        start_date = date(2023, 10, 10)
+        end_date = date(2023, 10, 24)
 
-        schedule = create_schedule(start_date, end_date, playoffs=False, count_down=False)
+        schedule = create_schedule(start_date, end_date, playoffs=False, count_down=True)
         update_calendar(schedule)
 
-        try:
-            os.mkdir('../json_output')
-        except FileExistsError:
-            pass
-
-        with open('../json_output/off_day_events.json', 'w') as f:
-            json.dump(dict(sorted(schedule.items())), f, indent=4)
+        write_dict_to_json_file(FILE_NAME_OUT, dict(sorted(schedule.items())))

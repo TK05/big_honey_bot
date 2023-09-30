@@ -1,4 +1,7 @@
 import hashlib
+import json
+import os
+
 
 description_tags = {
     "meta_start": "{meta_begin}\n",
@@ -16,6 +19,26 @@ description_tags = {
     "playoff_series": "{playoff_series}",
     "playoff_teams": "{playoff_teams}"
 }
+
+
+def write_dict_to_json_file(file_name, data):
+    try:
+        os.mkdir('./json_output')
+    except FileExistsError:
+        pass
+
+    with open(f'./json_output/{file_name}', 'w') as f:
+        json.dump(data, f, indent=4)
+
+
+def get_dict_from_json_file(file_name):
+    if not os.path.exists(f'./json_output/{file_name}'):
+        ret_dict = {}
+    else:
+        with open(f'./json_output/{file_name}', 'r') as f:
+            ret_dict = json.load(f)
+
+    return ret_dict
 
 
 def create_hash(string):
