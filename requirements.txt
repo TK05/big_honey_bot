@@ -36,6 +36,6 @@ tzdata==2022.1
 tzlocal==2.1
 update-checker==0.18.0
 uritemplate==3.0.1
-urllib3==1.26.6
+urllib3==1.26.17
 w3lib==1.22.0
 websocket-client==1.1.0
