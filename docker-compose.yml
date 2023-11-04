@@ -12,8 +12,8 @@ services:
     env_file:
       - ./.env
     environment:
-      - UPDATE_SIDEBAR=False
+      - UPDATE_SIDEBAR=True
       - THREAD_STATS=True
       - IN_PLAYOFFS=False
       - PLAYOFF_WATCH=False
-      - IS_OFFSEASON=True
+      - IS_OFFSEASON=False

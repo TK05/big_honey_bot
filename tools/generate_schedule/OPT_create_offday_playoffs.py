@@ -9,7 +9,7 @@ from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
 TIMEZONE = setup['timezone']
-IN_SEASON_OFFDAYS = False
+IN_SEASON_OFFDAYS = True
 IN_PLAYOFFS = False
 FILE_NAME_IN = 'all_events.json'
 FILE_NAME_OUT = 'off_day_events.json'

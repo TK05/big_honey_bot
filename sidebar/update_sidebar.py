@@ -20,6 +20,7 @@ TIMEZONE = setup['timezone']
 
 UPDATE_SIDEBAR = bool(strtobool(os.getenv('UPDATE_SIDEBAR', "False")))
 PLAYOFF_WATCH = bool(strtobool(os.getenv('PLAYOFF_WATCH', "False")))
+IS_OFFSEASON = bool(strtobool(os.getenv('IS_OFFSEASON', "False")))
 
 TARGET_SUB = os.environ['TARGET_SUB']
 USERNAME = os.environ['PRAW_USERNAME']
@@ -165,7 +166,7 @@ def update_reign():
     date_now = datetime.now(tz=ZoneInfo(TIMEZONE)).date()
     reign_days = (date_now - start_date + timedelta(days=1)).days
 
-    return f"World Champs Reign Day #{reign_days}"
+    return f"Reign Day #{reign_days}"
 
 
 def update_sidebar():
@@ -189,8 +190,10 @@ def update_sidebar():
     p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
     p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
 
-    record_sub = update_record(standings)
-    old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
+    if not IS_OFFSEASON:
+        record_sub = update_record(standings)
+        old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
+
     old_reddit_sidebar = reign_regex.sub(update_reign(), old_reddit_sidebar)
     # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
     # old_reddit_sidebar = munder_regex.sub(update_munder(standings), old_reddit_sidebar)
@@ -215,7 +218,9 @@ def update_sidebar():
 
     new_text = new_reddit_sidebar.text
 
-    new_text = record_regex.sub(record_sub, new_text)
+    if not IS_OFFSEASON:
+        new_text = record_regex.sub(record_sub, new_text)
+
     new_text = reign_regex.sub(update_reign(), new_text)
     # new_text = tripdub_regex.sub(update_tripdub(), new_text)
     # new_text = munder_regex.sub(update_munder(standings), new_text)
