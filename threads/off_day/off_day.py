@@ -222,7 +222,7 @@ def generate_thread_body(event=None):
         if IN_PLAYOFFS:
             row_to_add = ["|Today's Playoff Games||||", "|:--|:--|:--|:--|:--|:--|", []]
         else:
-            row_to_add = ["|Today's Games||||", "|:--|:--|:--|", []]
+            row_to_add = ["|Today's Games||||", "|:--|:--|:--|:--|", []]
 
         for game in todays_games:
             row_to_add[-1].append(game)
