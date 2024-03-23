@@ -1,8 +1,12 @@
 import json
+from dotenv import load_dotenv
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
 from tools.toolkit import description_tags, get_dict_from_json_file
+
+
+load_dotenv()
 
 FILE_NAME = 'all_events.json'
 
