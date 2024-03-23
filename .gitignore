@@ -3,5 +3,5 @@
 **/__pycache__/
 /venv
 *.html
-/tools/tmp/*
-/tools/json_output/*
+**/tmp/
+**/json_output/
