@@ -113,7 +113,13 @@ def update_playoff(standings):
 
     tf_conf, tf_rank = get_team_conf_and_rank(standings)
     tf_wins = standings[tf_conf][tf_rank]['WINS']
-    tf_po_code = standings[tf_conf][tf_rank]['ClinchIndicator'] # TODO: Check these when they become active
+
+    # ClinchedPostSeason; 1 1 if play-in or better clinched, 0 otherwise
+    # PlayoffRank; int of current seed
+    # ClinchedIndicator; "- ps" if playins secured?, empty string otherwise
+    # PlayoffSeeding; ?
+    # TODO: Check these when they become active
+    tf_po_code = standings[tf_conf][tf_rank]['ClinchIndicator']
 
     # Get data for 7th and 11th seed in same conference
     seventh_losses = standings[tf_conf][7]['LOSSES']
@@ -140,10 +146,10 @@ def update_playoff(standings):
     p2_sub = ''
     p3_sub = ''
 
-    if tf_po_code in ['P', 'C'] or playoff_magic_num < 0:
+    if tf_po_code.lower() in ['p', 'c'] or playoff_magic_num < 0:
         p1_sub, p2_sub = generate_subs('Playoffs')
     elif play_in_magic_num < 0:
-        p1_sub, p3_sub = generate_subs('Play-ins', tf_rank)
+        p1_sub, p3_sub = generate_subs('Play-ins')
         p2_sub = f'Playoff Magic #: {playoff_magic_num}'
     else:
         p1_sub = f'Play-in Magic #: {play_in_magic_num}'
