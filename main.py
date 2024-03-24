@@ -1,8 +1,16 @@
 import logging
+import time
+import threading
 from dotenv import load_dotenv
 
 from config import DEBUG, OUTPUT_PATH
 from bots import manage_events_bot
+
+
+def reload_env():
+    while True:
+        load_dotenv()
+        time.sleep(60)
 
 
 def configure_logging(log_path):
@@ -41,6 +49,11 @@ if __name__ == "__main__":
 
     # load from .env
     load_dotenv()
+
+    # create thread to reload .env every minute
+    reload_env_thread = threading.Thread(target=reload_env)
+    reload_env_thread.daemon = True
+    reload_env_thread.start()
 
     # run main bot
     manage_events_bot.run()

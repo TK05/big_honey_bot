@@ -3,16 +3,16 @@ import logging
 
 import praw
 
-from config import DEBUG, setup
+from config import DEBUG, setup, get_env
 from threads.static.templates import ThreadStats
 
 
 USER_AGENT = setup['user_agent']
 
-USERNAME = os.environ['PRAW_USERNAME']
-PASSWORD = os.environ['PRAW_PASSWORD']
-CLIENT_ID = os.environ['PRAW_CLIENT_ID']
-CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
+USERNAME = get_env('PRAW_USERNAME')
+PASSWORD = get_env('PRAW_PASSWORD')
+CLIENT_ID = get_env('PRAW_CLIENT_ID')
+CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 

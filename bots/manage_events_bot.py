@@ -3,9 +3,8 @@ import time
 import pytz
 import logging
 from datetime import datetime, timedelta
-from distutils.util import strtobool
 
-from config import setup
+from config import get_env
 from threads.game.game_thread import game_thread_handler
 from threads.off_day.off_day import off_day_thread_handler
 from bots.thread_handler_bot import edit_thread, get_thread
@@ -16,12 +15,6 @@ from playoffs.playoff_data import get_series_status
 from events.manager import get_event, get_next_event, update_event, get_previous_event
 from tools.toolkit import hash_match
 
-
-UPDATE_SIDEBAR = bool(strtobool(os.getenv('UPDATE_SIDEBAR', "False")))
-THREAD_STATS = bool(strtobool(os.getenv('THREAD_STATS', "False")))
-IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
-# TODO: Determine IN_PLAYOFFS, PLAYOFF_WATCH and IS_OFFSEASON from external sources, remove from config
-TIMEZONE = pytz.timezone(setup['timezone'])
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
@@ -45,7 +38,7 @@ def make_post(event, po_data):
         post_game_thread_handler(event, po_data)
 
         # Generate thread stats after post game thread is posted
-        if THREAD_STATS:
+        if get_env('THREAD_STATS'):
             try:
                 prev_game_event = get_previous_event(penultimate=True)
                 prev_post = get_thread(prev_game_event.meta['reddit_id'])
@@ -93,7 +86,7 @@ def end_active_post(post):
 
 
 def get_playoff_data():
-    if IN_PLAYOFFS:
+    if get_env('IN_PLAYOFFS'):
         playoff_round, playoff_game_num, playoff_record = get_series_status()
         return [playoff_round, playoff_game_num, playoff_record]
     else:

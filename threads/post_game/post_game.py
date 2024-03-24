@@ -3,7 +3,7 @@ import random
 import logging
 from datetime import datetime
 
-from config import setup
+from config import setup, get_env
 from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from threads.post_game.game_status_check import status_check
 from bots.thread_handler_bot import new_thread, edit_thread
@@ -14,7 +14,7 @@ from events.manager import update_event, get_event
 
 
 TEAM = setup['team']
-TARGET_SUB = os.environ['TARGET_SUB']
+TARGET_SUB = get_env('TARGET_SUB')
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 

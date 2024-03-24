@@ -1,10 +1,8 @@
 from pathlib import Path
+from distutils.util import strtobool
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
-
-# TODO: cleanup env imports & usage
-load_dotenv()
 
 DEBUG = False
 OUTPUT_PATH = Path.cwd().joinpath("out")
@@ -50,3 +48,14 @@ setup = {
         'Origin': 'https://stats.nba.com/'
     }
 }
+
+
+def get_env(env_key):
+    """General function to allow calling refreshed env vars."""
+    env = dotenv_values(Path('.env'))
+
+    try:
+        # some env vars are boolean, try converting first
+        return bool(strtobool(env.get(env_key)))
+    except ValueError:
+        return env.get(env_key)

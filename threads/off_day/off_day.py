@@ -2,22 +2,22 @@ import os
 import platform
 import logging
 from datetime import datetime
-from distutils.util import strtobool
 
 import requests
 import pytz
 from parsel import Selector
 
 from bots.thread_handler_bot import new_thread
-from config import setup
+from config import setup, get_env
 from tools.toolkit import description_tags
 from data.static.data import lookup_by_loc
 from threads.off_day.static_events import events as se
 from threads.game.lineup_injury_odds import line_inj_odds
 
 
-IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
-IS_OFFSEASON = bool(strtobool(os.getenv('IS_OFFSEASON', "False")))
+IN_PLAYOFFS = get_env('IN_PLAYOFFS')
+IS_OFFSEASON = get_env('IS_OFFSEASON')
+
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else "%-I:%M"
 platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
 

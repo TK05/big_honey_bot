@@ -6,16 +6,16 @@ import praw
 import prawcore
 from praw.exceptions import RedditAPIException
 
-from config import setup
+from config import setup, get_env
 
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
-TARGET_SUB = os.environ['TARGET_SUB']
-USERNAME = os.environ['PRAW_USERNAME']
-PASSWORD = os.environ['PRAW_PASSWORD']
-CLIENT_ID = os.environ['PRAW_CLIENT_ID']
-CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
+TARGET_SUB = get_env('TARGET_SUB')
+USERNAME = get_env('PRAW_USERNAME')
+PASSWORD = get_env('PRAW_PASSWORD')
+CLIENT_ID = get_env('PRAW_CLIENT_ID')
+CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 USER_AGENT = setup['user_agent']
 
 

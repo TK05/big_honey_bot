@@ -1,7 +1,6 @@
 import os
 import re
 import logging
-from distutils.util import strtobool
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
@@ -11,7 +10,7 @@ from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
-from config import setup
+from config import setup, get_env
 
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
@@ -22,16 +21,15 @@ YEAR = setup['season']
 TEAM = setup['team']
 TIMEZONE = setup['timezone']
 
-UPDATE_SIDEBAR = bool(strtobool(os.getenv('UPDATE_SIDEBAR', "False")))
-PLAYOFF_WATCH = bool(strtobool(os.getenv('PLAYOFF_WATCH', "False")))
-IS_OFFSEASON = bool(strtobool(os.getenv('IS_OFFSEASON', "False")))
+UPDATE_SIDEBAR = get_env('UPDATE_SIDEBAR')
+PLAYOFF_WATCH = get_env('PLAYOFF_WATCH')
+IS_OFFSEASON = get_env('IS_OFFSEASON')
 
-TARGET_SUB = os.environ['TARGET_SUB']
-USERNAME = os.environ['PRAW_USERNAME']
-PASSWORD = os.environ['PRAW_PASSWORD']
-CLIENT_ID = os.environ['PRAW_CLIENT_ID']
-CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
-
+TARGET_SUB = get_env('TARGET_SUB')
+USERNAME = get_env('PRAW_USERNAME')
+PASSWORD = get_env('PRAW_PASSWORD')
+CLIENT_ID = get_env('PRAW_CLIENT_ID')
+CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,
