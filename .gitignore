@@ -4,4 +4,4 @@
 /venv
 *.html
 **/tmp/
-**/json_output/
+**/out/
