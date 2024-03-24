@@ -3,6 +3,7 @@ import json
 import re
 from abc import ABC
 from html.parser import HTMLParser
+
 from gcsa.serializers.event_serializer import EventSerializer
 
 from events.google_service import create_service
@@ -66,7 +67,8 @@ def get_previous_event(penultimate=False, days=30):
     for event in list(events)[:-1 if penultimate else None]:
         pass
 
-    add_meta_and_body(event)
+    if event:
+        add_meta_and_body(event)
 
     return event
 
