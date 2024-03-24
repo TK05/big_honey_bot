@@ -1,12 +1,11 @@
 import logging
-from pathlib import Path
 from dotenv import load_dotenv
 
-from config import DEBUG
+from config import DEBUG, OUTPUT_PATH
 from bots import manage_events_bot
 
 
-def setup_logger(log_path):
+def configure_logging(log_path):
     
     # create logger
     logger = logging.getLogger()
@@ -29,13 +28,16 @@ def setup_logger(log_path):
     # add handler to logger
     logger.addHandler(fh)
 
+    # quiet spammy loggers
+    logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+
 
 if __name__ == "__main__":
     
     # setup logging
     log_filename = "big_honey_bot.log"
-    log_file = Path.cwd().joinpath(log_filename)
-    setup_logger(log_file)
+    log_file = OUTPUT_PATH.joinpath(log_filename)
+    configure_logging(log_file)
 
     # load from .env
     load_dotenv()
