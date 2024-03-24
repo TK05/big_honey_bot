@@ -1,9 +1,10 @@
 import os
-from datetime import datetime
 import pprint
+from datetime import datetime
+
+import pytz
 import requests
 from parsel import Selector
-import pytz
 
 from config import DEBUG, setup  # When DEBUG; save json & html
 from tools.toolkit import write_dict_to_json_file, get_dict_from_json_file

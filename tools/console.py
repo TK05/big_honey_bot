@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+
 from gcsa.event import Event
 
 from events.manager import create_event

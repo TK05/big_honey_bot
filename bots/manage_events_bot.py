@@ -1,8 +1,9 @@
 import os
 import time
-import pytz
 import logging
 from datetime import datetime, timedelta
+
+import pytz
 
 from config import get_env
 from threads.game.game_thread import game_thread_handler

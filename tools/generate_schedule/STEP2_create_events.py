@@ -1,7 +1,8 @@
-from datetime import datetime
 import copy
-import pytz
 import platform
+from datetime import datetime
+
+import pytz
 
 from config import setup
 from data.static.data import team_lookup
