@@ -216,7 +216,7 @@ def update_sidebar():
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(old_reddit_sidebar)
-    logging.info(f"Old-Reddit sidebar updated")
+    logger.info(f"Old-Reddit sidebar updated")
 
     # New Reddit
     widgets = reddit.subreddit(TARGET_SUB).widgets
@@ -243,4 +243,4 @@ def update_sidebar():
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
     new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
-    logging.info(f"New-Reddit sidebar updated")
+    logger.info(f"New-Reddit sidebar updated")
