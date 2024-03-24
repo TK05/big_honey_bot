@@ -1,6 +1,9 @@
 from big_honey_bot.config.helpers import OUTPUT_PATH
 
 
+ENV_RELOAD_INTERVAL_SEC = 60
+LOG_FILENAME = "big_honey_bot.log"
+
 setup = {
     'season': 2023,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',

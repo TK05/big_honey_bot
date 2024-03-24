@@ -1,8 +1,5 @@
 import hashlib
 import json
-import time
-
-from dotenv import load_dotenv
 
 from big_honey_bot.config.main import OUTPUT_PATH
 
@@ -49,9 +46,3 @@ def create_hash(string):
 
 def hash_match(string, hash_in):
     return hash_in == hashlib.md5(string.encode()).hexdigest()
-
-
-def reload_env(sleep_time_sec):
-    while True:
-        load_dotenv()
-        time.sleep(sleep_time_sec)
