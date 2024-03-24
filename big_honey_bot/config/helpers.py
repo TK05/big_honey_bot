@@ -26,11 +26,22 @@ def get_env(env_key):
 def reload_env(sleep_time_sec):
     while True:
         load_dotenv()
+        update_logger_level()
         time.sleep(sleep_time_sec)
 
 
 def get_all_env():
     return dotenv_values(Path('.env'))
+
+
+def update_logger_level():
+    logger = logging.getLogger()
+    
+    # set debug levels
+    if get_env('DEBUG'):
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
 
 def configure_logging(log_path):
