@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "big-honey-bot"
+version = "2.1.0"
+description = ""
+authors = ["Tommy Kelley <6148136+TK05@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+praw = "^7.7.1"
+requests = "^2.31.0"
+parsel = "^1.9.0"
+nba-api = "^1.4.1"
+pytz = "^2024.1"
+python-dotenv = "^1.0.1"
+gcsa = "^2.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
