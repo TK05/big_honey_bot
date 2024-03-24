@@ -1,6 +1,7 @@
 import hashlib
 import json
-import os
+
+from config import OUTPUT_PATH
 
 
 description_tags = {
@@ -22,20 +23,18 @@ description_tags = {
 
 
 def write_dict_to_json_file(file_name, data):
-    try:
-        os.mkdir('./json_output')
-    except FileExistsError:
-        pass
+    
+    OUTPUT_PATH.mkdir(exist_ok=True)
 
-    with open(f'./json_output/{file_name}', 'w') as f:
+    with open(OUTPUT_PATH.joinpath(file_name), 'w') as f:
         json.dump(data, f, indent=4)
 
 
 def get_dict_from_json_file(file_name):
-    if not os.path.exists(f'./json_output/{file_name}'):
+    if not OUTPUT_PATH.joinpath(file_name).exists():
         ret_dict = {}
     else:
-        with open(f'./json_output/{file_name}', 'r') as f:
+        with open(OUTPUT_PATH.joinpath(file_name), 'r') as f:
             ret_dict = json.load(f)
 
     return ret_dict
