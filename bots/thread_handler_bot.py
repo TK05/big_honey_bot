@@ -1,9 +1,13 @@
 import os
+import logging
+
 import praw
 import prawcore.exceptions
 
 from config import setup
 
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 TARGET_SUB = os.environ['TARGET_SUB']
 USERNAME = os.environ['PRAW_USERNAME']
@@ -54,21 +58,21 @@ def new_thread(event):
     try:
         prev_post = get_thread(event.prev_post_id)
         prev_post.mod.sticky(state=False)
-        print(f"{os.path.basename(__file__)}: Unstickied previous post - {prev_post.title}")
+        logger.info(f"Unstickied previous post - {prev_post.title}")
     except AttributeError:
         top2_posts = subreddit.hot(limit=2)
 
         for post in top2_posts:
             if post.author.name == USERNAME:
                 post.mod.sticky(state=False)
-                print(f"{os.path.basename(__file__)}: Unstickied - {post.title}")
+                logger.info(f"Unstickied - {post.title}")
                 break
 
     # TODO: prawcore.exceptions.BadRequest: received 400 HTTP response
     post = subreddit.submit(event.summary, event.body, flair_id=FLAIRS[event.meta['event_type']], send_replies=False)
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
-    print(f"{os.path.basename(__file__)}: Thread posted to r/{TARGET_SUB} - {post.id}")
+    logger.info(f"Thread posted to r/{TARGET_SUB} - {post.id}")
 
     setattr(event, 'post', post)
     event.meta['reddit_id'] = post.id
@@ -84,4 +88,4 @@ def edit_thread(event):
     """
 
     event.post.edit(event.body)
-    print(f"{os.path.basename(__file__)}: Thread updated on r/{TARGET_SUB} - {event.post.id}")
+    logger.info(f"Thread updated on r/{TARGET_SUB} - {event.post.id}")

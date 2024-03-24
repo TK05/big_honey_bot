@@ -1,5 +1,6 @@
 import os
 import random
+import logging
 from datetime import datetime
 
 from config import setup
@@ -14,6 +15,8 @@ from events.manager import update_event, get_event
 
 TEAM = setup['team']
 TARGET_SUB = os.environ['TARGET_SUB']
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 def format_date_and_time(time_in):
@@ -86,7 +89,7 @@ def format_post(event, playoff_data):
     custom_title = event_new.meta.get(outcome_key)
 
     if custom_title:
-        print(f"{os.path.basename(__file__)}: Custom post game title detected: {custom_title}")
+        logger.info(f"Custom post game title detected: {custom_title}")
         custom_title = custom_title.replace('***team***', TEAM)
         custom_title = custom_title.replace('***opponent***', event.meta['opponent'])
         custom_title = custom_title.replace('***margin***', str(margin))
@@ -109,9 +112,9 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
     If data returned is not the final boxscore, function will recursive call itself to later return
     finalized data to edit the thread."""
 
-    print(f"{os.path.basename(__file__)}: Sending to game_status_check, final version only: {str(only_final)}")
+    logger.info(f"Sending to game_status_check, final version only: {str(only_final)}")
     was_final = status_check(event.meta["nba_id"], only_final)
-    print(f"{os.path.basename(__file__)}: Generating thread data for {event.summary} - Final Version: {str(was_final)}")
+    logger.info(f"Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
     format_post(event, playoff_data)
 

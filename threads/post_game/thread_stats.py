@@ -1,4 +1,6 @@
 import os
+import logging
+
 import praw
 
 from config import DEBUG, setup
@@ -11,6 +13,8 @@ USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']
 CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,
@@ -75,11 +79,11 @@ def post_reply(thread, comment):
 
 def generate_stats_comment(game_thread, post_game_thread):
 
-    print(f"Gathering stats for: {game_thread.id}, Replying to: {post_game_thread.id}")
+    logger.info(f"Gathering stats for: {game_thread.id}, Replying to: {post_game_thread.id}")
     details = thread_details(game_thread)
     comment = ThreadStats.format_post(*details)
     if not DEBUG:
         comment_id = post_reply(post_game_thread, comment)
-        print(f"Thread stats reply finished, ID: {comment_id}")
+        logger.info(f"Thread stats reply finished, ID: {comment_id}")
     else:
-        print(comment)
+        logger.debug(comment)

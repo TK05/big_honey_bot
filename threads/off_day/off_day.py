@@ -1,10 +1,12 @@
 import os
+import platform
+import logging
 from datetime import datetime
 from distutils.util import strtobool
+
 import requests
 import pytz
 from parsel import Selector
-import platform
 
 from bots.thread_handler_bot import new_thread
 from config import setup
@@ -18,6 +20,8 @@ IN_PLAYOFFS = bool(strtobool(os.getenv('IN_PLAYOFFS', "False")))
 IS_OFFSEASON = bool(strtobool(os.getenv('IS_OFFSEASON', "False")))
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else "%-I:%M"
 platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 def get_nba_games(playoffs=False):
@@ -269,7 +273,7 @@ def off_day_thread_handler(event):
 
     generate_thread_body(event)
 
-    print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
+    logger.info(f"Created headline: {event.summary}")
     new_thread(event)
 
 

@@ -1,11 +1,15 @@
 import os
 import time
+import logging
+
 import requests
 
 from config import setup
 
 
 SEASON = setup['season']
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 def status_check(nba_id, only_final):
@@ -39,11 +43,11 @@ def status_check(nba_id, only_final):
             min_left = int(game_data['g']['cl'].split(':')[0])
             sec_left = float(game_data['g']['cl'].split(':')[1])
         else:
-            print(f"{os.path.basename(__file__)}: Game clock is NoneType, sleeping 60 seconds...")
+            logger.info(f"{os.path.basename(__file__)}: Game clock is NoneType, sleeping 60 seconds...")
             time.sleep(60)
             continue
 
-        print(f"{os.path.basename(__file__)}: Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}")
+        logger.info(f"{os.path.basename(__file__)}: Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}")
 
         # Check for game start
         if game_status == 1:
@@ -74,19 +78,19 @@ def status_check(nba_id, only_final):
 
                 # Game is over and boxscore is finalized
                 if game_status == 3:
-                    print(f"{os.path.basename(__file__)}: Game Over, finalized version")
+                    logger.info(f"{os.path.basename(__file__)}: Game Over, finalized version")
                     final_version = True
                     game_ongoing = False
                 # Game is over but boxscore not finalized
                 elif abs(away_score - home_score) != 0 and sec_left == 0 and not only_final:
-                    print(f"{os.path.basename(__file__)}: Game Over, initial version")
+                    logger.info(f"{os.path.basename(__file__)}: Game Over, initial version")
                     final_version = False
                     game_ongoing = False
                 else:
                     time.sleep(10)
                     continue
             else:
-                print(f"{os.path.basename(__file__)}: Something unexpected happened during game_status_check...")  # TODO: Handle an error properly
+                logger.warning(f"{os.path.basename(__file__)}: Something unexpected happened during game_status_check...")  # TODO: Handle an error properly
                 time.sleep(30)
                 continue
 

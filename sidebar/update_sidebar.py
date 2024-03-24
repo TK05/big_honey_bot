@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 from distutils.util import strtobool
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
@@ -11,6 +12,9 @@ from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
 from config import setup
+
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 USER_AGENT = setup['user_agent']
@@ -181,7 +185,7 @@ def update_sidebar():
     if not UPDATE_SIDEBAR:
         return
 
-    print(f"{os.path.basename(__file__)}: Updating sidebar @ {datetime.now().strftime('%H:%M')}")
+    logger.info(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
 
     standings = get_standings()
 
@@ -212,7 +216,7 @@ def update_sidebar():
 
     sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
     sidebar.edit(old_reddit_sidebar)
-    print(f"{os.path.basename(__file__)}: Old-Reddit sidebar updated")
+    logging.info(f"Old-Reddit sidebar updated")
 
     # New Reddit
     widgets = reddit.subreddit(TARGET_SUB).widgets
@@ -239,4 +243,4 @@ def update_sidebar():
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
     new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
-    print(f"{os.path.basename(__file__)}: New-Reddit sidebar updated")
+    logging.info(f"New-Reddit sidebar updated")

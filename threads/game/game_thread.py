@@ -1,6 +1,8 @@
-from datetime import datetime
 import os
 import re
+import logging
+from datetime import datetime
+
 import requests
 from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
@@ -16,6 +18,8 @@ from tools.toolkit import description_tags
 
 TEAM = setup['team']
 LOCATION = setup['location']
+
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 def format_date_and_time(game_start):
@@ -186,5 +190,5 @@ def game_thread_handler(event, playoff_data):
     if event.meta['event_type'] in ['pre', 'game']:
         generate_game_body(event)
 
-    print(f"{os.path.basename(__file__)}: Created headline: {event.summary}")
+    logger.info(f"Created headline: {event.summary}")
     new_thread(event)
