@@ -1,7 +1,8 @@
+.python-version
 *.env
-/.idea/
+*.html
+**/.idea/
 **/__pycache__/
 **/.venv
-*.html
 **/tmp/
 **/out/
