@@ -1,4 +1,3 @@
-import os
 import pprint
 from datetime import datetime
 
@@ -7,7 +6,7 @@ import requests
 from parsel import Selector
 
 from big_honey_bot.helpers import write_dict_to_json_file, get_dict_from_json_file
-from big_honey_bot.config.main import setup
+from big_honey_bot.config.main import setup, OUTPUT_PATH
 from big_honey_bot.config.helpers import get_env
 
 
@@ -175,17 +174,17 @@ def request_schedule(url, headers, file_name):
     # import from file_name if it exists, otherwise scrape page using requests
     if DEBUG:
         try:
-            os.mkdir('../tmp')
+            OUTPUT_PATH.mkdir()
         except FileExistsError:
             pass
 
         try:
-            with open(f'../tmp/{file_name}', 'r') as file:
+            with open(OUTPUT_PATH.joinpath(file_name), 'r') as file:
                 response = file.read().replace('\n', '')
         except FileNotFoundError:
             response = requests.get(url).text
 
-        f = open(f'../tmp/{file_name}', 'w', encoding='utf-8')
+        f = open(OUTPUT_PATH.joinpath(file_name), 'w', encoding='utf-8')
         f.write(response)
 
     else:
