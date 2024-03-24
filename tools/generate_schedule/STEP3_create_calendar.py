@@ -1,12 +1,11 @@
 import json
+
 from dotenv import load_dotenv
 from gcsa.serializers.event_serializer import EventSerializer
 
-from events.google_service import create_service
-from tools.toolkit import description_tags, get_dict_from_json_file
+from big_honey_bot.events.helpers import create_service
+from big_honey_bot.helpers import description_tags, get_dict_from_json_file
 
-
-load_dotenv()
 
 FILE_NAME = 'all_events.json'
 
@@ -30,6 +29,6 @@ def update_calendar(schedule):
 
 
 if __name__ == '__main__':
-
+    load_dotenv()
     schedule_in = get_dict_from_json_file(FILE_NAME)
     update_calendar(schedule_in)

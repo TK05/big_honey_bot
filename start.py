@@ -1,20 +1,13 @@
 import logging
-import time
 import threading
-from dotenv import load_dotenv
 
-from config import DEBUG, OUTPUT_PATH
-from bots import manage_events_bot
+from big_honey_bot.helpers import reload_env
+from big_honey_bot.main.config import DEBUG, OUTPUT_PATH
+from big_honey_bot.main.big_honey_bot import run as run_bhb
 
 
 ENV_RELOAD_INTERVAL_SEC = 60
 LOG_FILENAME = "big_honey_bot.log"
-
-
-def reload_env():
-    while True:
-        load_dotenv()
-        time.sleep(ENV_RELOAD_INTERVAL_SEC)
 
 
 def configure_logging(log_path):
@@ -50,13 +43,9 @@ if __name__ == "__main__":
     log_file = OUTPUT_PATH.joinpath(LOG_FILENAME)
     configure_logging(log_file)
 
-    # load from .env
-    load_dotenv()
-
     # create thread to reload .env every minute
-    reload_env_thread = threading.Thread(target=reload_env)
-    reload_env_thread.daemon = True
+    reload_env_thread = threading.Thread(target=reload_env, args=(ENV_RELOAD_INTERVAL_SEC,), daemon=True)
     reload_env_thread.start()
 
-    # run main bot
-    manage_events_bot.run()
+    # run bhb main event loop
+    run_bhb()

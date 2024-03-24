@@ -7,12 +7,13 @@ import requests
 import pytz
 from parsel import Selector
 
-from bots.thread_handler_bot import new_thread
-from config import setup, get_env
-from tools.toolkit import description_tags
-from data.static.data import lookup_by_loc
-from threads.off_day.static_events import events as se
-from threads.game.lineup_injury_odds import line_inj_odds
+from big_honey_bot.config.helpers import get_env
+from big_honey_bot.helpers import description_tags
+from big_honey_bot.main.threads import new_thread
+from big_honey_bot.main.config import setup
+from big_honey_bot.threads.static.lookups import lookup_by_loc
+from big_honey_bot.threads.static.events import events as se
+from big_honey_bot.threads.helpers import lineup_injury_odds
 
 
 IN_PLAYOFFS = get_env('IN_PLAYOFFS')
@@ -51,7 +52,7 @@ def get_nba_games(playoffs=False):
             if playoffs:
                 game_data.insert(0, game['seriesGameNumber'])
                 game_data.append(game['seriesText'])
-            odds = line_inj_odds(game['homeTeam']['teamName'])[-1]
+            odds = lineup_injury_odds(game['homeTeam']['teamName'])[-1]
             game_data.append(" ".join(odds) if "N/A" not in odds else "")
             game_data.append(", ".join(nat_tv))
 

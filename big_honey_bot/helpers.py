@@ -1,7 +1,10 @@
 import hashlib
 import json
+import time
 
-from config import OUTPUT_PATH
+from dotenv import load_dotenv
+
+from big_honey_bot.main.config import OUTPUT_PATH
 
 
 description_tags = {
@@ -46,3 +49,9 @@ def create_hash(string):
 
 def hash_match(string, hash_in):
     return hash_in == hashlib.md5(string.encode()).hexdigest()
+
+
+def reload_env(sleep_time_sec):
+    while True:
+        load_dotenv()
+        time.sleep(sleep_time_sec)

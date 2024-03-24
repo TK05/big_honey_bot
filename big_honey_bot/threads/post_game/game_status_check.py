@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-from config import setup
+from big_honey_bot.main.config import setup
 
 
 SEASON = setup['season']

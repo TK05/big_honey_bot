@@ -3,8 +3,9 @@ import logging
 
 import praw
 
-from config import DEBUG, setup, get_env
-from threads.static.templates import ThreadStats
+from big_honey_bot.main.config import DEBUG, setup
+from big_honey_bot.config.helpers import get_env
+from big_honey_bot.threads.static.templates import ThreadStats
 
 
 USER_AGENT = setup['user_agent']

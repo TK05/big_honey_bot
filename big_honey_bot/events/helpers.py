@@ -3,7 +3,7 @@ import json
 from gcsa.google_calendar import GoogleCalendar
 from google.oauth2 import service_account
 
-from config import get_env
+from big_honey_bot.config.helpers import get_env
 
 
 def create_service(calendar_id=None, credentials_string=None):

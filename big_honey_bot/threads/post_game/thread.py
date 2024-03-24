@@ -3,14 +3,14 @@ import random
 import logging
 from datetime import datetime
 
-from config import setup, get_env
-from threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
-from threads.post_game.game_status_check import status_check
-from bots.thread_handler_bot import new_thread, edit_thread
-from threads.static.headlines import headlines
-from threads.static.headlines_playoffs import po_headlines
-from threads.static.templates import PostGame
-from events.manager import update_event, get_event
+from big_honey_bot.main.config import setup
+from big_honey_bot.main.threads import new_thread, edit_thread
+from big_honey_bot.main.events import update_event, get_event
+from big_honey_bot.threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
+from big_honey_bot.threads.post_game.game_status_check import status_check
+from big_honey_bot.threads.static.headlines import headlines, playoff_headlines
+from big_honey_bot.threads.static.templates import PostGame
+from big_honey_bot.config.helpers import get_env
 
 
 TEAM = setup['team']
@@ -56,24 +56,24 @@ def playoff_headline(opp_team, game_start, win, final_score, playoff_data):
         opp_wins += 1
 
     if team_wins >= 4:
-        headline = po_headlines['clinch']
+        headline = playoff_headlines['clinch']
         return headline.format(final_score, TEAM.upper(), opp_team.upper(), team_wins, opp_wins, date_str)
 
     if opp_wins >= 4:
-        headline = po_headlines['over']
+        headline = playoff_headlines['over']
         return headline.format(final_score, TEAM, playoff_data[1], opp_team, date_str)
 
     if win:
-        headline = po_headlines['win'].format(TEAM.upper(), playoff_data[1], ('!' * int(team_wins)), final_score)
+        headline = playoff_headlines['win'].format(TEAM.upper(), playoff_data[1], ('!' * int(team_wins)), final_score)
     else:
-        headline = po_headlines['lose'].format(TEAM.upper(), playoff_data[1], final_score)
+        headline = playoff_headlines['lose'].format(TEAM.upper(), playoff_data[1], final_score)
 
     if team_wins > opp_wins:
-        headline += po_headlines['leading'].format(opp_team, team_wins, opp_wins, date_str)
+        headline += playoff_headlines['leading'].format(opp_team, team_wins, opp_wins, date_str)
     elif team_wins < opp_wins:
-        headline += po_headlines['trailing'].format(opp_team, team_wins, opp_wins, date_str)
+        headline += playoff_headlines['trailing'].format(opp_team, team_wins, opp_wins, date_str)
     else:
-        headline += po_headlines['tied'].format(opp_team, team_wins, opp_wins, date_str)
+        headline += playoff_headlines['tied'].format(opp_team, team_wins, opp_wins, date_str)
 
     return headline
 

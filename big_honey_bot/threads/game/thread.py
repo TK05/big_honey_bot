@@ -8,12 +8,12 @@ from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
-from config import setup
-from bots.thread_handler_bot import new_thread
-from threads.static.templates import Game
-from data.static.data import team_lookup
-from threads.game.lineup_injury_odds import line_inj_odds
-from tools.toolkit import description_tags
+from big_honey_bot.main.config import setup
+from big_honey_bot.main.threads import new_thread
+from big_honey_bot.threads.static.templates import Game
+from big_honey_bot.threads.static.lookups import team_lookup
+from big_honey_bot.threads.helpers import lineup_injury_odds
+from big_honey_bot.helpers import description_tags
 
 
 TEAM = setup['team']
@@ -125,7 +125,7 @@ def generate_game_body(event):
         home_abv = team_lookup[event.meta['opponent']][1]
 
     # Call to lineup script to return lineups, injuries, betting odds
-    team_lineups, team_injuries, betting_odds = line_inj_odds(TEAM)
+    team_lineups, team_injuries, betting_odds = lineup_injury_odds(TEAM)
 
     lineup_header = Game.lineup_head_and_fmt(away_abv, home_abv)
     lineup_rows = Game.lineup_rows(team_lineups)

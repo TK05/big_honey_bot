@@ -6,8 +6,8 @@ import pytz
 import requests
 from parsel import Selector
 
-from config import DEBUG, setup  # When DEBUG; save json & html
-from tools.toolkit import write_dict_to_json_file, get_dict_from_json_file
+from big_honey_bot.main.config import DEBUG, setup  # When DEBUG; save json & html
+from big_honey_bot.helpers import write_dict_to_json_file, get_dict_from_json_file
 
 TIMEZONE = setup['timezone']
 SCRAPE_YEAR = setup['season']

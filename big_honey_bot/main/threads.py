@@ -6,10 +6,9 @@ import praw
 import prawcore
 from praw.exceptions import RedditAPIException
 
-from config import setup, get_env
+from big_honey_bot.main.config import setup
+from big_honey_bot.config.helpers import get_env
 
-
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 TARGET_SUB = get_env('TARGET_SUB')
 USERNAME = get_env('PRAW_USERNAME')
@@ -18,6 +17,7 @@ CLIENT_ID = get_env('PRAW_CLIENT_ID')
 CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 USER_AGENT = setup['user_agent']
 
+logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,

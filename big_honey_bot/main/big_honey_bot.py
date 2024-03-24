@@ -5,16 +5,16 @@ from datetime import datetime, timedelta
 
 import pytz
 
-from config import get_env
-from threads.game.game_thread import game_thread_handler
-from threads.off_day.off_day import off_day_thread_handler
-from bots.thread_handler_bot import edit_thread, get_thread
-from threads.post_game.post_game import post_game_thread_handler
-from threads.post_game.thread_stats import generate_stats_comment
-from sidebar.update_sidebar import update_sidebar
-from playoffs.playoff_data import get_series_status
-from events.manager import get_event, get_next_event, update_event, get_previous_event
-from tools.toolkit import hash_match
+from big_honey_bot.helpers import hash_match
+from big_honey_bot.config.helpers import get_env
+from big_honey_bot.main.threads import edit_thread, get_thread
+from big_honey_bot.main.events import get_event, get_next_event, update_event, get_previous_event
+from big_honey_bot.threads.game.thread import game_thread_handler
+from big_honey_bot.threads.off_day.thread import off_day_thread_handler
+from big_honey_bot.threads.post_game.thread import post_game_thread_handler
+from big_honey_bot.threads.post_game.thread_stats import generate_stats_comment
+from big_honey_bot.sidebar.helpers import update_sidebar
+from big_honey_bot.playoffs.helpers import get_series_status
 
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")

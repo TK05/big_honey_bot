@@ -6,8 +6,8 @@ from html.parser import HTMLParser
 
 from gcsa.serializers.event_serializer import EventSerializer
 
-from events.google_service import create_service
-from tools.toolkit import description_tags, create_hash
+from big_honey_bot.events.helpers import create_service
+from big_honey_bot.helpers import description_tags, create_hash
 
 
 class HTMLFilter(HTMLParser, ABC):

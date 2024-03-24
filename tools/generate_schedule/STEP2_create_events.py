@@ -4,10 +4,10 @@ from datetime import datetime
 
 import pytz
 
-from config import setup
-from data.static.data import team_lookup
-from threads.static.templates import Game
-from tools.toolkit import create_hash, description_tags, get_dict_from_json_file, write_dict_to_json_file
+from big_honey_bot.main.config import setup
+from big_honey_bot.threads.static.lookups import team_lookup
+from big_honey_bot.threads.static.templates import Game
+from big_honey_bot.helpers import create_hash, description_tags, get_dict_from_json_file, write_dict_to_json_file
 
 
 IN_PLAYOFFS = False

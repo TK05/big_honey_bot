@@ -2,8 +2,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 import requests
 
-from config import setup
-from threads.static.templates import PostGame
+from big_honey_bot.main.config import setup
+from big_honey_bot.threads.static.templates import PostGame
 
 
 SEASON = setup['season']

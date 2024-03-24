@@ -2,7 +2,7 @@ import requests
 from parsel import Selector
 
 
-def line_inj_odds(team_name):
+def lineup_injury_odds(team_name):
     """Scrapes for lineups, injuries and odds.
 
     :param team_name: Team name to search for
