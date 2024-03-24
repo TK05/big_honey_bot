@@ -1,3 +1,11 @@
+gt_placeholders = {
+    "our_record": "{our_rec}",
+    "opp_record": "{opp_rec}",
+    "date_and_time": "{date_time}",
+    "playoff_series": "{playoff_series}",
+    "playoff_teams": "{playoff_teams}"
+}
+
 pgt_placeholders = {
     "team": "***team***",
     "opponent": "***opponent***",

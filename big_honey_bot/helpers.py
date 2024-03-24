@@ -9,16 +9,11 @@ description_tags = {
     "meta_end": "\n{meta_end}",
     "body_start": "\n{body_begin}\n",
     "body_end": "\n{body_end}",
-    "our_record": "{our_rec}",
-    "opp_record": "{opp_rec}",
-    "date_and_time": "{date_time}",
     "starters": "{starters}",
     "injuries": "{injuries}",
     "odds": "{odds}",
     "referees": "{referees}",
-    "daily_games": "{daily_games}",
-    "playoff_series": "{playoff_series}",
-    "playoff_teams": "{playoff_teams}"
+    "daily_games": "{daily_games}"
 }
 
 

@@ -4,10 +4,11 @@ from datetime import datetime
 
 import pytz
 
-from big_honey_bot.helpers import create_hash, description_tags, get_dict_from_json_file, write_dict_to_json_file
+from big_honey_bot.helpers import create_hash, get_dict_from_json_file, write_dict_to_json_file, description_tags
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.static.lookups import team_lookup
 from big_honey_bot.threads.static.templates import Game
+from big_honey_bot.threads.static.headlines import gt_placeholders
 
 
 IN_PLAYOFFS = False
@@ -23,9 +24,9 @@ def create_headline(event_type_str, event_data):
         return f"POST GAME THREAD: {setup['team']} {home_away} {event_data['opponent']}"
     else:
         if IN_PLAYOFFS:
-            return f"{event_type_str}: {description_tags['playoff_series']} - {description_tags['playoff_teams']} | {description_tags['date_and_time']}"
+            return f"{event_type_str}: {gt_placeholders['playoff_series']} - {gt_placeholders['playoff_teams']} | {gt_placeholders['date_and_time']}"
         else:
-            return f"{event_type_str}: {setup['team']} {description_tags['our_record']} {home_away} {event_data['opponent']} {description_tags['opp_record']} | {description_tags['date_and_time']}"
+            return f"{event_type_str}: {setup['team']} {gt_placeholders['our_record']} {home_away} {event_data['opponent']} {gt_placeholders['opp_record']} | {gt_placeholders['date_and_time']}"
 
 
 def create_pre_game_event(schedule):

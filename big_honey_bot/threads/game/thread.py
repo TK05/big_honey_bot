@@ -11,6 +11,7 @@ from nba_api.stats.static import teams
 from big_honey_bot.helpers import description_tags
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.main import new_thread
+from big_honey_bot.threads.static.headlines import gt_placeholders
 from big_honey_bot.threads.static.templates import Game
 from big_honey_bot.threads.static.lookups import team_lookup
 from big_honey_bot.threads.helpers import lineup_injury_odds
@@ -64,9 +65,9 @@ def generate_title(event):
 
     date_str, time_str = format_date_and_time(event.meta['game_start'])
 
-    event.summary = event.summary.replace(description_tags['our_record'], f'({tf_rec})')
-    event.summary = event.summary.replace(description_tags['opp_record'], f'({opp_rec})')
-    event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
+    event.summary = event.summary.replace(gt_placeholders['our_record'], f'({tf_rec})')
+    event.summary = event.summary.replace(gt_placeholders['opp_record'], f'({opp_rec})')
+    event.summary = event.summary.replace(gt_placeholders['date_and_time'], f'{date_str} - {time_str}')
 
 
 def playoff_headline(event, playoff_data):
@@ -101,9 +102,9 @@ def playoff_headline(event, playoff_data):
 
     date_str, time_str = format_date_and_time(event.meta['game_start'])
 
-    event.summary = event.summary.replace(description_tags['playoff_series'], series_str)
-    event.summary = event.summary.replace(description_tags['playoff_teams'], teams_str)
-    event.summary = event.summary.replace(description_tags['date_and_time'], f'{date_str} - {time_str}')
+    event.summary = event.summary.replace(gt_placeholders['playoff_series'], series_str)
+    event.summary = event.summary.replace(gt_placeholders['playoff_teams'], teams_str)
+    event.summary = event.summary.replace(gt_placeholders['date_and_time'], f'{date_str} - {time_str}')
 
 
 def generate_game_body(event):
