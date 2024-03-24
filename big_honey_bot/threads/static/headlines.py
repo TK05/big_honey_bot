@@ -1,3 +1,11 @@
+pgt_placeholders = {
+    "team": "***team***",
+    "opponent": "***opponent***",
+    "margin": "***margin***",
+    "score": "***score***",
+    "date": "***date***"
+}
+
 headlines = {
     "1": {
         "4": [

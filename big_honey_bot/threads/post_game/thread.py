@@ -9,7 +9,7 @@ from big_honey_bot.events.main import update_event, get_event
 from big_honey_bot.threads.main import new_thread, edit_thread
 from big_honey_bot.threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from big_honey_bot.threads.post_game.game_status_check import status_check
-from big_honey_bot.threads.static.headlines import headlines, playoff_headlines
+from big_honey_bot.threads.static.headlines import headlines, playoff_headlines, pgt_placeholders
 from big_honey_bot.threads.static.templates import PostGame
 
 
@@ -90,11 +90,11 @@ def format_post(event, playoff_data):
 
     if custom_title:
         logger.info(f"Custom post game title detected: {custom_title}")
-        custom_title = custom_title.replace('***team***', TEAM)
-        custom_title = custom_title.replace('***opponent***', event.meta['opponent'])
-        custom_title = custom_title.replace('***margin***', str(margin))
-        custom_title = custom_title.replace('***score***', final_score)
-        custom_title = custom_title.replace('***date***', format_date_and_time(event.meta['game_start']))
+        custom_title = custom_title.replace(pgt_placeholders['team'], TEAM)
+        custom_title = custom_title.replace(pgt_placeholders['opponent'], event.meta['opponent'])
+        custom_title = custom_title.replace(pgt_placeholders['margin'], str(margin))
+        custom_title = custom_title.replace(pgt_placeholders['score'], final_score)
+        custom_title = custom_title.replace(pgt_placeholders['date'], format_date_and_time(event.meta['game_start']))
         event.summary = custom_title
     elif playoff_data:
         event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, final_score, playoff_data)
