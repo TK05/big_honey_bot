@@ -51,7 +51,15 @@ def espn_schedule_scrape():
 
         game_id_url = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/@href').get()
         game_id_raw = game_id_url.split('/')
-        espn_data[utc_key]['espn_id'] = game_id_raw[-1]
+        game_id = game_id_raw[-2]
+
+        # Ensure game_is an integer to catch potential future URI schema changes
+        try:
+            int(game_id)
+        except ValueError:
+            raise ValueError(f"ESPN game_id unexpectedly not an int: {game_id}")
+        
+        espn_data[utc_key]['espn_id'] = game_id
 
         write_dict_to_json_file(FILE_NAME, espn_data)
 
