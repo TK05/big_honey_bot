@@ -3,13 +3,12 @@ import logging
 
 import praw
 
-from big_honey_bot.config.main import DEBUG, setup
+from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env
 from big_honey_bot.threads.static.templates import ThreadStats
 
 
 USER_AGENT = setup['user_agent']
-
 USERNAME = get_env('PRAW_USERNAME')
 PASSWORD = get_env('PRAW_PASSWORD')
 CLIENT_ID = get_env('PRAW_CLIENT_ID')
@@ -83,7 +82,7 @@ def generate_stats_comment(game_thread, post_game_thread):
     logger.info(f"Gathering stats for: {game_thread.id}, Replying to: {post_game_thread.id}")
     details = thread_details(game_thread)
     comment = ThreadStats.format_post(*details)
-    if not DEBUG:
+    if not get_env('DEBUG'):
         comment_id = post_reply(post_game_thread, comment)
         logger.info(f"Thread stats reply finished, ID: {comment_id}")
     else:

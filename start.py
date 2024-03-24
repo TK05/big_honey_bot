@@ -3,7 +3,8 @@ import threading
 
 from big_honey_bot.main import run as run_bhb
 from big_honey_bot.helpers import reload_env
-from big_honey_bot.config.main import DEBUG, OUTPUT_PATH
+from big_honey_bot.config.main import OUTPUT_PATH
+from big_honey_bot.config.helpers import get_env
 
 
 ENV_RELOAD_INTERVAL_SEC = 60
@@ -19,7 +20,7 @@ def configure_logging(log_path):
     fh = logging.FileHandler(filename=log_path, encoding='utf-8')
     
     # set debug levels
-    if DEBUG:
+    if get_env('DEBUG'):
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)

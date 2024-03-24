@@ -1,9 +1,6 @@
 from big_honey_bot.config.helpers import OUTPUT_PATH
 
 
-# TODO: move debug to .env
-DEBUG = False
-
 setup = {
     'season': 2023,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
