@@ -129,8 +129,6 @@ def run():
     update_sidebar()
 
     # Initialize startup variables
-    game_thread = None
-    post_game_thread = None
     active_post = None
     bot_running = True
     skip = False
