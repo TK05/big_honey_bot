@@ -4,7 +4,7 @@ import time
 
 from dotenv import load_dotenv
 
-from big_honey_bot.main.config import OUTPUT_PATH
+from big_honey_bot.config.main import OUTPUT_PATH
 
 
 description_tags = {

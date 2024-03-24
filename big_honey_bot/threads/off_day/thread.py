@@ -7,10 +7,10 @@ import requests
 import pytz
 from parsel import Selector
 
-from big_honey_bot.config.helpers import get_env
 from big_honey_bot.helpers import description_tags
-from big_honey_bot.main.threads import new_thread
-from big_honey_bot.main.config import setup
+from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.main import setup
+from big_honey_bot.threads.main import new_thread
 from big_honey_bot.threads.static.lookups import lookup_by_loc
 from big_honey_bot.threads.static.events import events as se
 from big_honey_bot.threads.helpers import lineup_injury_odds

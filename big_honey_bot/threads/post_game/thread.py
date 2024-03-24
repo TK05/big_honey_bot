@@ -3,14 +3,14 @@ import random
 import logging
 from datetime import datetime
 
-from big_honey_bot.main.config import setup
-from big_honey_bot.main.threads import new_thread, edit_thread
-from big_honey_bot.main.events import update_event, get_event
+from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.main import setup
+from big_honey_bot.events.main import update_event, get_event
+from big_honey_bot.threads.main import new_thread, edit_thread
 from big_honey_bot.threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from big_honey_bot.threads.post_game.game_status_check import status_check
 from big_honey_bot.threads.static.headlines import headlines, playoff_headlines
 from big_honey_bot.threads.static.templates import PostGame
-from big_honey_bot.config.helpers import get_env
 
 
 TEAM = setup['team']

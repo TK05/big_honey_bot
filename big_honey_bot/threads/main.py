@@ -6,7 +6,7 @@ import praw
 import prawcore
 from praw.exceptions import RedditAPIException
 
-from big_honey_bot.main.config import setup
+from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env
 
 

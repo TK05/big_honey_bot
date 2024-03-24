@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from gcsa.event import Event
 
-from big_honey_bot.main.events import create_event
+from big_honey_bot.events.main import create_event
 
 
 def make_new_event(event, seconds=60):

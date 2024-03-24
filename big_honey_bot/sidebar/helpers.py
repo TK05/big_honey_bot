@@ -10,7 +10,7 @@ from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
-from big_honey_bot.main.config import setup
+from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env
 
 

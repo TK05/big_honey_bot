@@ -1,9 +1,9 @@
 import logging
 import threading
 
+from big_honey_bot.main import run as run_bhb
 from big_honey_bot.helpers import reload_env
-from big_honey_bot.main.config import DEBUG, OUTPUT_PATH
-from big_honey_bot.main.big_honey_bot import run as run_bhb
+from big_honey_bot.config.main import DEBUG, OUTPUT_PATH
 
 
 ENV_RELOAD_INTERVAL_SEC = 60

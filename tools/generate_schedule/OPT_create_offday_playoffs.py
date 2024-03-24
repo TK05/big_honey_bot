@@ -2,9 +2,9 @@ import platform
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
-from big_honey_bot.main.events import get_all_events_with_meta
-from big_honey_bot.main.config import setup
 from big_honey_bot.helpers import description_tags, create_hash, write_dict_to_json_file, get_dict_from_json_file
+from big_honey_bot.events.main import get_all_events_with_meta
+from big_honey_bot.config.main import setup
 from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 

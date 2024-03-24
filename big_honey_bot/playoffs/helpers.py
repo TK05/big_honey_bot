@@ -1,6 +1,6 @@
 import requests
 
-from big_honey_bot.main.config import setup
+from big_honey_bot.config.main import setup
 
 
 TEAM = setup['team']

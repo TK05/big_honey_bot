@@ -7,14 +7,14 @@ import pytz
 
 from big_honey_bot.helpers import hash_match
 from big_honey_bot.config.helpers import get_env
-from big_honey_bot.main.threads import edit_thread, get_thread
-from big_honey_bot.main.events import get_event, get_next_event, update_event, get_previous_event
+from big_honey_bot.sidebar.helpers import update_sidebar
+from big_honey_bot.playoffs.helpers import get_series_status
+from big_honey_bot.threads.main import edit_thread, get_thread
 from big_honey_bot.threads.game.thread import game_thread_handler
 from big_honey_bot.threads.off_day.thread import off_day_thread_handler
 from big_honey_bot.threads.post_game.thread import post_game_thread_handler
 from big_honey_bot.threads.post_game.thread_stats import generate_stats_comment
-from big_honey_bot.sidebar.helpers import update_sidebar
-from big_honey_bot.playoffs.helpers import get_series_status
+from big_honey_bot.events.main import get_event, get_next_event, update_event, get_previous_event
 
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")

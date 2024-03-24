@@ -3,8 +3,8 @@ import json
 from dotenv import load_dotenv
 from gcsa.serializers.event_serializer import EventSerializer
 
-from big_honey_bot.events.helpers import create_service
 from big_honey_bot.helpers import description_tags, get_dict_from_json_file
+from big_honey_bot.events.helpers import create_service
 
 
 FILE_NAME = 'all_events.json'

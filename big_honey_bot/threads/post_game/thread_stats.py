@@ -3,7 +3,7 @@ import logging
 
 import praw
 
-from big_honey_bot.main.config import DEBUG, setup
+from big_honey_bot.config.main import DEBUG, setup
 from big_honey_bot.config.helpers import get_env
 from big_honey_bot.threads.static.templates import ThreadStats
 
