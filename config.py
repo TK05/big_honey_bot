@@ -9,6 +9,9 @@ load_dotenv()
 DEBUG = False
 OUTPUT_PATH = Path.cwd().joinpath("out")
 
+if not OUTPUT_PATH.exists():
+    OUTPUT_PATH.mkdir()
+
 setup = {
     'season': 2023,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
