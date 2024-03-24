@@ -14,9 +14,8 @@ USERNAME = os.environ['PRAW_USERNAME']
 PASSWORD = os.environ['PRAW_PASSWORD']
 CLIENT_ID = os.environ['PRAW_CLIENT_ID']
 CLIENT_SECRET = os.environ['PRAW_CLIENT_SECRET']
-
 USER_AGENT = setup['user_agent']
-FLAIRS = setup['flairs']
+
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,
@@ -42,6 +41,17 @@ def get_thread(post_id):
         return post
     except prawcore.exceptions.NotFound:
         return None
+    
+
+def get_flair_uuid_from_event_type(event_type):
+    flair_map = {
+        "pre": os.environ['FLAIR_PRE'],
+        "game": os.environ['FLAIR_GAME'],
+        "post": os.environ['FLAIR_POST'],
+        "off": os.environ['FLAIR_OFF']
+    }
+
+    return flair_map[event_type]
 
 
 def new_thread(event):
@@ -68,8 +78,10 @@ def new_thread(event):
                 logger.info(f"Unstickied - {post.title}")
                 break
 
+    flair_uuid = get_flair_uuid_from_event_type(event.meta['event_type'])
+
     # TODO: prawcore.exceptions.BadRequest: received 400 HTTP response
-    post = subreddit.submit(event.summary, event.body, flair_id=FLAIRS[event.meta['event_type']], send_replies=False)
+    post = subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
     logger.info(f"Thread posted to r/{TARGET_SUB} - {post.id}")
