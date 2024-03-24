@@ -1,4 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
+
 import requests
 
 from config import setup
