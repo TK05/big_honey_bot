@@ -1,8 +1,10 @@
 import os
 import logging
+import time
 
 import praw
-import prawcore.exceptions
+import prawcore
+from praw.exceptions import RedditAPIException
 
 from config import setup
 
@@ -39,19 +41,19 @@ def get_thread(post_id):
     try:
         post.title
         return post
-    except prawcore.exceptions.NotFound:
+    except prawcore.NotFound:
         return None
     
 
 def get_flair_uuid_from_event_type(event_type):
     flair_map = {
-        "pre": os.environ['FLAIR_PRE'],
-        "game": os.environ['FLAIR_GAME'],
-        "post": os.environ['FLAIR_POST'],
-        "off": os.environ['FLAIR_OFF']
+        "pre": os.getenv('FLAIR_PRE', None),
+        "game": os.getenv('FLAIR_GAME', None),
+        "post": os.getenv('FLAIR_POST', None),
+        "off": os.getenv('FLAIR_OFF', None)
     }
 
-    return flair_map[event_type]
+    return flair_map.get(event_type)
 
 
 def new_thread(event):
@@ -78,10 +80,23 @@ def new_thread(event):
                 logger.info(f"Unstickied - {post.title}")
                 break
 
+    post_attempts = 5
     flair_uuid = get_flair_uuid_from_event_type(event.meta['event_type'])
 
-    # TODO: prawcore.exceptions.BadRequest: received 400 HTTP response
-    post = subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
+    while post_attempts > 0:
+        try:
+            post = subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
+        except RedditAPIException:
+            logger.error(f"Flair UUID ({flair_uuid}) is not valid for type={event.meta['event_type']}, attempting again without flair")
+            flair_uuid = None
+        # TODO: see if better handling of other/common praw errors
+        except prawcore.BadRequest:
+            time.sleep(30)
+        else:
+            post_attempts = 0
+        finally:
+            post_attempts -= 1
+        
     post.mod.sticky(bottom=False)
     post.mod.suggested_sort(sort='new')
     logger.info(f"Thread posted to r/{TARGET_SUB} - {post.id}")
