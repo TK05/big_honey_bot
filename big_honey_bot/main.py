@@ -160,8 +160,8 @@ def run():
         else:
             active_post = check_if_last_event_still_active(playoff_data)
 
-        current_utc = get_timestamp_from_datetime()
-        seconds_till_post = get_timestamp_from_datetime(dt=next_event.start) - current_utc
+        current_time = get_timestamp_from_datetime()
+        seconds_till_post = get_timestamp_from_datetime(dt=next_event.start) - current_time
 
         # If skip, next_event was same as active_event, grab next_event again
         if skip:

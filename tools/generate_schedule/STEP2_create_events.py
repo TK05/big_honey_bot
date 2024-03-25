@@ -7,6 +7,7 @@ from big_honey_bot.helpers import (
     get_datetime_from_timestamp,
     get_timestamp_from_datetime,
     get_str_from_datetime,
+    change_timezone,
     description_tags,
     platform_hr_min_fmt
 )
@@ -57,7 +58,7 @@ def create_pre_game_event(schedule):
         new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['start']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['end'] = {}
-        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['end']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['summary'] = create_headline('GDT', event_data)
 
@@ -106,7 +107,7 @@ def create_game_event(schedule):
         new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['start']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['end'] = {}
-        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['end']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
         new_schedule[new_utc]['summary'] = create_headline('GAME THREAD', event_data)
@@ -124,7 +125,8 @@ def create_game_event(schedule):
 
         times = []
         for loc, tz in time_table.items():
-            times.append(f"{get_str_from_datetime(dt=dt_obj, fmt=time_fmt, add_tz=True, tz=tz)} - {loc}")
+            tz_dt = change_timezone(dt=dt_obj, tz=tz)
+            times.append(f"{get_str_from_datetime(dt=tz_dt, fmt=time_fmt)} - {loc}")
 
         # subreddit links using team lookup dict
         top_sub = team_lookup[event_data['opponent']][0]
@@ -169,7 +171,7 @@ def post_game_edit(schedule):
         new_schedule[utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[utc]['start']['timeZone'] = setup['timezone']
         new_schedule[utc]['end'] = {}
-        new_schedule[utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(utc) + 61), add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[utc]['end']['timeZone'] = setup['timezone']
         new_schedule[utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
         new_schedule[utc]['summary'] = create_headline('POST GAME THREAD', event_data)

@@ -22,6 +22,7 @@ logger = logging.getLogger(f"{os.path.basename(__file__)}")
 def format_date_and_time(time_in):
 
     dt = get_datetime_from_str(dt_str=time_in, fmt="%m/%d/%y %I:%M %p")
+    
     try:
         date_out = dt.strftime('%b %-d, %Y')
     except ValueError:

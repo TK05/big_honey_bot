@@ -6,10 +6,11 @@ import requests
 from parsel import Selector
 
 from big_honey_bot.helpers import (
-    add_timezone_to_datetime,
+    change_timezone,
     get_timestamp_from_datetime,
     get_str_from_datetime,
-    get_datetime_from_str
+    get_datetime_from_str,
+    get_datetime
 )
 from big_honey_bot.config.main import setup, OUTPUT_PATH
 from big_honey_bot.config.helpers import get_env
@@ -83,9 +84,9 @@ def espn_convert_date_time(date_in, time_in):
         hour = int(time_in[0])
         minute = (int(time_in[-1].strip(' AM')))
 
-    site_dt = datetime(year, month, day, hour, minute)  # create datetime obj from what's scraped
-    site_dt = add_timezone_to_datetime(dt=site_dt, tz=espn_timezone) # properly converted to correct timezone
-    loc_str = get_str_from_datetime(dt=site_dt, fmt='%D %I:%M %p', add_tz=True, tz=setup['timezone'])
+    site_dt = get_datetime(dt=[year, month, day, hour, minute], add_tz=True, tz=espn_timezone)  # create datetime obj from what's scraped
+    loc_dt = change_timezone(dt=site_dt, tz=setup['timezone']) # convert to setup timezone
+    loc_str = get_str_from_datetime(dt=loc_dt, fmt='%D %I:%M %p')
 
     return get_timestamp_from_datetime(dt=site_dt), loc_str
 
@@ -119,7 +120,9 @@ def get_espn_schedule_dict():
             continue
 
         utc_key, date = espn_convert_date_time(date_raw, time_raw)
-
+        
+        # store utc_key as string since they're converted to strings in JSON already
+        utc_key = str(utc_key)
         espn_data[utc_key] = dict()
         espn_data[utc_key]['game_start'] = date
 
@@ -224,3 +227,7 @@ def get_next_game():
         logger.error(f"Unknown error when getting next game: {next_espn_ts}, NBA: {next_nba_com_ts}")
         
         raise ValueError(f"Unknown error when getting next game.")
+    
+
+if __name__ == "__main__":
+    get_espn_schedule_dict()

@@ -71,7 +71,7 @@ def add_timezone_to_datetime(dt, tz=setup['timezone']):
         
         tz = validate_timezone(tz)
 
-        return dt.astimezone(tz)
+        return dt.replace(tzinfo=tz)
 
 
 def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
@@ -84,7 +84,7 @@ def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
         dt = datetime(**dt)
     
     if add_tz:
-        dt = add_timezone_to_datetime(dt)
+        dt = add_timezone_to_datetime(dt=dt, tz=tz)
     
     return dt
 
@@ -101,7 +101,7 @@ def get_datetime_from_timestamp(ts=None, add_tz=False, tz=setup['timezone']):
         raise e
 
     if add_tz:
-        dt = add_timezone_to_datetime(dt)
+        dt = add_timezone_to_datetime(dt=dt, tz=tz)
 
     return dt
 
