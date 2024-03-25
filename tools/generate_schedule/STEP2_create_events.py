@@ -49,7 +49,7 @@ def create_pre_game_event(schedule):
         new_schedule[new_utc]['meta']['event_type'] = 'pre'
 
         post_date = get_datetime_from_timestamp(ts=new_utc)
-        loc_time_str = get_str_from_datetime(dt=post_date, fmt=f'{platform_hr_min_fmt} %p', add_tz=True)
+        loc_time_str = get_str_from_datetime(dt=post_date, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
         new_schedule[new_utc]['meta']['post_time'] = loc_time_str
 
         # Format Google Cal Event
@@ -93,7 +93,7 @@ def create_game_event(schedule):
 
         new_utc = str(int(old_utc) - 60*60)     # Offset time 1 hour prior to game start time
         post_date = get_datetime_from_timestamp(ts=new_utc)
-        loc_time_str = get_str_from_datetime(dt=post_date, fmt=f'{platform_hr_min_fmt} %p', add_tz=True)
+        loc_time_str = get_str_from_datetime(dt=post_date, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
 
         new_schedule[new_utc] = {}
         new_schedule[new_utc]['meta'] = event_data
@@ -161,7 +161,7 @@ def post_game_edit(schedule):
         new_schedule[utc]['meta']['event_type'] = 'post'
 
         game_time = get_datetime_from_timestamp(ts=utc)
-        loc_time_str = get_str_from_datetime(dt=game_time, fmt=f'{platform_hr_min_fmt} %p', add_tz=True)
+        loc_time_str = get_str_from_datetime(dt=game_time, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
         new_schedule[utc]['meta']['post_time'] = loc_time_str
 
         # Format Google Cal Event
