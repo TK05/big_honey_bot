@@ -1,5 +1,8 @@
 import hashlib
 import json
+from datetime import datetime
+
+import pytz
 
 from big_honey_bot.config.main import OUTPUT_PATH
 
@@ -41,3 +44,11 @@ def create_hash(string):
 
 def hash_match(string, hash_in):
     return hash_in == hashlib.md5(string.encode()).hexdigest()
+
+
+def timestamps_are_same_day(ts_1, ts_2, tzone):
+    tz = pytz.timezone(tzone)
+    date_1 = datetime.fromtimestamp(ts_1, tz)
+    date_2 = datetime.fromtimestamp(ts_2, tz)
+
+    return date_1.date() == date_2.date()
