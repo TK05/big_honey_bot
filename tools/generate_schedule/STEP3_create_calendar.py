@@ -25,7 +25,7 @@ def update_calendar(schedule):
         }
 
         service.add_event(EventSerializer.to_object(cal_event))
-        print(event_data)
+        print(f"{utc} - {event_data['summary']}")
 
 
 if __name__ == '__main__':
