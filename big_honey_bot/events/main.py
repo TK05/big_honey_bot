@@ -99,6 +99,18 @@ def find_event(query, past=None):
     return event
 
 
+def find_events_by_meta(**kwargs):
+    all_events = get_all_events_with_meta()
+
+    matches = []
+
+    for event in all_events:
+        if all(item in event.meta.items() for item in kwargs.items()):
+            matches.append(event)
+    
+    return matches
+
+
 def create_event(event_data):
     service = create_service()
     service.add_event(event_data)
