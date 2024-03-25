@@ -78,6 +78,10 @@ def get_datetime_from_timestamp(timestamp=datetime.timestamp(datetime.now()), ad
     return dt
 
 
+def get_timestamp_from_datetime(datetime=datetime.now()):
+    return datetime.timestamp()
+
+
 def timestamps_are_same_day(ts_1, ts_2, tzone):
     date_1 = get_datetime_from_timestamp(ts_1, tzone)
     date_2 = get_datetime_from_timestamp(ts_2, tzone)
