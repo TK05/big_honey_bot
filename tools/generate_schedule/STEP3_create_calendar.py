@@ -15,7 +15,6 @@ def update_calendar(schedule):
 
     for utc, event_data in schedule.items():
         cal_event = {
-            "id": utc,
             "start": event_data["start"],
             "end": event_data["end"],
             "summary": event_data["summary"],
