@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytz
 
-from big_honey_bot.config.main import OUTPUT_PATH
+from big_honey_bot.config.main import setup, OUTPUT_PATH
 
 
 description_tags = {
@@ -46,9 +46,32 @@ def hash_match(string, hash_in):
     return hash_in == hashlib.md5(string.encode()).hexdigest()
 
 
+def datetime_from_timestamp(timestamp, add_tz=False, tz=setup['timezone']):
+    
+    # check if timestamp is int, create datetime obj if so
+    try:
+        dt = datetime.fromtimestamp(int(timestamp))
+    except TypeError:
+        raise TypeError
+    except ValueError:
+        raise ValueError
+
+    if add_tz:
+        
+        # check if tz is already a pytz.timezone object or string, keep/convert to pytz.timezone
+        try:
+            tz.zone
+        except AttributeError:
+            tz = pytz.timezone(tz)
+
+
+        dt = dt.replace(tzinfo=tz)
+
+    return dt
+
+
 def timestamps_are_same_day(ts_1, ts_2, tzone):
-    tz = pytz.timezone(tzone)
-    date_1 = datetime.fromtimestamp(ts_1, tz)
-    date_2 = datetime.fromtimestamp(ts_2, tz)
+    date_1 = datetime_from_timestamp(ts_1, tzone)
+    date_2 = datetime_from_timestamp(ts_2, tzone)
 
     return date_1.date() == date_2.date()
