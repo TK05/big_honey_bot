@@ -1,11 +1,9 @@
 import os
 import time
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-import pytz
-
-from big_honey_bot.helpers import hash_match
+from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime
 from big_honey_bot.config.helpers import get_env
 from big_honey_bot.sidebar.helpers import update_sidebar
 from big_honey_bot.playoffs.helpers import get_series_status
@@ -162,8 +160,8 @@ def run():
         else:
             active_post = check_if_last_event_still_active(playoff_data)
 
-        current_utc = datetime.timestamp(datetime.now())
-        seconds_till_post = int(datetime.timestamp(next_event.start)) - int(current_utc)
+        current_utc = get_timestamp_from_datetime()
+        seconds_till_post = get_timestamp_from_datetime(dt=next_event.start) - current_utc
 
         # If skip, next_event was same as active_event, grab next_event again
         if skip:
@@ -187,7 +185,7 @@ def run():
         # There is an active post, check for updates to it
         elif active_post:
             # End active posts 12 hours after posting
-            if datetime.now(tz=pytz.timezone(active_post.timezone)) > (active_post.start + timedelta(hours=12)):
+            if get_datetime(add_tz=True, tz=active_post.timezone) > (active_post.start + timedelta(hours=12)):
                 logger.info(f"active_post active longer than 12 hours, setting to done")
                 end_active_post(active_post)
             else:

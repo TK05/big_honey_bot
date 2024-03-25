@@ -1,12 +1,12 @@
-import datetime
 import json
 import re
+from datetime import timedelta
 from abc import ABC
 from html.parser import HTMLParser
 
 from gcsa.serializers.event_serializer import EventSerializer
 
-from big_honey_bot.helpers import description_tags, create_hash
+from big_honey_bot.helpers import description_tags, create_hash, get_datetime
 from big_honey_bot.events.helpers import create_service
 
 
@@ -59,8 +59,9 @@ def get_all_events_with_meta():
 
 def get_previous_event(penultimate=False, days=30):
     service = create_service()
-    events = service.get_events((datetime.datetime.now() - datetime.timedelta(days=days)),
-                                datetime.datetime.now(), order_by='startTime', single_events=True)
+    now = get_datetime()
+    events = service.get_events((now - timedelta(days=days)),
+                                now, order_by='startTime', single_events=True)
 
     # Return penultimate event if requested, else return last event
     event = None

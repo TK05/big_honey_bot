@@ -1,11 +1,15 @@
 import hashlib
 import json
 from datetime import datetime
-
-import pytz
+import platform
+from zoneinfo import ZoneInfo
 
 from big_honey_bot.config.main import setup, OUTPUT_PATH
 
+
+platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
+platform_day_fmt = "%#d" if platform.system() == 'Windows' else '%-d'
+platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
 
 description_tags = {
     "meta_start": "{meta_begin}\n",
@@ -46,32 +50,53 @@ def hash_match(string, hash_in):
     return hash_in == hashlib.md5(string.encode()).hexdigest()
 
 
-def convert_to_timezone(tz):
-    # check if tz is already a pytz.timezone object or string, return as pytz.timezone
-    try:
-        tz.zone
-    except AttributeError:
-        tz = pytz.timezone(tz)
+def validate_timezone(tz):
     
-    return tz
+    if isinstance(tz, ZoneInfo):
+        return tz
+    elif isinstance(tz, str):
+        return ZoneInfo(tz)
+    else:
+        raise AttributeError
 
-def add_timezone_to_datetime(datetime, tz=setup['timezone']):
-        return convert_to_timezone(tz).localize(datetime)
+
+def change_timezone(dt, tz=setup['timezone']):
+    
+    tz = validate_timezone(tz)
+    
+    return dt.astimezone(tz)
 
 
-def get_datetime(datetime=datetime.now(), add_tz=False, tz=setup['timezone']):
+def add_timezone_to_datetime(dt, tz=setup['timezone']):
+        
+        tz = validate_timezone(tz)
+
+        return dt.replace(tzinfo=tz)
+
+
+def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
+
+    if not dt:
+        dt = datetime.now()
+    elif isinstance(dt, list):
+        dt = datetime(*dt)
+    elif isinstance(dt, dict):
+        dt = datetime(**dt)
     
     if add_tz:
-        datetime = add_timezone_to_datetime(datetime)
+        dt = add_timezone_to_datetime(dt)
     
-    return datetime
+    return dt
 
 
-def get_datetime_from_timestamp(timestamp=datetime.timestamp(datetime.now()), add_tz=False, tz=setup['timezone']):
+def get_datetime_from_timestamp(ts=None, add_tz=False, tz=setup['timezone']):
+
+    if not ts:
+        ts = datetime.timestamp(datetime.now())
     
     # check if timestamp is int, create datetime obj if so
     try:
-        dt = datetime.fromtimestamp(int(timestamp))
+        dt = datetime.fromtimestamp(int(ts))
     except (TypeError, ValueError) as e:
         raise e
 
@@ -81,24 +106,30 @@ def get_datetime_from_timestamp(timestamp=datetime.timestamp(datetime.now()), ad
     return dt
 
 
-def get_timestamp_from_datetime(datetime=datetime.now()):
+def get_timestamp_from_datetime(dt=None):
+
+    if not dt:
+        dt = datetime.now()
     
-    return int(datetime.timestamp())
+    return int(dt.timestamp())
 
 
 def get_datetime_from_str(dt_str, fmt, add_tz=False, tz=setup['timezone']):
     
     if add_tz:
-        tz = convert_to_timezone(tz)
+        tz = validate_timezone(tz)
         return tz.localize(datetime.strptime(dt_str, fmt))
     
     return datetime.strptime(dt_str, fmt)
 
 
-def get_str_from_datetime(dt=datetime.now(), fmt='%D %I:%M %p', add_tz=False, tz=setup['timezone']):
+def get_str_from_datetime(dt=None, fmt='%D %I:%M %p', add_tz=False, tz=setup['timezone']):
+
+    if not dt:
+        dt = datetime.now()
     
     if add_tz:
-        return datetime.strftime(dt.astimezone(tz=convert_to_timezone(tz)), format(fmt))
+        return datetime.strftime(dt.astimezone(tz=validate_timezone(tz)), format(fmt))
     
     return datetime.strftime(dt, format(fmt))
 

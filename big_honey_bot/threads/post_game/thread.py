@@ -1,8 +1,8 @@
 import os
 import random
 import logging
-from datetime import datetime
 
+from big_honey_bot.helpers import get_datetime_from_str
 from big_honey_bot.config.helpers import get_env
 from big_honey_bot.config.main import setup
 from big_honey_bot.events.main import update_event, get_event
@@ -20,10 +20,12 @@ logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 def format_date_and_time(time_in):
+
+    dt = get_datetime_from_str(dt_str=time_in, fmt="%m/%d/%y %I:%M %p")
     try:
-        date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
+        date_out = dt.strftime('%b %-d, %Y')
     except ValueError:
-        date_out = datetime.strptime(time_in, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
+        date_out = dt.strftime('%b %#d, %Y')
 
     return date_out
 

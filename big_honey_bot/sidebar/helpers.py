@@ -1,8 +1,7 @@
 import os
 import re
 import logging
-from datetime import datetime, date, timedelta
-from zoneinfo import ZoneInfo
+from datetime import date, timedelta
 
 import requests
 import praw
@@ -10,6 +9,7 @@ from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
+from big_honey_bot.helpers import get_datetime, get_str_from_datetime
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env
 
@@ -20,7 +20,6 @@ logger = logging.getLogger(f"{os.path.basename(__file__)}")
 USER_AGENT = setup['user_agent']
 YEAR = setup['season']
 TEAM = setup['team']
-TIMEZONE = setup['timezone']
 
 UPDATE_SIDEBAR = get_env('UPDATE_SIDEBAR')
 PLAYOFF_WATCH = get_env('PLAYOFF_WATCH')
@@ -172,7 +171,7 @@ def update_munder(standings):
 
 def update_reign():
     start_date = date(2023, 6, 13)
-    date_now = datetime.now(tz=ZoneInfo(TIMEZONE)).date()
+    date_now = get_datetime(add_tz=True).date()
     reign_days = (date_now - start_date + timedelta(days=1)).days
 
     return f"Reign Day #{reign_days}"
@@ -184,7 +183,7 @@ def update_sidebar():
     if not UPDATE_SIDEBAR:
         return
 
-    logger.info(f"Updating sidebar @ {datetime.now().strftime('%H:%M')}")
+    logger.info(f"Updating sidebar @ {get_str_from_datetime(fmt='%H:%M')}")
 
     standings = get_standings()
 

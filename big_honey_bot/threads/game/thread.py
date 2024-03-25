@@ -1,14 +1,13 @@
 import os
 import re
 import logging
-from datetime import datetime
 
 import requests
 from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
-from big_honey_bot.helpers import description_tags
+from big_honey_bot.helpers import get_datetime_from_str, description_tags
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.main import new_thread
 from big_honey_bot.threads.static.headlines import gt_placeholders
@@ -24,12 +23,15 @@ logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
 def format_date_and_time(game_start):
+
+    dt = get_datetime_from_str(dt_str=game_start, fmt="%m/%d/%y %I:%M %p")
+
     try:
-        date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %-d, %Y')
-        time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%-I:%M %p')
+        date = dt.strftime('%b %-d, %Y')
+        time = dt.strftime('%-I:%M %p')
     except ValueError:
-        date = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%b %#d, %Y')
-        time = datetime.strptime(game_start, "%m/%d/%y %I:%M %p").strftime('%#I:%M %p')
+        date = dt.strftime('%b %#d, %Y')
+        time = dt.strftime('%#I:%M %p')
 
     return date, time
 

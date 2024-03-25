@@ -1,13 +1,18 @@
 import os
-import platform
 import logging
-from datetime import datetime
 
 import requests
-import pytz
 from parsel import Selector
 
-from big_honey_bot.helpers import description_tags
+from big_honey_bot.helpers import (
+    get_datetime_from_str,
+    change_timezone,
+    get_str_from_datetime,
+    get_datetime,
+    description_tags,
+    platform_hr_min_fmt,
+    platform_mo_day_fmt
+)
 from big_honey_bot.config.helpers import get_env
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.main import new_thread
@@ -19,9 +24,6 @@ from big_honey_bot.threads.helpers import lineup_injury_odds
 IN_PLAYOFFS = get_env('IN_PLAYOFFS')
 IS_OFFSEASON = get_env('IS_OFFSEASON')
 
-platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else "%-I:%M"
-platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
-
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
@@ -30,12 +32,12 @@ def get_nba_games(playoffs=False):
 
     def get_game_data(game, for_team=''):
         game_data = []
-        time_utc = datetime.strptime(game['gameDateTimeUTC'], '%Y-%m-%dT%H:%M:%SZ')
-        time_local_dt = time_utc.replace(tzinfo=pytz.utc).astimezone(pytz.timezone(setup['timezone']))
-        date_local = time_local_dt.strftime(platform_mo_day_fmt)
-        time_local = f"{datetime.strftime(time_local_dt, format(f'{platform_hr_min_fmt} %p %Z'))}"
+        time_utc = get_datetime_from_str(dt_str=game['gameDateTimeUTC'], fmt='%Y-%m-%dT%H:%M:%SZ', add_tz=True, tz='UTC')
+        time_local_dt = change_timezone(dt=time_utc, tz=setup['timezone'])
+        date_local = get_str_from_datetime(dt=time_local_dt, fmt=platform_mo_day_fmt)
+        time_local = get_str_from_datetime(dt=time_local_dt, fmt=f'{platform_hr_min_fmt} %p %Z')
         time_link = f"https://dateful.com/time-zone-converter?t=" \
-                    f"{datetime.strftime(time_local_dt, format(f'{platform_hr_min_fmt} %p'))}" \
+                    f"{get_str_from_datetime(dt=time_local_dt, fmt=f'{platform_hr_min_fmt} %p')}" \
                     f"&tz={setup['location']}&"
         game_data.append(f"{date_local} - [{time_local}]({time_link})" if for_team else f"[{time_local}]({time_link})")
         game_data.append(f"{game['awayTeam']['teamName']} @ {game['homeTeam']['teamName']}")
@@ -78,11 +80,11 @@ def get_nba_games(playoffs=False):
     def get_days_games():
         games = []
         sort_order = []
-        today = datetime.now().date()
+        today = get_datetime().date()
         i = 0
 
         for date in all_games['leagueSchedule']['gameDates']:
-            day = datetime.strptime(date['gameDate'], '%m/%d/%Y %H:%M:%S').date()
+            day = get_datetime_from_str(dt_str=date['gameDate'], fmt='%m/%d/%Y %H:%M:%S').date()
 
             if today == day:
                 for game in date['games']:
@@ -130,15 +132,13 @@ def get_espn_games():
 
         date_str = game.xpath('.//div[@class="Table__Title"]/text()').get().strip()
         time_str = game_base[2].xpath('.//a[@class="AnchorLink"]/text()').get()
-        time = pytz.timezone('US/Eastern').localize(
-            datetime.strptime(f"{date_str} {time_str}", '%A, %B %d, %Y %I:%M %p'))
-        time_tz = time.astimezone(pytz.timezone(setup['timezone']))
+        time = get_datetime_from_str(dt_str=f"{date_str} {time_str}", fmt='%A, %B %d, %Y %I:%M %p', add_tz=True, tz='US/Eastern')
+        time_tz = change_timezone(dt=time, tz=setup['timezone'])
 
-        date_local = f"{datetime.strftime(time_tz, format(platform_mo_day_fmt))}"
-
-        time_local = f"{datetime.strftime(time_tz, format(f'{platform_hr_min_fmt} %p %Z'))}"
+        date_local = f"{get_str_from_datetime(dt=time_tz, fmt=platform_mo_day_fmt)}"
+        time_local = f"{get_str_from_datetime(dt=time_tz, fmt=f'{platform_hr_min_fmt} %p %Z')}"
         time_link = f"https://dateful.com/time-zone-converter?t=" \
-                    f"{datetime.strftime(time_tz, format(f'{platform_hr_min_fmt} %p'))}" \
+                    f"{get_str_from_datetime(dt=time_tz, fmt=f'{platform_hr_min_fmt} %p')}" \
                     f"&tz={setup['location']}&"
         time_fmt = f"{date_local} - [{time_local}]({time_link})"
 
@@ -157,7 +157,7 @@ def get_espn_games():
             # network identified by text
             tv = net_con.xpath('.//div[contains(@class, "network-name")]/text()').get()
 
-        if time_tz.date() == datetime.now(tz=pytz.timezone(setup['timezone'])).date():
+        if time_tz.date() == get_datetime(add_tz=True).date():
             games_today.append(
                 f"|{away_team} {lookup_by_loc[away_team][0]} @ {home_team} {lookup_by_loc[home_team][0]}|{time_fmt}|{game_note}|{tv}|{espn_link}|\n")
         else:
@@ -191,7 +191,7 @@ def generate_thread_body(event=None):
 
         upcoming_events = []
         events_today = []
-        current_doy = int(datetime.strftime(datetime.now(), "%j"))
+        current_doy = int(get_str_from_datetime(fmt="%j"))
 
         for i in sorted(se.keys()):
             if se[i]["start_doy"] <= current_doy <= se[i]["end_doy"]:

@@ -2,16 +2,20 @@ import logging
 import os
 from datetime import datetime
 
-import pytz
 import requests
 from parsel import Selector
 
+from big_honey_bot.helpers import (
+    add_timezone_to_datetime,
+    get_timestamp_from_datetime,
+    get_str_from_datetime,
+    get_datetime_from_str
+)
 from big_honey_bot.config.main import setup, OUTPUT_PATH
 from big_honey_bot.config.helpers import get_env
 
 
 DEBUG = get_env('DEBUG')
-TIMEZONE = setup['timezone']
 
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
@@ -44,7 +48,8 @@ def espn_convert_date_time(date_in, time_in):
     """ convert raw time and date
         outputs utc timestamp for key and a local time string for easier reading
     """
-    espn_timezone = pytz.timezone('US/Eastern')  # ESPN uses Eastern timezone
+
+    espn_timezone = 'US/Eastern' # ESPN uses Eastern timezone
     scrape_year = setup['season']
 
     # TODO: fix this table so it's not needed
@@ -78,11 +83,11 @@ def espn_convert_date_time(date_in, time_in):
         hour = int(time_in[0])
         minute = (int(time_in[-1].strip(' AM')))
 
-    site_dt = datetime(year, month, day, hour, minute)  # datetime of scraped time
-    site_dt = espn_timezone.localize(site_dt)   # properly converted to correct timezone
-    loc_str = datetime.strftime(site_dt.astimezone(tz=pytz.timezone(TIMEZONE)), format('%D %I:%M %p'))
+    site_dt = datetime(year, month, day, hour, minute)  # create datetime obj from what's scraped
+    site_dt = add_timezone_to_datetime(dt=site_dt, tz=espn_timezone) # properly converted to correct timezone
+    loc_str = get_str_from_datetime(dt=site_dt, fmt='%D %I:%M %p', add_tz=True, tz=setup['timezone'])
 
-    return str(int(site_dt.timestamp())), loc_str
+    return get_timestamp_from_datetime(dt=site_dt), loc_str
 
 
 def get_espn_schedule_dict():
@@ -159,7 +164,9 @@ def get_nba_com_schedule_dict():
             if setup['team'] not in [home_team, away_team]:
                 continue
 
-            utc_key = str(int(pytz.utc.localize(datetime.strptime(game['gameDateTimeUTC'],'%Y-%m-%dT%H:%M:%SZ')).timestamp()))
+            utc_dt = get_datetime_from_str(dt_str=game['gameDateTimeUTC'], fmt='%Y-%m-%dT%H:%M:%SZ', add_tz=True, tz='UTC')
+            # store utc_key as string since they're converted to strings in JSON already
+            utc_key = str(get_timestamp_from_datetime(dt=utc_dt))
             nbacom_data[utc_key] = dict()
             nbacom_data[utc_key]['nba_id'] = game['gameId']
             nbacom_data[utc_key]['home_away'] = 'home' if setup['team'] == home_team else 'away'
@@ -190,7 +197,7 @@ def get_next_game():
 
     next_espn_ts = None
     next_nba_com_ts = None
-    now_ts = int(datetime.now().timestamp())
+    now_ts = get_timestamp_from_datetime()
 
     for game_ts in espn_data.keys():
         if int(game_ts) > now_ts:
