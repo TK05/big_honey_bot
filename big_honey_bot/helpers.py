@@ -64,7 +64,7 @@ def get_datetime(datetime=datetime.now(), add_tz=False, tz=setup['timezone']):
     return datetime
 
 
-def get_datetime_from_timestamp(timestamp, add_tz=False, tz=setup['timezone']):
+def get_datetime_from_timestamp(timestamp=datetime.timestamp(datetime.now()), add_tz=False, tz=setup['timezone']):
     
     # check if timestamp is int, create datetime obj if so
     try:
