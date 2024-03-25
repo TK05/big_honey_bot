@@ -46,18 +46,21 @@ def hash_match(string, hash_in):
     return hash_in == hashlib.md5(string.encode()).hexdigest()
 
 
+def convert_to_timezone(tz):
+    # check if tz is already a pytz.timezone object or string, return as pytz.timezone
+    try:
+        tz.zone
+    except AttributeError:
+        tz = pytz.timezone(tz)
+    
+    return tz
+
 def add_timezone_to_datetime(datetime, tz=setup['timezone']):
-        # check if tz is already a pytz.timezone object or string, keep/convert to pytz.timezone
-        try:
-            tz.zone
-        except AttributeError:
-            tz = pytz.timezone(tz)
-
-
-        return datetime.replace(tzinfo=tz)
+        return convert_to_timezone(tz).localize(datetime)
 
 
 def get_datetime(datetime=datetime.now(), add_tz=False, tz=setup['timezone']):
+    
     if add_tz:
         datetime = add_timezone_to_datetime(datetime)
     
@@ -79,11 +82,30 @@ def get_datetime_from_timestamp(timestamp=datetime.timestamp(datetime.now()), ad
 
 
 def get_timestamp_from_datetime(datetime=datetime.now()):
-    return datetime.timestamp()
+    
+    return int(datetime.timestamp())
 
 
-def timestamps_are_same_day(ts_1, ts_2, tzone):
-    date_1 = get_datetime_from_timestamp(ts_1, tzone)
-    date_2 = get_datetime_from_timestamp(ts_2, tzone)
+def get_datetime_from_str(dt_str, fmt, add_tz=False, tz=setup['timezone']):
+    
+    if add_tz:
+        tz = convert_to_timezone(tz)
+        return tz.localize(datetime.strptime(dt_str, fmt))
+    
+    return datetime.strptime(dt_str, fmt)
+
+
+def get_str_from_datetime(dt=datetime.now(), fmt='%D %I:%M %p', add_tz=False, tz=setup['timezone']):
+    
+    if add_tz:
+        return datetime.strftime(dt.astimezone(tz=convert_to_timezone(tz)), format(fmt))
+    
+    return datetime.strftime(dt, format(fmt))
+
+
+def timestamps_are_same_day(ts_1, ts_2, tz):
+    
+    date_1 = get_datetime_from_timestamp(ts_1, tz)
+    date_2 = get_datetime_from_timestamp(ts_2, tz)
 
     return date_1.date() == date_2.date()
