@@ -71,7 +71,7 @@ def add_timezone_to_datetime(dt, tz=setup['timezone']):
         
         tz = validate_timezone(tz)
 
-        return dt.replace(tzinfo=tz)
+        return dt.astimezone(tz)
 
 
 def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
@@ -115,12 +115,13 @@ def get_timestamp_from_datetime(dt=None):
 
 
 def get_datetime_from_str(dt_str, fmt, add_tz=False, tz=setup['timezone']):
+
+    dt = datetime.strptime(dt_str, fmt)
     
     if add_tz:
-        tz = validate_timezone(tz)
-        return tz.localize(datetime.strptime(dt_str, fmt))
+        dt = add_timezone_to_datetime(dt=dt, tz=tz)
     
-    return datetime.strptime(dt_str, fmt)
+    return dt
 
 
 def get_str_from_datetime(dt=None, fmt='%D %I:%M %p', add_tz=False, tz=setup['timezone']):
@@ -129,7 +130,7 @@ def get_str_from_datetime(dt=None, fmt='%D %I:%M %p', add_tz=False, tz=setup['ti
         dt = datetime.now()
     
     if add_tz:
-        return datetime.strftime(dt.astimezone(tz=validate_timezone(tz)), format(fmt))
+        dt = add_timezone_to_datetime(dt=dt, tz=tz)
     
     return datetime.strftime(dt, format(fmt))
 
