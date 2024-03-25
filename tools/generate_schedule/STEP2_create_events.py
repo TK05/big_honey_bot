@@ -7,7 +7,6 @@ from big_honey_bot.helpers import (
     get_datetime_from_timestamp,
     get_timestamp_from_datetime,
     get_str_from_datetime,
-    change_timezone,
     description_tags,
     platform_hr_min_fmt
 )
@@ -55,10 +54,10 @@ def create_pre_game_event(schedule):
 
         # Format Google Cal Event
         new_schedule[new_utc]['start'] = {}
-        new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['start']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['end'] = {}
-        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['end']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['summary'] = create_headline('GDT', event_data)
 
@@ -104,10 +103,10 @@ def create_game_event(schedule):
 
         # Format Google Cal Event
         new_schedule[new_utc]['start'] = {}
-        new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['start']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['end'] = {}
-        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[new_utc]['end']['timeZone'] = setup['timezone']
         new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
         new_schedule[new_utc]['summary'] = create_headline('GAME THREAD', event_data)
@@ -125,8 +124,7 @@ def create_game_event(schedule):
 
         times = []
         for loc, tz in time_table.items():
-            tz_dt = change_timezone(dt=dt_obj, tz=tz)
-            times.append(f"{get_str_from_datetime(dt=tz_dt, fmt=time_fmt)} - {loc}")
+            times.append(f"{get_str_from_datetime(dt=dt_obj, fmt=time_fmt, to_tz=True, tz=setup['timezone'])} - {loc}")
 
         # subreddit links using team lookup dict
         top_sub = team_lookup[event_data['opponent']][0]
@@ -168,10 +166,10 @@ def post_game_edit(schedule):
 
         # Format Google Cal Event
         new_schedule[utc]['start'] = {}
-        new_schedule[utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=utc, add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=utc, to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[utc]['start']['timeZone'] = setup['timezone']
         new_schedule[utc]['end'] = {}
-        new_schedule[utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(utc) + 61), add_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(utc) + 61), to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
         new_schedule[utc]['end']['timeZone'] = setup['timezone']
         new_schedule[utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
         new_schedule[utc]['summary'] = create_headline('POST GAME THREAD', event_data)

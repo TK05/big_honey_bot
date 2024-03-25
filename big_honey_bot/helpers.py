@@ -89,7 +89,7 @@ def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
     return dt
 
 
-def get_datetime_from_timestamp(ts=None, add_tz=False, tz=setup['timezone']):
+def get_datetime_from_timestamp(ts=None, add_tz=False, to_tz=False, tz=setup['timezone']):
 
     if not ts:
         ts = datetime.timestamp(datetime.now())
@@ -102,6 +102,8 @@ def get_datetime_from_timestamp(ts=None, add_tz=False, tz=setup['timezone']):
 
     if add_tz:
         dt = add_timezone_to_datetime(dt=dt, tz=tz)
+    elif to_tz:
+        dt = change_timezone(dt=dt, tz=tz)
 
     return dt
 
@@ -124,13 +126,15 @@ def get_datetime_from_str(dt_str, fmt, add_tz=False, tz=setup['timezone']):
     return dt
 
 
-def get_str_from_datetime(dt=None, fmt='%D %I:%M %p', add_tz=False, tz=setup['timezone']):
+def get_str_from_datetime(dt=None, fmt='%D %I:%M %p', add_tz=False, to_tz=False, tz=setup['timezone']):
 
     if not dt:
         dt = datetime.now()
     
     if add_tz:
         dt = add_timezone_to_datetime(dt=dt, tz=tz)
+    elif to_tz:
+        dt = change_timezone(dt=dt, tz=tz)
     
     return datetime.strftime(dt, format(fmt))
 
