@@ -16,8 +16,13 @@ from big_honey_bot.config.main import setup
 from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
-IN_SEASON_OFFDAYS = True
-IN_PLAYOFFS = False
+CREATE_IN_SEASON_OFF_DAY_EVENTS = True # Uses all_events.json and creates off-day events for days w/ no games
+PLAYOFFS_HAVE_STARTED = False # Events created denote playoff day #, increments w/ each day using range below
+PLAYOFFS_START_DATE = date(2023, 4, 15) # Day playoffs start
+PLAYOFFS_END_DATE = date(2023, 6, 18) # Day playoffs end (IE: game 7 of finals)
+CREATE_OFF_SEASON_EVENTS = False # If not in season & not playoffs; this will create off-season events w/ count up to day of first game using range below
+OFF_SEASON_START_DATE = date(2023, 10, 10) # Day after NBA finals have finished
+OFF_SEASON_END_DATE = date(2023, 10, 24) # Day of first NBA regular season game
 FILE_NAME_IN = 'all_events.json'
 FILE_NAME_OUT = 'off_day_events.json'
 
@@ -147,23 +152,25 @@ def create_in_season_schedule(curr_sch):
 
 
 if __name__ == '__main__':
-    if IN_SEASON_OFFDAYS:
+    if CREATE_IN_SEASON_OFF_DAY_EVENTS:
         raw_schedule = get_dict_from_json_file(FILE_NAME_IN)
         schedule = create_in_season_schedule(raw_schedule)
         update_calendar(schedule)
-    elif IN_PLAYOFFS:
+    elif PLAYOFFS_HAVE_STARTED:
         start_date = date(2023, 4, 15)
         end_date = date(2023, 6, 18)
 
-        schedule = create_schedule(start_date, end_date)
+        schedule = create_schedule(PLAYOFFS_START_DATE, PLAYOFFS_END_DATE)
+        update_calendar(schedule)
+
+        write_dict_to_json_file(FILE_NAME_OUT, dict(sorted(schedule.items())))
+    elif CREATE_OFF_SEASON_EVENTS:
+        start_date = date(2023, 10, 10)
+        end_date = date(2023, 10, 24)
+
+        schedule = create_schedule(OFF_SEASON_START_DATE , OFF_SEASON_END_DATE , playoffs=False, count_down=True)
         update_calendar(schedule)
 
         write_dict_to_json_file(FILE_NAME_OUT, dict(sorted(schedule.items())))
     else:
-        start_date = date(2023, 10, 10)
-        end_date = date(2023, 10, 24)
-
-        schedule = create_schedule(start_date, end_date, playoffs=False, count_down=True)
-        update_calendar(schedule)
-
-        write_dict_to_json_file(FILE_NAME_OUT, dict(sorted(schedule.items())))
+        print("Created no events. Recheck global variables.")
