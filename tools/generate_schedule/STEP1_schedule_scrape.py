@@ -2,11 +2,10 @@ import pprint
 
 from big_honey_bot.games.helpers import get_espn_schedule_dict, get_nba_com_schedule_dict
 from big_honey_bot.helpers import write_dict_to_json_file, get_dict_from_json_file
-from big_honey_bot.config.helpers import get_env
 
 
 FILE_NAME = 'schedule_scrape_output.json'
-DEBUG = get_env('DEBUG')
+DEBUG = False
 
 
 def get_espn_schedule():
