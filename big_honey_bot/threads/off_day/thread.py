@@ -21,9 +21,6 @@ from big_honey_bot.threads.static.events import events as se
 from big_honey_bot.threads.helpers import lineup_injury_odds
 
 
-IN_PLAYOFFS = get_env('IN_PLAYOFFS')
-IS_OFFSEASON = get_env('IS_OFFSEASON')
-
 logger = logging.getLogger(f"{os.path.basename(__file__)}")
 
 
@@ -210,10 +207,11 @@ def generate_thread_body(event=None):
         return events_today, upcoming_events
 
     body_events = []
-    todays_games, team_games = get_nba_games(playoffs=IN_PLAYOFFS)
+    in_playoffs = get_env('IN_PLAYOFFS')
+    todays_games, team_games = get_nba_games(playoffs=in_playoffs)
 
     if team_games:
-        if IN_PLAYOFFS:
+        if in_playoffs:
             row_to_add = [f"|Upcoming {setup['team']} Playoff Games|||", "|:--|:--|:--|:--|", []]
         else:
             row_to_add = [f"|{setup['team']} Next {len(team_games)}|||", "|:--|:--|:--|", []]
@@ -224,7 +222,7 @@ def generate_thread_body(event=None):
         body_events.insert(0, row_to_add)
 
     if todays_games:
-        if IN_PLAYOFFS:
+        if in_playoffs:
             row_to_add = ["|Today's Playoff Games||||", "|:--|:--|:--|:--|:--|:--|", []]
         else:
             row_to_add = ["|Today's Games||||", "|:--|:--|:--|:--|", []]
@@ -234,7 +232,7 @@ def generate_thread_body(event=None):
 
         body_events.insert(1, row_to_add)
 
-    if IS_OFFSEASON:  # include static events
+    if get_env('IS_OFFSEASON'):  # include static events
         static_top, static_bottom = get_static_events()
 
         if static_top:
