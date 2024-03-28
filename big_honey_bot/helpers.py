@@ -139,6 +139,13 @@ def get_str_from_datetime(dt=None, fmt='%D %I:%M %p', add_tz=False, to_tz=False,
     return datetime.strftime(dt, format(fmt))
 
 
+def get_str_from_timestamp(ts=None, fmt="%I:%M %p", add_tz=False, to_tz=False, tz=setup['timezone']):
+
+    dt = get_datetime_from_timestamp(ts=ts)
+    
+    return get_str_from_datetime(dt=dt, fmt=fmt, add_tz=add_tz, to_tz=to_tz, tz=tz)
+
+
 def timestamps_are_same_day(ts_1, ts_2, tz):
     
     date_1 = get_datetime_from_timestamp(ts_1, tz)
