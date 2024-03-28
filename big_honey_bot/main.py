@@ -121,7 +121,7 @@ def run():
 
     # Update playoff data at each restart
     playoff_data = get_playoff_data()
-    logger.info(f"IN_PLAYOFFS: {playoff_data}")
+    # logger.info(f"IN_PLAYOFFS: {playoff_data}")
 
     # Update sidebar at each restart
     update_sidebar()
@@ -188,10 +188,11 @@ def run():
             if get_datetime(add_tz=True, tz=active_post.timezone) > (active_post.start + timedelta(hours=12)):
                 logger.info(f"active_post active longer than 12 hours, setting to done")
                 end_active_post(active_post)
-            else:
-                logger.debug(f"ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
-                active_post = check_active_post(active_post)
-                time.sleep(30)
+            
+            # Sleep, then check status of active post
+            logger.debug(f"ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
+            time.sleep(30)
+            active_post = check_active_post(active_post)
 
         # Not time to post and no active_post
         else:
