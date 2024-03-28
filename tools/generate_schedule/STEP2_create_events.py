@@ -1,19 +1,19 @@
 import copy
 
 from big_honey_bot.helpers import (
-    create_hash,
     get_dict_from_json_file,
     write_dict_to_json_file,
     get_datetime_from_timestamp,
     get_timestamp_from_datetime,
     get_str_from_datetime,
+    get_str_from_timestamp,
     description_tags,
     platform_hr_min_fmt
 )
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.static.lookups import team_lookup
 from big_honey_bot.threads.static.templates import Game
-from big_honey_bot.threads.static.headlines import gt_placeholders
+from tools.models import GameEvent
 
 
 IN_PLAYOFFS = False
@@ -21,48 +21,26 @@ PRE_FILE_NAME = 'schedule_scrape_output.json'
 POST_FILE_NAME = 'all_events.json'
 
 
-def create_headline(event_type_str, event_data):
-    home_away = "vs." if event_data['home_away'] == 'home' else '@'
-    if event_type_str == 'POST GAME THREAD':
-        return f"POST GAME THREAD: {setup['team']} {home_away} {event_data['opponent']}"
-    else:
-        if IN_PLAYOFFS:
-            return f"{event_type_str}: {gt_placeholders['playoff_series']} - {gt_placeholders['playoff_teams']} | {gt_placeholders['date_and_time']}"
-        else:
-            return f"{event_type_str}: {setup['team']} {gt_placeholders['our_record']} {home_away} {event_data['opponent']} {gt_placeholders['opp_record']} | {gt_placeholders['date_and_time']}"
+def add_desc_placeholders(in_desc):
+    return  f"{in_desc}\n\n&nbsp;\n\n" \
+            f"{description_tags['starters']}\n\n&nbsp;\n\n" \
+            f"{description_tags['injuries']}\n\n&nbsp;\n\n" \
+            f"{description_tags['odds']}\n\n&nbsp;\n\n" \
+            f"{description_tags['referees']}\n"
 
 
 def create_pre_game_event(schedule):
+    
     new_schedule = {}
 
-    for old_utc, event_data in schedule.items():
+    for game_ts, event_data in schedule.items():
 
-        post_time = setup['pre_game_post_time'].split(':')
-        game_day = get_datetime_from_timestamp(ts=old_utc, add_tz=True)
-        game_day = game_day.replace(hour=int(post_time[0]), minute=int(post_time[1]))   # Offsets time based on config's pre_game_post_time
-        new_utc = str(get_timestamp_from_datetime(dt=game_day))
+        event_dt = get_datetime_from_timestamp(ts=game_ts, add_tz=True).replace(hour=int(setup['pre_game_post_hour']), minute=int(0))
+        event_ts = str(get_timestamp_from_datetime(dt=event_dt))
+        start_time = get_datetime_from_timestamp(ts=event_ts, to_tz=True, tz=setup['timezone'])
 
-        new_schedule[new_utc] = {}
-        new_schedule[new_utc]['meta'] = {}
-        new_schedule[new_utc]['meta'] = event_data
-        new_schedule[new_utc]['meta']['game_utc'] = int(old_utc)
-        new_schedule[new_utc]['meta']['event_type'] = 'pre'
-
-        post_date = get_datetime_from_timestamp(ts=new_utc)
-        loc_time_str = get_str_from_datetime(dt=post_date, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
-        new_schedule[new_utc]['meta']['post_time'] = loc_time_str
-
-        # Format Google Cal Event
-        new_schedule[new_utc]['start'] = {}
-        new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
-        new_schedule[new_utc]['start']['timeZone'] = setup['timezone']
-        new_schedule[new_utc]['end'] = {}
-        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
-        new_schedule[new_utc]['end']['timeZone'] = setup['timezone']
-        new_schedule[new_utc]['summary'] = create_headline('GDT', event_data)
-
-        game_time = " ".join(event_data['game_start'].split(" ")[1:])
-        new_schedule[new_utc]['description'] = Game.pre_game_body(
+        game_time = get_str_from_timestamp(ts=game_ts, fmt=platform_hr_min_fmt, to_tz=True)
+        description = Game.pre_game_body(
             time=game_time,
             tz=setup['timezone_short'],
             url=f"https://dateful.com/time-zone-converter?t={game_time}&tz={setup['location']}&",
@@ -72,48 +50,35 @@ def create_pre_game_event(schedule):
             radio=event_data['radio'],
             previews=f"[Game Notes](https://www.nba.com/gamenotes/{setup['team'].lower()}.pdf), [nba.com]({nba_link('preview', event_data['nba_id'])})"
         )
-        new_schedule[new_utc]['description'] = f"{new_schedule[new_utc]['description']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['starters']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['injuries']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['odds']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['referees']}\n"
+        description = add_desc_placeholders(description)
 
-        new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
+        new_event = GameEvent(
+            event_data=event_data,
+            event_type='pre',
+            start=start_time,
+            game_ts=game_ts,
+            description=description,
+            in_playoffs=IN_PLAYOFFS
+        )
 
-        new_schedule[new_utc]['meta']['title_hash'] = create_hash(new_schedule[new_utc]['summary'])
-        new_schedule[new_utc]['meta']['body_hash'] = create_hash(new_schedule[new_utc]['description'])
+        new_schedule.update({event_ts: new_event.as_dict()})
 
     return new_schedule
 
 
 def create_game_event(schedule):
+    
     new_schedule = {}
 
-    for old_utc, event_data in schedule.items():
+    for game_ts, event_data in schedule.items():
+        
+        event_ts = str(int(game_ts) - 60*60)     # Offset time 1 hour prior to game start time
+        start_time = get_datetime_from_timestamp(ts=event_ts, to_tz=True, tz=setup['timezone'])
 
-        new_utc = str(int(old_utc) - 60*60)     # Offset time 1 hour prior to game start time
-        post_date = get_datetime_from_timestamp(ts=new_utc)
-        loc_time_str = get_str_from_datetime(dt=post_date, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
-
-        new_schedule[new_utc] = {}
-        new_schedule[new_utc]['meta'] = event_data
-        new_schedule[new_utc]['meta']['game_utc'] = int(old_utc)
-        new_schedule[new_utc]['meta']['event_type'] = 'game'
-        new_schedule[new_utc]['meta']['post_time'] = loc_time_str
-
-        # Format Google Cal Event
-        new_schedule[new_utc]['start'] = {}
-        new_schedule[new_utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=new_utc, to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
-        new_schedule[new_utc]['start']['timeZone'] = setup['timezone']
-        new_schedule[new_utc]['end'] = {}
-        new_schedule[new_utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(new_utc) + 61), to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
-        new_schedule[new_utc]['end']['timeZone'] = setup['timezone']
-        new_schedule[new_utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
-        new_schedule[new_utc]['summary'] = create_headline('GAME THREAD', event_data)
 
         # Format a few times based on popular time zones in the subreddit
         time_fmt = f'{platform_hr_min_fmt} %p %Z'
-        dt_obj = get_datetime_from_timestamp(ts=old_utc) 
+        game_dt = get_datetime_from_timestamp(ts=game_ts, to_tz=True)
         time_table = {
             "Kitchener": 'US/Eastern',
             "Denver": 'US/Mountain',
@@ -124,14 +89,14 @@ def create_game_event(schedule):
 
         times = []
         for loc, tz in time_table.items():
-            times.append(f"{get_str_from_datetime(dt=dt_obj, fmt=time_fmt, to_tz=True, tz=setup['timezone'])} - {loc}")
+            times.append(f"{get_str_from_datetime(dt=game_dt, fmt=time_fmt, to_tz=True, tz=tz)} - {loc}")
 
         # subreddit links using team lookup dict
         top_sub = team_lookup[event_data['opponent']][0]
         bot_sub = team_lookup[setup['team']][0]
 
         # Top "General Information" table
-        new_schedule[new_utc]['description'] = Game.gen_info_table(
+        description = Game.gen_info_table(
             times=times,
             tv=event_data['tv'],
             radio=event_data['radio'],
@@ -140,47 +105,49 @@ def create_game_event(schedule):
             arena=event_data['arena'],
             city=event_data['city'],
             subreddits=[top_sub, bot_sub])
-        new_schedule[new_utc]['description'] = f"{new_schedule[new_utc]['description']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['starters']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['injuries']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['odds']}\n\n&nbsp;\n\n" \
-                                               f"{description_tags['referees']}\n"
-        new_schedule[new_utc]['meta']['title_hash'] = create_hash(new_schedule[new_utc]['summary'])
-        new_schedule[new_utc]['meta']['body_hash'] = create_hash(new_schedule[new_utc]['description'])
+        description = add_desc_placeholders(description)
+
+        new_event = GameEvent(
+            event_data=event_data,
+            event_type='game',
+            start=start_time,
+            game_ts=game_ts,
+            description=description,
+            in_playoffs=IN_PLAYOFFS
+        )
+
+        new_schedule.update({event_ts: new_event.as_dict()})
 
     return new_schedule
 
 
 def post_game_edit(schedule):
+    
     new_schedule = {}
 
-    for utc, event_data in schedule.items():
-        new_schedule[utc] = {}
-        new_schedule[utc]['meta'] = event_data
-        new_schedule[utc]['meta']['game_utc'] = int(utc)
-        new_schedule[utc]['meta']['event_type'] = 'post'
+    for game_ts, event_data in schedule.items():
 
-        game_time = get_datetime_from_timestamp(ts=utc)
-        loc_time_str = get_str_from_datetime(dt=game_time, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
-        new_schedule[utc]['meta']['post_time'] = loc_time_str
-
-        # Format Google Cal Event
-        new_schedule[utc]['start'] = {}
-        new_schedule[utc]['start']['dateTime'] = get_datetime_from_timestamp(ts=utc, to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
-        new_schedule[utc]['start']['timeZone'] = setup['timezone']
-        new_schedule[utc]['end'] = {}
-        new_schedule[utc]['end']['dateTime'] = get_datetime_from_timestamp(ts=(int(utc) + 61), to_tz=True, tz=setup['timezone']).strftime('%G-%m-%dT%H:%M:%S')
-        new_schedule[utc]['end']['timeZone'] = setup['timezone']
-        new_schedule[utc]['location'] = f"{event_data['arena']} - {event_data['city']}"
-        new_schedule[utc]['summary'] = create_headline('POST GAME THREAD', event_data)
-        new_schedule[utc]['description'] = "TBD"
+        start_time = get_datetime_from_timestamp(ts=game_ts, to_tz=True, tz=setup['timezone'])
+        description = "TBD"
+        
+        new_event = GameEvent(
+            event_data=event_data,
+            event_type='post',
+            start=start_time,
+            game_ts=game_ts,
+            description=description,
+            in_playoffs=IN_PLAYOFFS
+        )
 
         # Custom post game titles; see threads.post_game.post_game.format_post for details
-        new_schedule[utc]['meta']['win'] = ""
-        new_schedule[utc]['meta']['lose'] = ""
+        meta = {
+            "win": "",
+            "lose": ""
+        }
 
-        new_schedule[utc]['meta']['title_hash'] = create_hash(new_schedule[utc]['summary'])
-        new_schedule[utc]['meta']['body_hash'] = create_hash(new_schedule[utc]['description'])
+        new_event.add_meta(**meta)
+
+        new_schedule.update({game_ts: new_event.as_dict()})
 
     return new_schedule
 

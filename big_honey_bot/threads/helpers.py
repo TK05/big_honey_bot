@@ -1,6 +1,9 @@
 import requests
 from parsel import Selector
 
+from big_honey_bot.config.main import setup
+from big_honey_bot.threads.static.headlines import gt_placeholders as gtp
+
 
 def lineup_injury_odds(team_name):
     """Scrapes for lineups, injuries and odds.
@@ -60,3 +63,26 @@ def lineup_injury_odds(team_name):
     betting_data = [ml, spread, ou]
 
     return team_lineups, team_injuries, betting_data
+
+
+def create_templatized_headline(event_type, home_away, opponent, in_playoffs):
+    
+    f_map = {
+        "pre": "GDT",
+        "game": "GAME THREAD",
+        "post": "POST GAME THREAD",
+        "home": "vs.",
+        "away": "@"
+    }
+
+    ret_str = f"{f_map[event_type]}: "
+    
+    if event_type == "post":
+        ret_str += f"{setup['team']} {f_map[home_away]} {opponent}"
+    else:
+        if in_playoffs:
+            ret_str += f"{gtp['playoff_series']} - {gtp['playoff_teams']} | {gtp['date_and_time']}"
+        else:
+            ret_str += f"{setup['team']} {gtp['our_record']} {f_map[home_away]} {opponent} {gtp['opp_record']} | {gtp['date_and_time']}"
+
+    return ret_str
