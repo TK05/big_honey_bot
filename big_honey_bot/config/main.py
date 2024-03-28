@@ -10,7 +10,7 @@ setup = {
     'location': 'Denver',
     'timezone': 'US/Mountain',
     'timezone_short': 'MT',
-    'pre_game_post_time': "08:00",  # time used for pre game post time
+    'pre_game_post_hour': "8",  # hour (24) to post pre game thread
     # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/1',  # Preseason
     'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/2',  # Regular Season
     # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/3',  # Postseason

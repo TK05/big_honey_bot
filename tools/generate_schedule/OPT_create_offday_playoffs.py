@@ -29,7 +29,7 @@ FILE_NAME_OUT = 'off_day_events.json'
 
 def create_schedule(start, end, playoffs=True, count_down=False):
     now = get_datetime(add_tz=True)
-    pgpt = setup['pre_game_post_time'].split(':')
+    pgpt = setup['pre_game_post_hour'].split(':')
     new_schedule = {}
     for d in range((end - now.date()).days):
         post_date = now + timedelta(days=d+1)
@@ -108,7 +108,7 @@ def create_in_season_schedule(curr_sch):
             for n in range(1, diff):
                 days_without.append(day + timedelta(days=n))
 
-    pgpt = setup['pre_game_post_time'].split(':')
+    pgpt = setup['pre_game_post_hour'].split(':')
     new_schedule = {}
 
     for d in days_without:
