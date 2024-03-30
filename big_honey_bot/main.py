@@ -1,10 +1,9 @@
-import os
 import time
 import logging
 from datetime import timedelta
 
 from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.sidebar.helpers import update_sidebar
 from big_honey_bot.playoffs.helpers import get_series_status
 from big_honey_bot.threads.main import edit_thread, get_thread
@@ -15,7 +14,7 @@ from big_honey_bot.threads.post_game.thread_stats import generate_stats_comment
 from big_honey_bot.events.main import get_event, get_next_event, update_event, get_previous_event
 
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def make_post(event, po_data):
@@ -121,7 +120,7 @@ def run():
 
     # Update playoff data at each restart
     playoff_data = get_playoff_data()
-    # logger.info(f"IN_PLAYOFFS: {playoff_data}")
+    logger.debug(f"IN_PLAYOFFS: {playoff_data}")
 
     # Update sidebar at each restart
     update_sidebar()
@@ -145,8 +144,7 @@ def run():
         playoff_data = get_playoff_data()
 
         if active_post:
-            # Set prev_post_id on next_event
-            setattr(next_event, 'prev_post_id', active_post.meta['reddit_id'])
+
             # Catch when active_post & next_event are same (next_event not updated in time)
             try:
                 if active_post.id == next_event.id:
@@ -163,51 +161,55 @@ def run():
         current_time = get_timestamp_from_datetime()
         seconds_till_post = get_timestamp_from_datetime(dt=next_event.start) - current_time
 
-        # If skip, next_event was same as active_event, grab next_event again
+        # If skip, next_event was same as active_event, skip rest of loop and grab next_event again
         if skip:
             skip = False
 
-        # Time to post next_event and correct event_type
+        # Time to post next_event
         elif seconds_till_post <= 0 and next_event.meta['event_type'] in upcoming_event_types:
 
-            # next_event will become the active_post, add prev post reference finish the existing active_post
+            # Update next_event.prev_reddit_id w/ reddit_id of current active_post & set active_post to done
             if active_post:
+                setattr(next_event, 'prev_reddit_id', active_post.meta['reddit_id'])
                 end_active_post(active_post)
 
             # Send event to appropriate thread handler
-            if next_event.meta['event_type'] in upcoming_event_types:
-                active_post = make_post(next_event, playoff_data)
-            else:
-                logger.warning(f"next_event.meta['event_type'] is invalid")
-
+            active_post = make_post(next_event, playoff_data)
             time.sleep(30)
 
-        # There is an active post, check for updates to it
+        # Not time to post next_event but there is an active_post; check for updates to it
         elif active_post:
+
             # End active posts 12 hours after posting
             if get_datetime(add_tz=True, tz=active_post.timezone) > (active_post.start + timedelta(hours=12)):
                 logger.info(f"active_post active longer than 12 hours, setting to done")
                 end_active_post(active_post)
             
-            # Sleep, then check status of active post
+            # Sleep, then check status of active post for any changes
             logger.debug(f"ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
             time.sleep(30)
             active_post = check_active_post(active_post)
 
-        # Not time to post and no active_post
+        # Not time to post next_event and no active_post
         else:
-            # Update sidebar every hour while no active post
-            update_sidebar()
 
             # Determine wait time
             try:
+                
+                # next_event post time is near, sleep exact amount
                 if seconds_till_post < 60:
                     logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_post)}, sleeping {seconds_till_post}")
                     time.sleep(seconds_till_post)
+                
+                # next_event post time is far, sleep larger amount & update_sidebar after
                 else:
                     wait_time = seconds_till_post if seconds_till_post < 3600 else 3600
                     logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_post)}, sleeping {wait_time}")
                     time.sleep(wait_time)
+                    
+                    # Update sidebar (roughly) every hour while no active post
+                    update_sidebar()
+            
             except ValueError:
                 logger.error(f"seconds_till_post was negative, exiting")
                 bot_running = False
