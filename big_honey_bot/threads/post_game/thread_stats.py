@@ -1,10 +1,9 @@
-import os
 import logging
 
 import praw
 
 from big_honey_bot.config.main import setup
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.threads.static.templates import ThreadStats
 
 
@@ -14,7 +13,7 @@ PASSWORD = get_env('PRAW_PASSWORD')
 CLIENT_ID = get_env('PRAW_CLIENT_ID')
 CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,

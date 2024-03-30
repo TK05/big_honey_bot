@@ -1,5 +1,4 @@
 import logging
-import os
 
 import requests
 from parsel import Selector
@@ -12,12 +11,12 @@ from big_honey_bot.helpers import (
     get_datetime
 )
 from big_honey_bot.config.main import setup, OUTPUT_PATH
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 
 
 DEBUG = get_env('DEBUG')
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def request_schedule(url, headers, file_name):

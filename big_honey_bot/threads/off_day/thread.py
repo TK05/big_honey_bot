@@ -1,4 +1,3 @@
-import os
 import logging
 
 import requests
@@ -13,7 +12,7 @@ from big_honey_bot.helpers import (
     platform_hr_min_fmt,
     platform_mo_day_fmt
 )
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.main import new_thread
 from big_honey_bot.threads.static.lookups import lookup_by_loc
@@ -21,7 +20,7 @@ from big_honey_bot.threads.static.events import events as se
 from big_honey_bot.threads.helpers import lineup_injury_odds
 
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def get_nba_games(playoffs=False):

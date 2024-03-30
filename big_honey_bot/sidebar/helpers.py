@@ -1,4 +1,3 @@
-import os
 import re
 import logging
 from datetime import date, timedelta
@@ -11,10 +10,10 @@ from nba_api.stats.static import teams
 
 from big_honey_bot.helpers import get_datetime, get_str_from_datetime
 from big_honey_bot.config.main import setup
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 USER_AGENT = setup['user_agent']

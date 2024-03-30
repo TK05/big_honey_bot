@@ -1,9 +1,8 @@
-import os
 import random
 import logging
 
 from big_honey_bot.helpers import get_datetime_from_str
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.config.main import setup
 from big_honey_bot.events.main import update_event, get_event
 from big_honey_bot.threads.main import new_thread, edit_thread
@@ -16,7 +15,7 @@ from big_honey_bot.threads.static.templates import PostGame
 TEAM = setup['team']
 TARGET_SUB = get_env('TARGET_SUB')
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def format_date_and_time(time_in):

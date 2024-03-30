@@ -1,4 +1,3 @@
-import os
 import re
 import logging
 
@@ -9,6 +8,7 @@ from nba_api.stats.static import teams
 
 from big_honey_bot.helpers import get_datetime_from_str, description_tags
 from big_honey_bot.config.main import setup
+from big_honey_bot.config.helpers import get_pname_fname_str
 from big_honey_bot.threads.main import new_thread
 from big_honey_bot.threads.static.headlines import gt_placeholders
 from big_honey_bot.threads.static.templates import Game
@@ -19,7 +19,7 @@ from big_honey_bot.threads.helpers import lineup_injury_odds
 TEAM = setup['team']
 LOCATION = setup['location']
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def format_date_and_time(game_start):

@@ -1,15 +1,15 @@
-import os
 import time
 import logging
 
 import requests
 
 from big_honey_bot.config.main import setup
+from big_honey_bot.config.helpers import get_pname_fname_str
 
 
 SEASON = setup['season']
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def status_check(nba_id, only_final):
