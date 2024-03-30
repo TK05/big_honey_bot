@@ -17,7 +17,7 @@ from big_honey_bot.events.main import get_event, get_next_event, update_event, g
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-def make_post(event, po_data):
+def do_event(event, po_data):
 
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
@@ -54,32 +54,36 @@ def make_post(event, po_data):
 def update_event_and_set_to_active(event):
     event.meta['event_type'] = 'active'
     update_event(event)
-    logger.info(f"Event updated with post details after init post: {event.id} - {event.summary}")
+    logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
 
 
-def check_active_post(post):
-    event = get_event(post.id)
+def refresh_active_event(in_event):
+    event = get_event(in_event.id)
 
     # Catch when event type manually set to done
     if event.meta['event_type'] == 'done':
-        logger.info(f"Event manually set to done, ending active post: {event.id} - {event.summary}")
+        logger.info(f"Event manually set to done, ending active event: {event.id} - {event.summary}")
         return None
 
+    # Update post if event body has been changed since last check
     if not hash_match(event.body, event.meta['body_hash']):
-        logger.info(f"Update to active post body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
-        setattr(event, 'post', post.post)
+        logger.info(f"Update to active event's body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
+        setattr(event, 'post', in_event.post)
         edit_thread(event)
         update_event(event)
-        logger.info(f"Event updated with body changes: {event.id} - {event.summary}")
+        logger.info(f"Post & Event updated after body changes: {event.id} - {event.summary}")
+        
         return event
+    
+    # Still active and no changes, return in_event
     else:
-        return post
+        return in_event
 
 
-def end_active_post(post):
-    post.meta['event_type'] = 'done'
-    update_event(post)
-    logger.info(f"Event updated, active post set to done: {post.id} - {post.summary}")
+def end_active_event(event):
+    event.meta['event_type'] = 'done'
+    update_event(event)
+    logger.info(f"Active event was set to done: {event.id} - {event.summary}")
 
 
 def get_playoff_data():
@@ -90,19 +94,19 @@ def get_playoff_data():
         return None
 
 
-def check_if_last_event_still_active(po_data):
+def check_if_prev_event_still_active(po_data):
 
     prev_event = get_previous_event()
 
     if not prev_event:
-        logger.info(f"Found no previous post")
+        logger.info(f"Found no previous event")
         return None
 
     # If previous event type is still post, game watch ongoing; restart game watch
     if prev_event.meta['event_type'] == 'post':
-        logger.info(f"prev_event was type post")
-        ap = make_post(prev_event, po_data)
-        return ap
+        logger.info("Previous event was type 'post'")
+        active_event = do_event(prev_event, po_data)
+        return active_event
 
     # If previous event still active, set post attribute and return event
     if prev_event.meta['event_type'] == 'active':
@@ -110,9 +114,10 @@ def check_if_last_event_still_active(po_data):
         setattr(prev_event, 'post', prev_post)
         logger.info(f"Previous event still active - {prev_event.summary}")
         return prev_event
-    # Else, previous post no longer active so keep active_post None
+    
+    # Else, previous event no longer active, unset active_event
     else:
-        logger.info(f"Previous event is no longer active")
+        logger.info("Previous event is no longer active")
         return None
 
 def run():
@@ -125,7 +130,7 @@ def run():
     update_sidebar()
 
     # Initialize startup variables
-    active_post = None
+    active_event = None
     bot_running = True
     skip = False
     upcoming_event_types = ['pre', 'game', 'post', 'off']
@@ -135,81 +140,78 @@ def run():
         next_event = get_next_event()
 
         if not next_event or next_event.meta['event_type'] == 'done':
-            logger.warning(f"All events finished posting.... exiting")
+            logger.warning(f"No next event found.... exiting")
             bot_running = False
             break
 
-        # Update playoff series before posting
         playoff_data = get_playoff_data()
 
-        if active_post:
+        if active_event:
 
-            # Catch when active_post & next_event are same (next_event not updated in time)
+            # Catch when active_event & next_event are same (next_event not updated in time)
             try:
-                if active_post.id == next_event.id:
-                    logger.info(f"ap==ne, ap:{active_post.id} - ne:{next_event.id}, sleeping 30")
+                if active_event.id == next_event.id:
+                    logger.info(f"ae==ne, ae:{active_event.id} - ne:{next_event.id}, sleeping 30")
                     time.sleep(30)
                     skip = True
             except AttributeError:
                 pass
 
-        # Ensure active_post is correct
+        # Check previous event to see if still active or needs doing
         else:
-            active_post = check_if_last_event_still_active(playoff_data)
+            active_event = check_if_prev_event_still_active(playoff_data)
 
         current_time = get_timestamp_from_datetime()
-        seconds_till_post = get_timestamp_from_datetime(dt=next_event.start) - current_time
+        seconds_till_event = get_timestamp_from_datetime(dt=next_event.start) - current_time
 
         # If skip, next_event was same as active_event, skip rest of loop and grab next_event again
         if skip:
             skip = False
 
-        # Time to post next_event
-        elif seconds_till_post <= 0 and next_event.meta['event_type'] in upcoming_event_types:
+        # Time to do next_event
+        elif seconds_till_event <= 0 and next_event.meta['event_type'] in upcoming_event_types:
 
-            # Update next_event.prev_reddit_id w/ reddit_id of current active_post & set active_post to done
-            if active_post:
-                setattr(next_event, 'prev_reddit_id', active_post.meta['reddit_id'])
-                end_active_post(active_post)
+            # Update next_event.prev_reddit_id w/ reddit_id of current active_event & set active_event to done
+            if active_event:
+                setattr(next_event, 'prev_reddit_id', active_event.meta['reddit_id'])
+                end_active_event(active_event)
 
-            # Send event to appropriate thread handler and make next_event the active_post
-            active_post = make_post(next_event, playoff_data)
+            # Send event to appropriate thread handler and make next_event the active_event
+            active_event = do_event(next_event, playoff_data)
             time.sleep(30)
 
-        # Not time to post next_event but there is an active_post; check for updates to it
-        elif active_post:
+        # Not time to do next_event but there is an active_event; check for updates to it
+        elif active_event:
 
-            # End active posts 12 hours after posting
-            if get_datetime(add_tz=True, tz=active_post.timezone) > (active_post.start + timedelta(hours=12)):
-                logger.info(f"active_post active longer than 12 hours, setting to done")
-                end_active_post(active_post)
+            # End active events 12 hours after start time
+            if get_datetime(add_tz=True, tz=active_event.timezone) > (active_event.start + timedelta(hours=12)):
+                logger.info(f"active_event active longer than 12 hours, setting to done")
+                end_active_event(active_event)
             
-            # Sleep, then check status of active post for any changes
-            logger.debug(f"ne: {next_event.summary[:30]}... ap: {active_post.summary[:30]}...")
+            # Sleep, then refresh active_event for any changes
+            logger.debug(f"ne: {next_event.summary[:30]}... ap: {active_event.summary[:30]}...")
             time.sleep(30)
-            active_post = check_active_post(active_post)
+            active_event = refresh_active_event(active_event)
 
-        # Not time to post next_event and no active_post
+        # Not time to do next_event and no active_event
         else:
-
             # Determine wait time
-            try:
+            try:   
+                # next_event start time is near, sleep exact amount
+                if seconds_till_event < 60:
+                    logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_event)}, sleeping {seconds_till_event}")
+                    time.sleep(seconds_till_event)
                 
-                # next_event post time is near, sleep exact amount
-                if seconds_till_post < 60:
-                    logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_post)}, sleeping {seconds_till_post}")
-                    time.sleep(seconds_till_post)
-                
-                # next_event post time is far, sleep larger amount & update_sidebar after
+                # next_event start time is far, sleep longer & update_sidebar after
                 else:
-                    wait_time = seconds_till_post if seconds_till_post < 3600 else 3600
-                    logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_post)}, sleeping {wait_time}")
+                    wait_time = seconds_till_event if seconds_till_event < 3600 else 3600
+                    logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_event)}, sleeping {wait_time}")
                     time.sleep(wait_time)
                     
-                    # Update sidebar (roughly) every hour while no active post
+                    # Update sidebar (roughly) every hour while no active_event
                     update_sidebar()
             
             except ValueError:
-                logger.error(f"seconds_till_post was negative, exiting")
+                logger.error(f"seconds_till_event was negative, exiting")
                 bot_running = False
                 break
