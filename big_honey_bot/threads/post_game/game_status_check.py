@@ -41,13 +41,6 @@ def status_check(nba_id, only_final):
         away_score = game_data['g']['vls']['s']
         home_score = game_data['g']['hls']['s']
 
-        # Set game over conditions
-        over_by_status = True if game_status == 3 else False
-        over_by_time = True if current_quarter >= 4 and min_left == 0 and sec_left == 0 else False
-        # Ensure game isn't tied (could go to overtime)
-        over_by_score = True if abs(away_score - home_score) != 0 else False
-        over_by_time_and_score = over_by_time and over_by_score
-
         # Sleep further when game clock is not initialized
         if game_data['g']['cl']:
             min_left = int(game_data['g']['cl'].split(':')[0])
@@ -56,6 +49,13 @@ def status_check(nba_id, only_final):
             logger.info(f"Game clock is not yet initialized, sleeping 15 minutes...")
             time.sleep(60*15)
             continue
+
+        # Set game over conditions
+        over_by_status = True if game_status == 3 else False
+        over_by_time = True if current_quarter >= 4 and min_left == 0 and sec_left == 0 else False
+        # Ensure game isn't tied (could go to overtime)
+        over_by_score = True if abs(away_score - home_score) != 0 else False
+        over_by_time_and_score = over_by_time and over_by_score
 
         logger.info(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}, Score: {away_score}-{home_score}")
 
