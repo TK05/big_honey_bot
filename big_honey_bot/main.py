@@ -104,16 +104,17 @@ def check_if_prev_event_still_active(po_data):
 
     # If previous event type is still post, game watch may possibly need to be restarted
     if prev_event.meta['event_type'] == 'post':
-        logger.info("Previous event was type 'post'")
-        
+    
         # Check current time and resume game watch if event.start < 3 hours ago
         if get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
+            logger.info("Previous event was type 'post'")
             active_event = do_event(prev_event, po_data)
-            
+
             return active_event
         
         # If previous event is too old to game watch, then assume there was no previous event
         else:
+            logger.info(f"Previous event was type 'post' but skipping game check as start time is too old: {prev_event.start}")
             return None
 
     # If previous event still active, set post attribute and return event
