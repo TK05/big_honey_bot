@@ -60,7 +60,7 @@ def get_pname_fname_str(fname):
     
     abs_path = Path(fname)
     
-    return ''.join(abs_path.parts[-2:])
+    return '.'.join(abs_path.parts[-2:])
 
 
 def update_logger_level():
