@@ -26,14 +26,11 @@ def make_post(event, po_data):
 
     if event.meta['event_type'] in ['pre', 'game']:
         game_thread_handler(event, po_data)
-
-        # Update event object
-        event.meta['event_type'] = 'active'
-        update_event(event)
-        logger.info(f"Event updated after init post: {event.id} - {event.summary}")
+        set_event_to_active(event)
 
     elif event.meta['event_type'] == 'post':
         post_game_thread_handler(event, po_data)
+        set_event_to_active(event)
 
         # Generate thread stats after post game thread is posted
         if get_env('THREAD_STATS'):
@@ -46,16 +43,18 @@ def make_post(event, po_data):
 
     elif event.meta['event_type'] == 'off':
         off_day_thread_handler(event)
-
-        # Update event object
-        event.meta['event_type'] = 'active'
-        update_event(event)
-        logger.info(f"Event updated after init post: {event.id} - {event.summary}")
+        set_event_to_active(event)
 
     else:
         logger.info(f"Unhandled event_type: {event.meta['event_type']}")
 
     return event
+
+
+def set_event_to_active(event):
+    event.meta['event_type'] = 'active'
+    update_event(event)
+    logger.info(f"Event updated with post details after init post: {event.id} - {event.summary}")
 
 
 def check_active_post(post):
@@ -173,7 +172,7 @@ def run():
                 setattr(next_event, 'prev_reddit_id', active_post.meta['reddit_id'])
                 end_active_post(active_post)
 
-            # Send event to appropriate thread handler
+            # Send event to appropriate thread handler and make next_event the active_post
             active_post = make_post(next_event, playoff_data)
             time.sleep(30)
 
