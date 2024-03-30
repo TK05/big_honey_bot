@@ -1,4 +1,3 @@
-import os
 import logging
 import time
 
@@ -7,7 +6,7 @@ import prawcore
 from praw.exceptions import RedditAPIException
 
 from big_honey_bot.config.main import setup
-from big_honey_bot.config.helpers import get_env
+from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 
 
 TARGET_SUB = get_env('TARGET_SUB')
@@ -17,7 +16,7 @@ CLIENT_ID = get_env('PRAW_CLIENT_ID')
 CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 USER_AGENT = setup['user_agent']
 
-logger = logging.getLogger(f"{os.path.basename(__file__)}")
+logger = logging.getLogger(get_pname_fname_str(__file__))
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,
@@ -47,10 +46,10 @@ def get_thread(post_id):
 
 def get_flair_uuid_from_event_type(event_type):
     flair_map = {
-        "pre": os.getenv('FLAIR_PRE', None),
-        "game": os.getenv('FLAIR_GAME', None),
-        "post": os.getenv('FLAIR_POST', None),
-        "off": os.getenv('FLAIR_OFF', None)
+        "pre": get_env('FLAIR_PRE'),
+        "game": get_env('FLAIR_GAME'),
+        "post": get_env('FLAIR_POST'),
+        "off": get_env('FLAIR_OFF')
     }
 
     return flair_map.get(event_type)
@@ -68,7 +67,7 @@ def new_thread(event):
 
     # Unsticky the correct post
     try:
-        prev_post = get_thread(event.prev_post_id)
+        prev_post = get_thread(event.prev_reddit_id)
         prev_post.mod.sticky(state=False)
         logger.info(f"Unstickied previous post - {prev_post.title}")
     except AttributeError:
