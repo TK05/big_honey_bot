@@ -4,7 +4,7 @@ import logging
 from big_honey_bot.helpers import get_datetime_from_str
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.config.main import setup
-from big_honey_bot.events.main import update_event, get_event
+from big_honey_bot.events.main import get_event
 from big_honey_bot.threads.main import new_thread, edit_thread
 from big_honey_bot.threads.post_game.nbacom_boxscore_scrape import generate_markdown_tables
 from big_honey_bot.threads.post_game.game_status_check import status_check
@@ -80,28 +80,32 @@ def playoff_headline(opp_team, game_start, win, final_score, playoff_data):
     return headline
 
 
-def format_post(event, playoff_data):
+def format_post(event, playoff_data, generate_summary):
     """Create body of post-game thread as markdown text."""
 
     bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
 
-    # Check for custom win/lose title from event.meta
-    outcome_key = 'win' if win else 'lose'
-    event_new = get_event(event.id)
-    custom_title = event_new.meta.get(outcome_key)
+    # Only create a summary headline if event needs one, otherwise use existing
+    # This avoids having event and post w/ different headlines
+    if generate_summary:
 
-    if custom_title:
-        logger.info(f"Custom post game title detected: {custom_title}")
-        custom_title = custom_title.replace(pgt_placeholders['team'], TEAM)
-        custom_title = custom_title.replace(pgt_placeholders['opponent'], event.meta['opponent'])
-        custom_title = custom_title.replace(pgt_placeholders['margin'], str(margin))
-        custom_title = custom_title.replace(pgt_placeholders['score'], final_score)
-        custom_title = custom_title.replace(pgt_placeholders['date'], format_date_and_time(event.meta['game_start']))
-        event.summary = custom_title
-    elif playoff_data:
-        event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, final_score, playoff_data)
-    else:
-        event.summary = post_game_headline(event.meta['opponent'], event.meta['game_start'], str(win), margin, final_score)
+        # Check for custom win/lose title from event.meta
+        outcome_key = 'win' if win else 'lose'
+        event_new = get_event(event.id)
+        custom_title = event_new.meta.get(outcome_key)
+
+        if custom_title:
+            logger.info(f"Custom post game title detected: {custom_title}")
+            custom_title = custom_title.replace(pgt_placeholders['team'], TEAM)
+            custom_title = custom_title.replace(pgt_placeholders['opponent'], event.meta['opponent'])
+            custom_title = custom_title.replace(pgt_placeholders['margin'], str(margin))
+            custom_title = custom_title.replace(pgt_placeholders['score'], final_score)
+            custom_title = custom_title.replace(pgt_placeholders['date'], format_date_and_time(event.meta['game_start']))
+            event.summary = custom_title
+        elif playoff_data:
+            event.summary = playoff_headline(event.meta['opponent'], event.meta['game_start'], win, final_score, playoff_data)
+        else:
+            event.summary = post_game_headline(event.meta['opponent'], event.meta['game_start'], str(win), margin, final_score)
 
     top_links = PostGame.top_links(event.meta['espn_id'], event.meta['nba_id'])
 
@@ -118,22 +122,18 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
     was_final = status_check(event.meta["nba_id"], only_final)
     logger.info(f"Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
-    format_post(event, playoff_data)
+    generate_summary = True if not was_prev_post else False
+    format_post(event, playoff_data, generate_summary)
 
     if was_final:
-        # Game final after initial post
+        # Initial post contained non-finalized data; update existing post w/ finalized data
         if was_prev_post:
             edit_thread(event)
-        # Game final, no need for a future edit
+        # Game is final and there was no initial post; create new thread
         else:
             new_thread(event)
 
-        event.meta['event_type'] = 'active'
-        update_event(event)
-
-    # Game finished but not final, create thread and rerun for only_final
+    # Game finished but not final, create thread and rerun for only_final data
     else:
         new_thread(event)
-        event.meta['event_type'] = 'active'
-        update_event(event)
         post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
