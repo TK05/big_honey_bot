@@ -26,11 +26,11 @@ def make_post(event, po_data):
 
     if event.meta['event_type'] in ['pre', 'game']:
         game_thread_handler(event, po_data)
-        set_event_to_active(event)
+        update_event_and_set_to_active(event)
 
     elif event.meta['event_type'] == 'post':
         post_game_thread_handler(event, po_data)
-        set_event_to_active(event)
+        update_event_and_set_to_active(event)
 
         # Generate thread stats after post game thread is posted
         if get_env('THREAD_STATS'):
@@ -43,7 +43,7 @@ def make_post(event, po_data):
 
     elif event.meta['event_type'] == 'off':
         off_day_thread_handler(event)
-        set_event_to_active(event)
+        update_event_and_set_to_active(event)
 
     else:
         logger.info(f"Unhandled event_type: {event.meta['event_type']}")
@@ -51,7 +51,7 @@ def make_post(event, po_data):
     return event
 
 
-def set_event_to_active(event):
+def update_event_and_set_to_active(event):
     event.meta['event_type'] = 'active'
     update_event(event)
     logger.info(f"Event updated with post details after init post: {event.id} - {event.summary}")
