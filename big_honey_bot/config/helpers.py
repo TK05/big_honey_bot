@@ -18,8 +18,11 @@ def strtobool(val):
     False values are: ('n', 'no', 'f', 'false', 'off', '0').
     Raises ValueError if 'val' is anything else.
     """
-
-    val = val.lower()
+    
+    try:
+        val = val.lower()
+    except AttributeError:
+        raise
 
     if val in ("y", "yes", "t", "true", "on", "1"):
         return True
@@ -33,13 +36,13 @@ def get_env(env_key):
     """General function to allow calling refreshed env vars."""
     
     env = dotenv_values(Path('.env'))
-    env_key = env.get(env_key)
+    env_val = env.get(env_key)
 
     try:
         # some env vars are boolean, try converting first
-        return bool(strtobool(env_key))
-    except ValueError:
-        return env_key
+        return bool(strtobool(env_val))
+    except (ValueError, AttributeError):
+        return env_val
 
 
 def reload_env(sleep_time_sec):
