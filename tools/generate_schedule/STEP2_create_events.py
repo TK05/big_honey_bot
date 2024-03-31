@@ -61,7 +61,7 @@ def create_pre_game_event(schedule):
             in_playoffs=IN_PLAYOFFS
         )
 
-        new_schedule.update({event_ts: new_event.as_dict()})
+        new_schedule.update({event_ts: new_event.as_dict_for_google_cal()})
 
     return new_schedule
 
@@ -116,7 +116,7 @@ def create_game_event(schedule):
             in_playoffs=IN_PLAYOFFS
         )
 
-        new_schedule.update({event_ts: new_event.as_dict()})
+        new_schedule.update({event_ts: new_event.as_dict_for_google_cal()})
 
     return new_schedule
 
@@ -147,7 +147,7 @@ def post_game_edit(schedule):
 
         new_event.add_meta(**meta)
 
-        new_schedule.update({game_ts: new_event.as_dict()})
+        new_schedule.update({game_ts: new_event.as_dict_for_google_cal()})
 
     return new_schedule
 

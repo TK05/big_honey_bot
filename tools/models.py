@@ -60,11 +60,25 @@ class GameEvent:
             "body_hash": create_hash(self._description)
         }
 
-        self._meta.update(hashes)  
+        self._meta.update(hashes)
+    
+
+    def _clean_meta_for_google_cal(self):
+        # keys that will end up in meta on google cal event
+        # TODO: probably store this somewhere else
+        meta_keys_keep = ["game_start", "espn_id", "nba_id", "home_away", "opponent", "game_utc",
+                "event_type", "title_hash", "body_hash", "win", "lose"]
+        
+        new_meta = {}
+        
+        for key in self._meta.keys():
+            if key in meta_keys_keep:
+                new_meta[key] = self._meta[key]
+        
+        self._meta = new_meta
 
     
-    # TODO : confirm google cal accepts change to short tz (new: MDT, old: US/Mountain)
-    def as_dict(self):
+    def as_dict_for_google_cal(self):
         ret_dict = {
             'start': {
                 'dateTime': self._start.strftime(self._time_fmt),
@@ -80,6 +94,7 @@ class GameEvent:
         }
 
         self.add_meta()
+        self._clean_meta_for_google_cal()
         self._add_hashes_to_meta()
         ret_dict.update({"meta": self._meta})
 
