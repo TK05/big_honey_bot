@@ -110,7 +110,7 @@ def check_if_prev_event_still_active(po_data):
         pe_type = prev_event.meta['event_type']
         pe_status = prev_event.meta['event_status']
     except KeyError:
-        logging.error(f"Previous event's meta was missing some required meta keys, ignoring previous event...")
+        logger.error(f"Previous event's meta was missing some required meta keys, ignoring previous event...")
 
     # If previous event type is post and status is not done, game watch may possibly need to be restarted
     if pe_type == 'post' and pe_status != 'done':
