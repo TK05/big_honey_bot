@@ -160,7 +160,7 @@ def run():
             # Catch when active_event & next_event are same (next_event not updated in time)
             try:
                 if active_event.id == next_event.id:
-                    logger.info(f"ae==ne, ae:{active_event.id} - ne:{next_event.id}, sleeping 30")
+                    logger.info(f"active_event==next_event; active_event: {active_event.id} -- next_event: {next_event.id}, sleeping 30")
                     time.sleep(30)
                     skip = True
             except AttributeError:
@@ -198,7 +198,7 @@ def run():
                 end_active_event(active_event)
             
             # Sleep, then refresh active_event for any changes
-            logger.debug(f"ne: {next_event.summary[:30]}... ap: {active_event.summary[:30]}...")
+            logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}...")
             time.sleep(30)
             active_event = refresh_active_event(active_event)
 
