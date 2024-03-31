@@ -24,6 +24,13 @@ description_tags = {
     "daily_games": "{daily_games}"
 }
 
+hidden_tags = {
+    "lio_start": "[](/lio_begin)\n",
+    "lio_end": "\n[](/lio_end)",
+    "todays_games_start": "[](/tg_begin)\n",
+    "todays_games_end": "\n[(/tg_end)]"
+}
+
 
 def write_dict_to_json_file(file_name, data):
     
