@@ -52,7 +52,7 @@ def do_event(event, po_data):
 
 
 def update_event_and_set_to_active(event):
-    event.meta['event_type'] = 'active'
+    event.meta['event_status'] = 'active'
     update_event(event)
     logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
 
@@ -61,7 +61,7 @@ def refresh_active_event(in_event):
     event = get_event(in_event.id)
 
     # Catch when event type manually set to done
-    if event.meta['event_type'] == 'done':
+    if event.meta['event_status'] == 'done':
         logger.info(f"Event manually set to done, ending active event: {event.id} - {event.summary}")
         return None
 
@@ -81,7 +81,7 @@ def refresh_active_event(in_event):
 
 
 def end_active_event(event):
-    event.meta['event_type'] = 'done'
+    event.meta['event_status'] = 'done'
     update_event(event)
     logger.info(f"Active event was set to done: {event.id} - {event.summary}")
 
@@ -102,23 +102,23 @@ def check_if_prev_event_still_active(po_data):
         logger.info(f"Found no previous event")
         return None
 
-    # If previous event type is still post, game watch may possibly need to be restarted
-    if prev_event.meta['event_type'] == 'post':
+    # If previous event type is post and status is not done, game watch may possibly need to be restarted
+    if prev_event.meta['event_type'] == 'post' and prev_event.meta['event_status'] != 'done':
     
         # Check current time and resume game watch if event.start < 3 hours ago
         if get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
-            logger.info("Previous event was type 'post'")
+            logger.info("Previous event was type='post' & status!='done'")
             active_event = do_event(prev_event, po_data)
 
             return active_event
         
         # If previous event is too old to game watch, then assume there was no previous event
         else:
-            logger.info(f"Previous event was type 'post' but skipping game check as start time is too old: {prev_event.start}")
+            logger.info(f"Previous event was type='post' & status!='done' but skipping game check as start time is too old: {prev_event.start}")
             return None
 
     # If previous event still active, set post attribute and return event
-    if prev_event.meta['event_type'] == 'active':
+    if prev_event.meta['event_status'] == 'active':
         prev_post = get_thread(prev_event.meta['reddit_id'])
         setattr(prev_event, 'post', prev_post)
         logger.info(f"Previous event still active - {prev_event.summary}")
@@ -142,13 +142,12 @@ def run():
     active_event = None
     bot_running = True
     skip = False
-    upcoming_event_types = ['pre', 'game', 'post', 'off']
 
     while bot_running:
 
         next_event = get_next_event()
 
-        if not next_event or next_event.meta['event_type'] == 'done':
+        if not next_event or next_event.meta['event_status'] == 'done':
             logger.warning(f"No next event found.... exiting")
             bot_running = False
             break
@@ -178,7 +177,7 @@ def run():
             skip = False
 
         # Time to do next_event
-        elif seconds_till_event <= 0 and next_event.meta['event_type'] in upcoming_event_types:
+        elif seconds_till_event <= 0 and next_event.meta['event_type']:
 
             # Update next_event.prev_reddit_id w/ reddit_id of current active_event & set active_event to done
             if active_event:

@@ -46,6 +46,7 @@ def create_schedule(start, end, playoffs=True, count_down=False):
         new_schedule[post_stamp] = {}
         new_schedule[post_stamp]['meta'] = {}
         new_schedule[post_stamp]['meta']['event_type'] = 'off'
+        new_schedule[post_stamp]['meta']['event_status'] = 'upcoming'
         loc_time_str = get_str_from_datetime(dt=post_time, fmt=f'{platform_hr_min_fmt} %p')
         new_schedule[post_stamp]['meta']['post_time'] = loc_time_str
 
@@ -125,6 +126,7 @@ def create_in_season_schedule(curr_sch):
         new_schedule[post_stamp] = {}
         new_schedule[post_stamp]['meta'] = {}
         new_schedule[post_stamp]['meta']['event_type'] = 'off'
+        new_schedule[post_stamp]['meta']['event_status'] = 'upcoming'
         loc_time_str = get_str_from_datetime(dt=post_time, fmt=f'{platform_hr_min_fmt} %p')
         new_schedule[post_stamp]['meta']['post_time'] = loc_time_str
 

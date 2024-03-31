@@ -45,6 +45,7 @@ class GameEvent:
             "game_utc": self._game_ts,
             "event_type": self._event_type,
             "post_time": get_str_from_datetime(dt=self._start, fmt=f'{platform_hr_min_fmt} %p'),
+            "event_status": "upcoming",
             **self._event_data
         }
         meta.update(kwargs)
@@ -67,7 +68,7 @@ class GameEvent:
         # keys that will end up in meta on google cal event
         # TODO: probably store this somewhere else
         meta_keys_keep = ["game_start", "espn_id", "nba_id", "home_away", "opponent", "game_utc",
-                "event_type", "title_hash", "body_hash", "win", "lose"]
+                "event_type", "title_hash", "body_hash", "win", "lose", "event_status"]
         
         new_meta = {}
         
