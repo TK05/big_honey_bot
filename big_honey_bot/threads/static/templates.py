@@ -156,7 +156,7 @@ class Game(object):
     @staticmethod
     def lineup_head_and_fmt(away_abv, home_abv, lineup_list):
         lineup_header = (
-            f"##Probable Starters\n\n"
+            f"##Starters\n\n"
             f"**[](/{away_abv}){away_abv}** - {lineup_list[0]}|**[](/{home_abv}){home_abv}** - {lineup_list[0]}|\n"
             f"|:--|:--|\n")
 

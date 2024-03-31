@@ -10,7 +10,7 @@ from big_honey_bot.config.main import setup, OUTPUT_PATH
 platform_hr_min_fmt = "%#I:%M" if platform.system() == 'Windows' else '%-I:%M'
 platform_day_fmt = "%#d" if platform.system() == 'Windows' else '%-d'
 platform_mo_day_fmt = "%#m/%#d" if platform.system() == 'Windows' else "%-m/%-d"
-last_updated_fmt = '^^**last** ^^**updated** ^^**%b** ^^**%d,** ^^**%H:%M**'
+last_updated_fmt = '^^**last** ^^**updated** ^^**%b** ^^**%d,** ^^**%H:%M** ^^**%Z**'
 
 description_tags = {
     "meta_start": "{meta_begin}\n",
