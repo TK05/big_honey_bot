@@ -1,3 +1,6 @@
+from big_honey_bot.helpers import hidden_tags
+
+
 class PostGame(object):
 
     @staticmethod
@@ -256,3 +259,21 @@ class ThreadStats(object):
             comment += f"**{poster[0]}**|{poster[1]}|+{poster[2]}|{poster[3]}|\n"
 
         return comment
+
+
+class LineupInjuryOdds(object):
+
+    @staticmethod
+    def format_body(l_headers, l_rows, i_header, i_rows, b_header, b_rows):
+        sep = "\n\n&nbsp;\n\n"
+        body = (
+            f"{hidden_tags['lio_start']}" \
+            f"{l_headers}{l_rows}" \
+            f"{sep}" \
+            f"{i_header}{i_rows}" \
+            f"{sep}" \
+            f"{b_header}{b_rows}" \
+            f"{hidden_tags['lio_end']}"
+        )
+
+        return body

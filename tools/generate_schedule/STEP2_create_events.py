@@ -23,9 +23,7 @@ POST_FILE_NAME = 'all_events.json'
 
 def add_desc_placeholders(in_desc):
     return  f"{in_desc}\n\n&nbsp;\n\n" \
-            f"{description_tags['starters']}\n\n&nbsp;\n\n" \
-            f"{description_tags['injuries']}\n\n&nbsp;\n\n" \
-            f"{description_tags['odds']}\n\n&nbsp;\n\n" \
+            f"{description_tags['lineup_injury_odds']}\n\n&nbsp;\n\n" \
             f"{description_tags['referees']}\n"
 
 

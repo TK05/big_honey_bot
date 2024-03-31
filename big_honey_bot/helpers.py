@@ -21,7 +21,8 @@ description_tags = {
     "injuries": "{injuries}",
     "odds": "{odds}",
     "referees": "{referees}",
-    "daily_games": "{daily_games}"
+    "daily_games": "{daily_games}",
+    "lineup_injury_odds": "{lineup_injury_odds}"
 }
 
 hidden_tags = {

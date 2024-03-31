@@ -11,7 +11,7 @@ from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_pname_fname_str
 from big_honey_bot.threads.main import new_thread
 from big_honey_bot.threads.static.headlines import gt_placeholders
-from big_honey_bot.threads.static.templates import Game
+from big_honey_bot.threads.static.templates import Game, LineupInjuryOdds
 from big_honey_bot.threads.static.lookups import team_lookup
 from big_honey_bot.threads.helpers import lineup_injury_odds
 
@@ -141,6 +141,15 @@ def generate_game_body(event):
     last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
     betting_rows = Game.betting_rows(betting_odds, last_updated_time)
 
+    lio_body = LineupInjuryOdds.format_body(
+        lineup_header,
+        lineup_rows,
+        injuries_header,
+        injuries_rows,
+        betting_header,
+        betting_rows
+    )
+
     # Scrape referees to get referees for the game
     ref_res = requests.get("https://official.nba.com/referee-assignments/").text
     ref_res = Selector(text=ref_res)
@@ -170,9 +179,9 @@ def generate_game_body(event):
     if referees == "*Referees: *":
         referees = ''
 
-    event.body = event.body.replace(description_tags['starters'], f"{lineup_header}{lineup_rows}")
-    event.body = event.body.replace(description_tags['injuries'], f"{injuries_header}{injuries_rows}")
-    event.body = event.body.replace(description_tags['odds'], f"{betting_header}{betting_rows}")
+    lio_regex = re.compile(r"\[\]\(/oo_begin\)(.*?)\[\]\(/oo_end\)", re.DOTALL)
+    event.body = lio_regex.sub(lio_body, event.body)
+
     event.body = event.body.replace(description_tags['referees'], f"{referees}\n")
 
 
