@@ -213,8 +213,13 @@ class Game(object):
         return betting_header
 
     @staticmethod
-    def betting_rows(betting_odds):
-        return f'|{betting_odds[0]}|{betting_odds[1]}|{betting_odds[2]}|'
+    def betting_rows(betting_odds, time_now):
+        betting_row = (
+            f'|{betting_odds[0]}|{betting_odds[1]}|{betting_odds[2]}|\n' \
+            f'{time_now}'
+        )
+        
+        return betting_row
 
 
 class ThreadStats(object):

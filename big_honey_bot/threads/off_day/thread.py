@@ -10,7 +10,8 @@ from big_honey_bot.helpers import (
     get_datetime,
     description_tags,
     platform_hr_min_fmt,
-    platform_mo_day_fmt
+    platform_mo_day_fmt,
+    last_updated_fmt
 )
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.config.main import setup
@@ -253,6 +254,10 @@ def generate_thread_body(event=None):
         # avoid adding separator to end of body
         body += f"{body_events[-1][0]}\n{body_events[-1][1]}\n"
         body += "\n".join(body_events[-1][2])
+
+    # Add last updated timestamp to end
+    last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
+    body += f"\n{last_updated_time}"
 
     if not event:
         print(body)

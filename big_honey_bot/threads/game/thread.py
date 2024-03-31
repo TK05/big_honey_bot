@@ -6,7 +6,7 @@ from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
-from big_honey_bot.helpers import get_datetime_from_str, description_tags
+from big_honey_bot.helpers import get_datetime_from_str, get_str_from_datetime, description_tags, last_updated_fmt
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_pname_fname_str
 from big_honey_bot.threads.main import new_thread
@@ -137,7 +137,9 @@ def generate_game_body(event):
     injuries_rows = Game.injuries_rows(team_injuries)
 
     betting_header = Game.betting_head_and_fmt()
-    betting_rows = Game.betting_rows(betting_odds)
+    # Include last updated timestamp at end of betting rows
+    last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
+    betting_rows = Game.betting_rows(betting_odds, last_updated_time)
 
     # Scrape referees to get referees for the game
     ref_res = requests.get("https://official.nba.com/referee-assignments/").text
