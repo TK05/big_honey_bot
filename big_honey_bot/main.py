@@ -29,7 +29,11 @@ def do_event(event, po_data):
         update_event_and_set_to_active(event)
 
     elif event.meta['event_type'] == 'post':
+        # Set post game events to active prior to running game check
+        update_event_and_set_to_active(event)
         post_game_thread_handler(event, po_data)
+
+        # Then update event again after finish with data
         update_event_and_set_to_active(event)
 
         # Generate thread stats after post game thread is posted
