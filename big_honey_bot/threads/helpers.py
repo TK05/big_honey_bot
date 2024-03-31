@@ -14,6 +14,7 @@ def lineup_injury_odds(team_name):
     :rtype: list[list[lineups], list[injuries], list[odds]]
     """
 
+    lineup_status = ["Projected", "Projected"]
     team_lineups = [[], []]
     team_injuries = [[], []]
     betting_data = ['N/A', 'N/A', 'N/A']
@@ -25,36 +26,46 @@ def lineup_injury_odds(team_name):
     game_idx = None
 
     for i, game in enumerate(all_games):
-        away = game.xpath('./div[2]/div[2]/a[1]/text()').get().strip()
-        home = game.xpath('./div[2]/div[2]/a[2]/text()').get().strip()
+        away_team = game.xpath('.//a[contains(@class, "lineup__mteam is-visit")]/text()').get().strip()
+        home_team = game.xpath('.//a[contains(@class, "lineup__mteam is-home")]/text()').get().strip()
 
-        if home == team_name or away == team_name:
+        if home_team == team_name or away_team == team_name:
             game_idx = i
 
     if game_idx is None:    # Return out of function if game not found
-        return team_lineups, team_injuries, betting_data
+        return lineup_status, team_lineups, team_injuries, betting_data
 
     game = all_games[game_idx]
 
-    for side in [0, 1]:
-        lineups = game.xpath(f'./div[2]/div[3]/ul[{side + 1}]')
-        lineup_len = game.xpath(f'./div[2]/div[3]/ul[{side + 1}]/li')
+    for i, side in enumerate(["is-visit", "is-home"]):
+        lineup_list = game.xpath(f'.//ul[contains(@class, "lineup__list {side}")]')
+        players = lineup_list.xpath('.//li[contains(@class, "lineup__player")]')
 
-        for player in range(2, 7):
-            pos = lineups.xpath(f'./li[{player}]/div[1]/text()').get()
-            name = lineups.xpath(f'./li[{player}]/a[1]/text()').get()
-            des = lineups.xpath(f'./li[{player}]/span[1]/text()').get()
+        # First 5 are starters
+        for player in players[:5]:
+            pos = player.xpath('.//div[@class="lineup__pos"]/text()').get()
+            name = player.xpath('.//a[1]/text()').get()
+            des = player.xpath('.//span[@class="lineup__inj"]/text()').get()
 
             if des:
-                name = f'{name} - *{des}*'
-            team_lineups[side].append((pos, name))
+                name = f"{name} - *{des}*"
 
-        for injury in range(8, len(lineup_len) + 1):
-            name = lineups.xpath(f'./li[{injury}]/a[1]/text()').get()
-            des = lineups.xpath(f'./li[{injury}]/span[1]/text()').get()
-            if name and des:
-                team_injuries[side].append((name, des))
+            team_lineups[i].append((pos, name))
 
+        # Remaining are those with injuries listed
+        for injury in players[5:]:
+            name = injury.xpath('.//a[1]/text()').get()
+            des = injury.xpath('.//span[@class="lineup__inj"]/text()').get()
+
+            # Do not append when des='OFS' (out for season)
+            if name and des and des != 'OFS':
+                team_injuries[i].append((name, des))
+
+        status = lineup_list.xpath('.//li[contains(@class, "lineup__status")]/text()').getall()[-1]
+        # This will be unstripped string, ie: "Possible Lineup\r\n", we just need first word cleaned
+        lineup_status[i] = status.split(' ')[0].strip()
+
+    # TODO: consider storing & showing opening line and then updating current line to closing
     ml = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[1]/span[1]/text()').get()
     spread = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[2]/span[1]/text()').get()
     ou = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[3]/span[1]/text()').get()
@@ -62,7 +73,7 @@ def lineup_injury_odds(team_name):
 
     betting_data = [ml, spread, ou]
 
-    return team_lineups, team_injuries, betting_data
+    return lineup_status, team_lineups, team_injuries, betting_data
 
 
 def create_templatized_headline(event_type, home_away, opponent, in_playoffs):

@@ -128,9 +128,9 @@ def generate_game_body(event):
         home_abv = team_lookup[event.meta['opponent']][1]
 
     # Call to lineup script to return lineups, injuries, betting odds
-    team_lineups, team_injuries, betting_odds = lineup_injury_odds(TEAM)
+    lineup_status, team_lineups, team_injuries, betting_odds = lineup_injury_odds(TEAM)
 
-    lineup_header = Game.lineup_head_and_fmt(away_abv, home_abv)
+    lineup_header = Game.lineup_head_and_fmt(away_abv, home_abv, lineup_status)
     lineup_rows = Game.lineup_rows(team_lineups)
 
     injuries_header = Game.injuries_head_and_fmt(away_abv, home_abv)
