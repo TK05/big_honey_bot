@@ -2,7 +2,7 @@ import time
 import logging
 from datetime import timedelta
 
-from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime
+from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime, change_timezone, dyn_event_types
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.sidebar.helpers import update_sidebar
 from big_honey_bot.playoffs.helpers import get_series_status
@@ -61,7 +61,7 @@ def update_event_and_set_to_active(event):
     logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
 
 
-def refresh_active_event(in_event):
+def refresh_active_event(in_event, po_data):
     event = get_event(in_event.id)
 
     # Catch when event type manually set to done
@@ -77,6 +77,19 @@ def refresh_active_event(in_event):
         update_event(event)
         logger.info(f"Post & Event updated after body changes: {event.id} - {event.summary}")
         
+        return event
+    
+    # If events w/ items that can update haven't been updated in > 1 hour, update them
+    if event.meta['event_type'] in dyn_event_types:
+        updated_at_tz = change_timezone(event.updated)
+        now_tz = get_datetime(add_tz=True)
+
+        if (now_tz - updated_at_tz) > timedelta(hours=1):
+            logger.info(f"Event with event_type='{event.meta['event_type']}' last updated > 1 hour ago, sending to do_event: {event.id}")
+            event = do_event(event, po_data)
+        else:
+            logger.debug(f"Event with event_type='{event.meta['event_type']}' last updated {updated_at_tz}. Doing nothing...")
+
         return event
     
     # Still active and no changes, return in_event
@@ -211,7 +224,7 @@ def run():
             # Sleep, then refresh active_event for any changes
             logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}")
             time.sleep(30)
-            active_event = refresh_active_event(active_event)
+            active_event = refresh_active_event(active_event, playoff_data)
 
         # Not time to do next_event and no active_event
         else:

@@ -34,6 +34,9 @@ hidden_tags = {
     "dl_end": "[](/dl_end)"
 }
 
+# These events have items (lineups, odds, etc.) that can be updated throughout the day
+dyn_event_types = ['pre', 'game', 'off']
+
 
 def write_dict_to_json_file(file_name, data):
     
