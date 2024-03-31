@@ -83,11 +83,11 @@ class GameEvent:
         ret_dict = {
             'start': {
                 'dateTime': self._start.strftime(self._time_fmt),
-                'timeZone': self._start.tzname()
+                'timeZone': f"{self._start.tzinfo}"
             },
             'end': {
                 'dateTime': self._end.strftime(self._time_fmt),
-                'timeZone': self._end.tzname()
+                'timeZone': f"{self._end.tzinfo}"
             },
             'location': self._location,
             'summary': self._summary,
