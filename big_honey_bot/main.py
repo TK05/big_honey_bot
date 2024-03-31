@@ -198,7 +198,7 @@ def run():
                 end_active_event(active_event)
             
             # Sleep, then refresh active_event for any changes
-            logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}...")
+            logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}")
             time.sleep(30)
             active_event = refresh_active_event(active_event)
 
