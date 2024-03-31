@@ -85,7 +85,7 @@ def refresh_active_event(in_event, po_data):
         now_tz = get_datetime(add_tz=True)
         delta = timedelta(hours=1) if get_env('DEBUG') == True else timedelta(minutes=2)
 
-        if (now_tz - updated_at_tz) > delta:
+        if (now_tz - updated_at_tz) < delta:
             logger.info(f"Event with event_type='{event.meta['event_type']}' last updated > 1 hour ago, sending to do_event: {event.id}")
             event = do_event(event, po_data)
         else:
