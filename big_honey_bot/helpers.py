@@ -28,7 +28,9 @@ hidden_tags = {
     "lio_start": "[](/lio_begin)\n",
     "lio_end": "\n[](/lio_end)",
     "todays_games_start": "[](/tg_begin)\n",
-    "todays_games_end": "\n[(/tg_end)]"
+    "todays_games_end": "\n[(/tg_end)]",
+    "dl_start": "[](/dl_begin)\n",
+    "dl_end": "\n[](/dl_end)"
 }
 
 
