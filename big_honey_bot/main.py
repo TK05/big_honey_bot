@@ -83,7 +83,7 @@ def refresh_active_event(in_event, po_data):
     if event.meta['event_type'] in dyn_event_types:
         updated_at_tz = change_timezone(event.updated)
         now_tz = get_datetime(add_tz=True)
-        delta = timedelta(hours=1) if get_env['DEBUG'] == True else timedelta(minutes=2)
+        delta = timedelta(hours=1) if get_env('DEBUG') == True else timedelta(minutes=2)
 
         if (now_tz - updated_at_tz) > delta:
             logger.info(f"Event with event_type='{event.meta['event_type']}' last updated > 1 hour ago, sending to do_event: {event.id}")
