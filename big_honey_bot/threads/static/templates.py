@@ -267,13 +267,13 @@ class LineupInjuryOdds(object):
     def format_body(l_headers, l_rows, i_header, i_rows, b_header, b_rows):
         sep = "\n\n&nbsp;\n\n"
         body = (
-            f"{hidden_tags['lio_start']}" \
+            f"{hidden_tags['lio_start']}\n" \
             f"{l_headers}{l_rows}" \
             f"{sep}" \
             f"{i_header}{i_rows}" \
             f"{sep}" \
             f"{b_header}{b_rows}" \
-            f"{hidden_tags['lio_end']}"
+            f"\n{hidden_tags['lio_end']}"
         )
 
         return body

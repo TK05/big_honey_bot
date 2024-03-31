@@ -6,7 +6,7 @@ from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
 
-from big_honey_bot.helpers import get_datetime_from_str, get_str_from_datetime, description_tags, last_updated_fmt
+from big_honey_bot.helpers import get_datetime_from_str, get_str_from_datetime, description_tags, last_updated_fmt, hidden_tags
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_pname_fname_str
 from big_honey_bot.threads.main import new_thread
@@ -179,8 +179,13 @@ def generate_game_body(event):
     if referees == "*Referees: *":
         referees = ''
 
-    lio_regex = re.compile(r"\[\]\(/oo_begin\)(.*?)\[\]\(/oo_end\)", re.DOTALL)
-    event.body = lio_regex.sub(lio_body, event.body)
+    # Replace lio chunk by replace or regex depending on whether replace tag exists
+    if description_tags['lineup_injury_odds'] in event.body:
+        event.body = event.body.replace(description_tags['lineup_injury_odds'], lio_body)
+    else:
+        lio_regex_str = f"{re.escape(hidden_tags['lio_start'])}(.*?){re.escape(hidden_tags['lio_end'])}"
+        lio_pattern = re.compile(rf"{lio_regex_str}", re.DOTALL)
+        event.body = re.sub(lio_pattern, lio_body, event.body)
 
     event.body = event.body.replace(description_tags['referees'], f"{referees}\n")
 
