@@ -85,7 +85,7 @@ def add_timezone_to_datetime(dt, tz=setup['timezone']):
         return dt.replace(tzinfo=tz)
 
 
-def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
+def get_datetime(dt=None, add_tz=False, to_tz=False, tz=setup['timezone']):
 
     if not dt:
         dt = datetime.now()
@@ -96,6 +96,8 @@ def get_datetime(dt=None, add_tz=False, tz=setup['timezone']):
     
     if add_tz:
         dt = add_timezone_to_datetime(dt=dt, tz=tz)
+    elif to_tz:
+        dt = change_timezone(dt=dt, tz=tz)
     
     return dt
 

@@ -59,7 +59,7 @@ def get_all_events_with_meta():
 
 def get_previous_event(penultimate=False, days=30):
     service = create_service()
-    now = get_datetime(add_tz=True)
+    now = get_datetime(to_tz=True, tz=setup['timezone'])
     events = service.get_events((now - timedelta(days=days)),now, order_by='startTime', timezone=setup['timezone'], single_events=True)
 
     # Return penultimate event if requested, else return last event
