@@ -7,11 +7,10 @@ from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_d
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.sidebar.helpers import update_sidebar
 from big_honey_bot.playoffs.helpers import get_series_status
-from big_honey_bot.threads.main import edit_thread, get_thread
+from big_honey_bot.threads.main import edit_thread, get_thread, generate_thread_stats
 from big_honey_bot.threads.game.thread import game_thread_handler
 from big_honey_bot.threads.off_day.thread import off_day_thread_handler
 from big_honey_bot.threads.post_game.thread import post_game_thread_handler
-from big_honey_bot.threads.post_game.thread_stats import generate_stats_comment
 from big_honey_bot.events.main import get_event, get_next_event, update_event, get_previous_event
 
 
@@ -33,31 +32,23 @@ def do_event(event, update_only=False):
 
     if event.meta['event_type'] in ['pre', 'game']:
         game_thread_handler(event, playoff_data, update_only)
-        update_event_and_set_to_active(event)
-
     elif event.meta['event_type'] == 'post':
-        # Set post game events to active prior to running game check
-        update_event_and_set_to_active(event)
         post_game_thread_handler(event, playoff_data)
-
-        # Then update event again after finish with data
-        update_event_and_set_to_active(event)
-
-        # Generate thread stats after post game thread is posted
-        if get_env('THREAD_STATS'):
-            try:
-                prev_game_event = get_previous_event(penultimate=True)
-                prev_post = get_thread(prev_game_event.meta['reddit_id'])
-                generate_stats_comment(game_thread=prev_post, post_game_thread=event.post)
-            except Exception as e:
-                logger.error(f"Error caught while generating thread stats: {e}")
-
     elif event.meta['event_type'] == 'off':
         off_day_thread_handler(event)
-        update_event_and_set_to_active(event)
-
     else:
-        logger.info(f"Unhandled event_type: {event.meta['event_type']}")
+        logger.error(f"Event type while do_event has no instructions -- type: {event.meta['event_type']} -- {event.summary}")
+    
+    update_event_and_set_to_active(event)
+
+    # Add comment to new thread of thread stats for previous thread
+    if get_env('THREAD_STATS'):
+        try:
+            prev_event = get_previous_event(penultimate=True)
+            prev_thread = get_thread(prev_event.meta['reddit_id'])
+            generate_thread_stats(prev_thread, event.post)
+        except Exception as e:
+            logger.error(f"Error caught while generating thread stats: {e}")
 
 
 def update_event_and_set_to_active(event):
@@ -160,18 +151,19 @@ def check_if_prev_event_still_active():
         logger.warning(f"Previous event's meta was missing some required meta keys, ignoring previous event...")
         active_event = None
 
-    # If previous event type is post and status is not done, game watch may possibly need to be restarted
-    if pe_type == 'post' and pe_status != 'done':
+    # If previous event type is post and status is upcoming, game watch may possibly need to be restarted
+    if pe_type == 'post' and pe_status == 'upcoming':
     
         # Check current time and resume game watch if event.start < 3 hours ago
         if get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
-            logger.info("Previous event was type='post' & status!='done'")
+            logger.info(f"Previous event was type={pe_type} & status={pe_status}, sending back to do_event")
             do_event(prev_event)
         
-        # If previous event is too old to game watch, then assume there was no previous event
+        # If previous event is too old to game watch, then set to done
         else:
-            logger.info(f"Previous event was type='post' & status!='done' but skipping game check as start time is too old: {prev_event.start}")
-            active_event = None
+            logger.info(f"Previous event was type={pe_type} & status={pe_status} but skipping game check as start time is too old: {prev_event.start}")
+            active_event = prev_event
+            end_active_event()
 
     # If previous event still active, set post attribute and return event
     if pe_status == 'active':

@@ -228,10 +228,17 @@ class Game(object):
 class ThreadStats(object):
 
     @staticmethod
-    def format_post(num_comments, num_commenters, total_karma, top_comment, most_posts, most_karma, top_posters):
+    def format_post(thread_type, num_comments, num_commenters, total_karma, top_comment, most_posts, most_karma, top_posters):
         """Formats submission given thread stats."""
 
-        comment = f"##BHB's Game Thread Stats\n\n&nbsp;\n\n" \
+        thread_type_map = {
+            'off': "Off Day",
+            'pre': "Pre-Game",
+            'game': "Game",
+            'post': "Post Game"
+        }
+
+        comment = f"##BHB's {thread_type_map[thread_type]} Thread Stats\n\n&nbsp;\n\n" \
             f"**Posts:** {num_comments}\n\n" \
             f"**Bees:** {num_commenters}\n\n" \
             f"**Honey Harvested:** +{total_karma}\n\n"
