@@ -7,8 +7,8 @@ from big_honey_bot.config.helpers import configure_logging, reload_env, get_env,
 
 
 async def main():
-    # create thread to reload .env every ENV_RELOAD_INTERVAL_SEC
-    asyncio.create_task(reload_env(ENV_RELOAD_INTERVAL_SEC))
+    # create task to reload .env every ENV_RELOAD_INTERVAL_SEC
+    asyncio.create_task(int(reload_env(ENV_RELOAD_INTERVAL_SEC)))
 
     # start run_bhb main event loop
     logger.info("Starting big_honey_bot....")

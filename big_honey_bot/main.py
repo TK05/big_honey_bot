@@ -205,7 +205,7 @@ async def do_maint_tasks(init_maint_task):
         init_maint_task.set()
 
         # Sleep at end
-        await asyncio.sleep(get_env('MAINT_INTERVAL'))
+        await asyncio.sleep(int(get_env('MAINT_INTERVAL')))
 
 
 async def bhb_main_loop(init_maint_task):
