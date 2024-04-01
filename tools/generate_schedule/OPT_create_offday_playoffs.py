@@ -109,7 +109,7 @@ def create_in_season_schedule(curr_sch):
             for n in range(1, diff):
                 days_without.append(day + timedelta(days=n))
 
-    pgpt = setup['pre_game_post_hour'].split(':')
+    pgpt = setup['pre_game_post_hour']
     new_schedule = {}
 
     for d in days_without:
@@ -117,8 +117,8 @@ def create_in_season_schedule(curr_sch):
             "year": d.year,
             "month": d.month,
             "day": d.day,
-            "hour": int(pgpt[0]),
-            "minute": int(pgpt[1])
+            "hour": int(pgpt),
+            "minute": 0
         }
         post_time = get_datetime(dt=post_time_dict, add_tz=True)
         post_stamp = int(post_time.timestamp())
