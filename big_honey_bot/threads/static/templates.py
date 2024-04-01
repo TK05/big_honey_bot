@@ -228,7 +228,7 @@ class Game(object):
 class ThreadStats(object):
 
     @staticmethod
-    def format_post(thread_type, num_comments, num_commenters, total_karma, top_comment, most_posts, most_karma, top_posters):
+    def format_post(d):
         """Formats submission given thread stats."""
 
         thread_type_map = {
@@ -238,31 +238,31 @@ class ThreadStats(object):
             'post': "Post Game"
         }
 
-        comment = f"##BHB's {thread_type_map[thread_type]} Thread Stats\n\n&nbsp;\n\n" \
-            f"**Posts:** {num_comments}\n\n" \
-            f"**Bees:** {num_commenters}\n\n" \
-            f"**Honey Harvested:** +{total_karma}\n\n"
+        comment = f"##BHB's {thread_type_map[d['thread_type']]} Thread Stats\n\n&nbsp;\n\n" \
+            f"**Posts:** {d['num_comments']}\n\n" \
+            f"**Bees:** {d['num_commenters']}\n\n" \
+            f"**Honey Harvested:** +{d['total_karma']}\n\n"
 
         try:
-            karma_per_comment = round((total_karma / num_comments), 2)
+            karma_per_comment = round((d['total_karma'] / d['num_comments']), 2)
         except ZeroDivisionError:
             karma_per_comment = 0
 
         comment += f"**Honey/Post Avg.:** {karma_per_comment}\n\n&nbsp;\n\n" \
-            f"**BHB's POTT:** +{top_comment[1]} Honey\n" \
-            f">[{top_comment[0]}]({top_comment[3]})\n"
+            f"**BHB's POTT:** +{d['top_comment'][1]} Honey\n" \
+            f">[{d['top_comment'][0]}]({d['top_comment'][3]})\n"
 
-        for line in top_comment[2].split("\n\n"):
+        for line in d['top_comment'][2].split("\n\n"):
             comment += f">>{line}\n\n"
 
         comment += f"&nbsp;\n\n" \
-            f"**Busiest Bee:** {most_posts[0]} w/ {most_posts[1]} Posts\n\n" \
-            f"**Most Honey:** {most_karma[0]} +{most_karma[1]} Honey\n\n&nbsp;\n\n" \
+            f"**Busiest Bee:** {d['most_posts'][0]} w/ {d['most_posts'][1]} Posts\n\n" \
+            f"**Most Honey:** {d['most_karma'][0]} +{d['most_karma'][1]} Honey\n\n&nbsp;\n\n" \
             f"**BHB's Top-Bees**\n\n" \
             f"Bee|Posts|Honey|H/P|\n" \
             f":-|:-:|:-:|:-:|\n"
 
-        for poster in top_posters:
+        for poster in d['top_posters']:
             comment += f"**{poster[0]}**|{poster[1]}|+{poster[2]}|{poster[3]}|\n"
 
         return comment

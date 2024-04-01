@@ -131,6 +131,8 @@ def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
     def _get_thread_details(thread):
         """Determine thread stats from given thread."""
 
+        results = {}
+        
         thread.comments.replace_more(limit=None)
 
         num_comments = thread.num_comments
@@ -170,16 +172,23 @@ def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
                                 all_authors[poster]['post_count'],
                                 all_authors[poster]['karma'],
                                 all_authors[poster]['ratio']])
-
-        return [num_comments, len(all_authors), total_karma, top_comment, most_posts, most_karma, top_posters]
+            
+        results['num_comments'] = thread.num_comments
+        results['len_all_authors'] = len(all_authors)
+        results['total_karma'] = total_karma
+        results['top_comment'] = top_comment
+        results['most_posts'] = most_posts
+        results['most_karma'] = most_karma
+        results['top_posters'] = top_posters
+        
+        return results
 
     # Main logic
     logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_thread.id}")
     
-    details = _get_thread_details(prev_thread)
-    logger.debug(f"prev_event_type: {prev_event_type} - details: {details}")
-
-    comment = ThreadStats.format_post(thread_type=prev_event_type, *details)
+    results = _get_thread_details(prev_thread)
+    results['thread_type'] = prev_event_type
+    comment = ThreadStats.format_post(results)
     comment_id = post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")
