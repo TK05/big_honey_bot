@@ -35,7 +35,7 @@ def do_event(event, update_only=False):
     elif event.meta['event_type'] == 'post':
         post_game_thread_handler(event, playoff_data)
     elif event.meta['event_type'] == 'off':
-        off_day_thread_handler(event)
+        off_day_thread_handler(event, update_only)
     else:
         logger.error(f"Event type while do_event has no instructions -- type: {event.meta['event_type']} -- {event.summary}")
     
@@ -151,6 +151,7 @@ def check_if_prev_event_still_active():
         logger.warning(f"Previous event's meta was missing some required meta keys, ignoring previous event...")
         active_event = None
 
+    # TODO: think/rethink/actually-think if we really need to send this to game check and possible post
     # If previous event type is post and status is upcoming, game watch may possibly need to be restarted
     if pe_type == 'post' and pe_status == 'upcoming':
 
