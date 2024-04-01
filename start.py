@@ -13,11 +13,11 @@ if __name__ == "__main__":
     configure_logging(log_file)
     logger = logging.getLogger(get_pname_fname_str(__file__))
 
+    logger.info("Starting big_honey_bot....")
+
     # create thread to reload .env every minute
     reload_env_thread = threading.Thread(target=reload_env, args=(ENV_RELOAD_INTERVAL_SEC,), daemon=True)
     reload_env_thread.start()
-
-    logger.info("Starting big_honey_bot....")
 
     if get_env('DEBUG'):
         from big_honey_bot.config.helpers import get_all_env
