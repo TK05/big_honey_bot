@@ -240,7 +240,7 @@ class ThreadStats(object):
 
         comment = f"##BHB's {thread_type_map[d['thread_type']]} Thread Stats\n\n&nbsp;\n\n" \
             f"**Posts:** {d['num_comments']}\n\n" \
-            f"**Bees:** {d['num_commenters']}\n\n" \
+            f"**Bees:** {d['len_all_authors']}\n\n" \
             f"**Honey Harvested:** +{d['total_karma']}\n\n"
 
         try:
