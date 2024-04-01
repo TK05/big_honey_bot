@@ -17,7 +17,7 @@ from big_honey_bot.events.main import get_event, get_next_event, update_event, g
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-def do_event(event, po_data):
+def do_event(event, po_data, update_only=False):
 
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
@@ -25,7 +25,7 @@ def do_event(event, po_data):
         logger.info(f"Custom body detected, updated @ {event.updated.strftime('%b %d, %H:%M')}")
 
     if event.meta['event_type'] in ['pre', 'game']:
-        game_thread_handler(event, po_data)
+        game_thread_handler(event, po_data. update_only)
         update_event_and_set_to_active(event)
 
     elif event.meta['event_type'] == 'post':
@@ -87,7 +87,7 @@ def refresh_active_event(in_event, po_data):
 
         if (now_tz - updated_at_tz) < delta:
             logger.info(f"Event with event_type='{event.meta['event_type']}' last updated > 1 hour ago, sending to do_event: {event.id}")
-            event = do_event(event, po_data)
+            event = do_event(event, po_data, update_only=True)
         else:
             logger.debug(f"Event with event_type='{event.meta['event_type']}' last updated {updated_at_tz}. Doing nothing...")
 

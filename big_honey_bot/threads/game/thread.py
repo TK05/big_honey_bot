@@ -9,7 +9,7 @@ from nba_api.stats.static import teams
 from big_honey_bot.helpers import get_datetime_from_str, get_str_from_datetime, description_tags, last_updated_fmt, hidden_tags
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_pname_fname_str
-from big_honey_bot.threads.main import new_thread
+from big_honey_bot.threads.main import new_thread, edit_thread
 from big_honey_bot.threads.static.headlines import gt_placeholders
 from big_honey_bot.threads.static.templates import Game, LineupInjuryOdds
 from big_honey_bot.threads.static.lookups import team_lookup
@@ -190,7 +190,7 @@ def generate_game_body(event):
     event.body = event.body.replace(description_tags['referees'], f"{referees}\n")
 
 
-def game_thread_handler(event, playoff_data):
+def game_thread_handler(event, playoff_data, update_only):
     """Generates thread title and body for event. Posts generated thread.
 
     :param event: Event to generate thread for
@@ -201,13 +201,16 @@ def game_thread_handler(event, playoff_data):
     :rtype: NoneType
     """
 
-    if playoff_data:
-        playoff_headline(event, playoff_data)
-    else:
-        generate_title(event)
-
     if event.meta['event_type'] in ['pre', 'game']:
         generate_game_body(event)
 
-    logger.info(f"Created headline: {event.summary}")
-    new_thread(event)
+    if not update_only:
+        if playoff_data:
+            playoff_headline(event, playoff_data)
+        else:
+            generate_title(event)
+        logger.info(f"Created headline: {event.summary}")
+        new_thread(event)
+    else:
+        logger.info(f"Updating existing thread with new event data: {event.summary}")
+        edit_thread(event)
