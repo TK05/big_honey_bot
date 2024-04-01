@@ -28,8 +28,8 @@ description_tags = {
 hidden_tags = {
     "lio_start": "[](/lio_begin)",
     "lio_end": "[](/lio_end)",
-    "todays_games_start": "[](/tg_begin)",
-    "todays_games_end": "[(/tg_end)]",
+    "dg_start": "[](/dg_begin)",
+    "dg_end": "[(/dg_end)]",
     "dl_start": "[](/dl_begin)",
     "dl_end": "[](/dl_end)"
 }

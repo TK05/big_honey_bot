@@ -1,4 +1,5 @@
 import logging
+import re
 
 import requests
 from parsel import Selector
@@ -9,13 +10,14 @@ from big_honey_bot.helpers import (
     get_str_from_datetime,
     get_datetime,
     description_tags,
+    hidden_tags,
     platform_hr_min_fmt,
     platform_mo_day_fmt,
     last_updated_fmt
 )
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.config.main import setup
-from big_honey_bot.threads.main import new_thread
+from big_honey_bot.threads.main import new_thread, edit_thread
 from big_honey_bot.threads.static.lookups import lookup_by_loc
 from big_honey_bot.threads.static.events import events as se
 from big_honey_bot.threads.helpers import lineup_injury_odds
@@ -241,7 +243,7 @@ def generate_thread_body(event=None):
         if static_bottom:
             body_events.append(static_bottom)
 
-    body = ""
+    body = f"{hidden_tags['dg_start']}"
 
     if body_events:
         separator = "\n\n&nbsp;\n\n"
@@ -257,15 +259,20 @@ def generate_thread_body(event=None):
 
     # Add last updated timestamp to end
     last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
-    body += f"\n{last_updated_time}"
+    body += f"\n{last_updated_time}\n{hidden_tags['dg_end']}"
 
     if not event:
         print(body)
     else:
-        event.body = event.body.replace(description_tags['daily_games'], f"{body}")
+        if description_tags['daily_games'] in event.body:
+            event.body = event.body.replace(description_tags['daily_games'], body)
+        else:
+            dg_regex_str = f"{re.escape(hidden_tags['dg_start'])}(.*?){re.escape(hidden_tags['dg_end'])}"
+            dg_pattern = re.compile(rf"{dg_regex_str}", re.DOTALL)
+            event.body = re.sub(dg_pattern, body, event.body)
 
 
-def off_day_thread_handler(event):
+def off_day_thread_handler(event, update_only=False):
     """Generates thread title and body for event. Posts generated thread.
 
     :param event: Event to generate thread for
@@ -276,8 +283,12 @@ def off_day_thread_handler(event):
 
     generate_thread_body(event)
 
-    logger.info(f"Created headline: {event.summary}")
-    new_thread(event)
+    if not update_only:
+        logger.info(f"Created headline: {event.summary}")
+        new_thread(event)
+    else:
+        logger.info(f"Updating existing thread with new event data: {event.summary}")
+        edit_thread(event)
 
 
 if __name__ == "__main__":
