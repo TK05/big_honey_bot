@@ -177,6 +177,8 @@ def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
     logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_thread.id}")
     
     details = _get_thread_details(prev_thread)
+    logger.debug(f"prev_event_type: {prev_event_type} - details: {details}")
+
     comment = ThreadStats.format_post(thread_type=prev_event_type, *details)
     comment_id = post_comment(curr_thread, comment)
 
