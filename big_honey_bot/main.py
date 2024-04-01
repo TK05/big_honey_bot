@@ -22,6 +22,10 @@ def do_event(event, update_only=False):
 
     global active_event
 
+    # End active event prior to moving to new event (when update_only=False)
+    if active_event and not update_only:
+        end_active_event()
+
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
     if not hash_match(event.body, event.meta['body_hash']):
@@ -55,13 +59,15 @@ def do_event(event, update_only=False):
     else:
         logger.info(f"Unhandled event_type: {event.meta['event_type']}")
 
-    active_event = event
-
 
 def update_event_and_set_to_active(event):
+    
+    global active_event
+    
     event.meta['event_status'] = 'active'
     update_event(event)
     logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
+    active_event = event
 
 
 def check_active_event_for_manual_changes():
@@ -69,6 +75,7 @@ def check_active_event_for_manual_changes():
     global active_event
 
     if not active_event:
+        logger.debug("active_event=None during check for manual changes")
         return
     
     event = get_event(active_event.id)
@@ -93,9 +100,10 @@ def update_active_event():
 
     global active_event
     
-    active_event = check_active_event_for_manual_changes()
+    check_active_event_for_manual_changes()
 
     if not active_event:
+        logger.debug("active_event=None during update of active event")
         return
 
     # End active events 12 hours after start time
@@ -111,6 +119,9 @@ def update_active_event():
 def end_active_event():
     
     global active_event
+
+    if not active_event:
+        return
     
     active_event.meta['event_status'] = 'done'
     update_event(active_event)
@@ -210,6 +221,10 @@ def run():
             update_playoff_data()
             check_if_prev_event_still_active()
             update_active_event()
+            
+            # Maint debug logging
+            logger.debug(f"Maint data -- playoff_data: {playoff_data}")
+            logger.debug(f"Maint data -- active_event: {active_event}")
 
 
     # Initialize locals
@@ -220,7 +235,8 @@ def run():
     maint_tasks_thread.start()   
 
     # Init debug logging
-    logger.debug(f"IN_PLAYOFFS: {playoff_data}")
+    logger.debug(f"Init data -- playoff_data: {playoff_data}")
+    logger.debug(f"Init data -- active_event: {active_event}")
 
     while bot_running:
 
@@ -252,11 +268,10 @@ def run():
         # Time to do next_event
         elif seconds_till_event <= 0 and next_event.meta['event_type']:
 
-            # Update next_event.prev_reddit_id w/ reddit_id of current active_event & set active_event to done
+            # Update next_event.prev_reddit_id w/ reddit_id of current active_event
             if active_event:
                 setattr(next_event, 'prev_reddit_id', active_event.meta['reddit_id'])
-                end_active_event()
-
+            
             # Send event to appropriate thread handler and make next_event the active_event
             do_event(next_event)
             time.sleep(30)
