@@ -190,33 +190,20 @@ def run():
     global playoff_data
     global next_event
     global active_event
-    global bot_running
 
     playoff_data = None
     next_event = None
     active_event = None
-    bot_running = True
 
 
     def _maint_tasks():
-        # Maint tasks are things to do every hour likey get playoff updates, update sidebar and 
-        # update active threads that have dynamic data.
+        # Maint tasks are things to do every maint_interval
+        # IE: get playoff updates, update sidebar and  update active threads that have dynamic data.
         
-        logger.info("Maintanence tasks thread started...")
-
-        # Do these once at startup
-        update_sidebar()
-        update_playoff_data()
-        check_if_prev_event_still_active()
-        update_active_event()
-        
-        while bot_running:
-            # After doing once at startup, sleep
-            time.sleep(int(get_env('MAINT_INTERVAL')))
-
-            # Then do tasks
+        while True:
             logger.info("Maintanence tasks running...")
 
+            # Run tasks
             update_sidebar()
             update_playoff_data()
             check_if_prev_event_still_active()
@@ -226,17 +213,17 @@ def run():
             logger.debug(f"Maint data -- playoff_data: {playoff_data}")
             logger.debug(f"Maint data -- active_event: {active_event}")
 
+            # Sleep at end
+            time.sleep(int(get_env('MAINT_INTERVAL')))
+
 
     # Initialize locals
+    bot_running = True
     skip = False
 
     # Create separate thread for maint_tasks & start thread
     maint_tasks_thread = threading.Thread(target=_maint_tasks, daemon=True)
-    maint_tasks_thread.start()   
-
-    # Init debug logging
-    logger.debug(f"Init data -- playoff_data: {playoff_data}")
-    logger.debug(f"Init data -- active_event: {active_event}")
+    maint_tasks_thread.start()
 
     while bot_running:
 
@@ -301,5 +288,6 @@ def run():
             
             except ValueError:
                 logger.error(f"seconds_till_event was negative, exiting")
+                maint_tasks_thread.join()
                 bot_running = False
                 break
