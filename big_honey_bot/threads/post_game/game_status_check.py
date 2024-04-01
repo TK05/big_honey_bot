@@ -93,7 +93,7 @@ def status_check(nba_id, only_final):
             # update to the post game thread with the updated "finalized" box score data.
 
             # First instance that the game is "over"; sleep 10 and check again
-            if not final_checked_once:
+            if not final_checked_once and not only_final:
                 final_checked_once = True
                 time.sleep(10)
                 continue
