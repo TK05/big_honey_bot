@@ -203,8 +203,7 @@ def run():
         
         while bot_running:
             # After doing once at startup, sleep
-            sleep_time = (60*30) if get_env('DEBUG') == False else (60*2)
-            time.sleep(sleep_time)
+            time.sleep(int(get_env('MAINT_INTERVAL')))
 
             # Then do tasks
             logger.info("Maintanence tasks running...")
