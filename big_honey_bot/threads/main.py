@@ -126,7 +126,7 @@ def post_comment(thread, comment):
     return comment_obj.id
     
 
-def generate_thread_stats(prev_thread, curr_thread):
+def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
     
     def _get_thread_details(thread):
         """Determine thread stats from given thread."""
@@ -177,7 +177,7 @@ def generate_thread_stats(prev_thread, curr_thread):
     logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_thread.id}")
     
     details = _get_thread_details(prev_thread)
-    comment = ThreadStats.format_post(*details)
+    comment = ThreadStats.format_post(thread_type=prev_event_type, *details)
     comment_id = post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")

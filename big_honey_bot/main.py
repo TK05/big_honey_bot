@@ -42,11 +42,11 @@ def do_event(event, update_only=False):
     update_event_and_set_to_active(event)
 
     # Add comment to new thread of thread stats for previous thread
-    if get_env('THREAD_STATS'):
+    if get_env('THREAD_STATS') and not update_only:
         try:
             prev_event = get_previous_event(penultimate=True)
             prev_thread = get_thread(prev_event.meta['reddit_id'])
-            generate_thread_stats(prev_thread, event.post)
+            generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.post)
         except Exception as e:
             logger.error(f"Error caught while generating thread stats: {e}")
 
