@@ -20,6 +20,8 @@ logger = logging.getLogger(get_pname_fname_str(__file__))
 
 def do_event(event, update_only=False):
 
+    global active_event
+
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
     if not hash_match(event.body, event.meta['body_hash']):
@@ -53,7 +55,7 @@ def do_event(event, update_only=False):
     else:
         logger.info(f"Unhandled event_type: {event.meta['event_type']}")
 
-    return event
+    active_event = event
 
 
 def update_event_and_set_to_active(event):
@@ -62,53 +64,65 @@ def update_event_and_set_to_active(event):
     logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
 
 
-def check_active_event_for_manual_changes(in_event):
+def check_active_event_for_manual_changes():
     
-    event = get_event(in_event.id)
+    global active_event
+
+    if not active_event:
+        return
+    
+    event = get_event(active_event.id)
 
     # Catch when event type manually set to done
     if event.meta['event_status'] == 'done':
         logger.info(f"Event manually set to done, ending active event: {event.id} - {event.summary}")
-        return None
+        active_event = None
 
     # Update post if event body has been changed since last check
     if not hash_match(event.body, event.meta['body_hash']):
         logger.info(f"Update to active event's body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
-        setattr(event, 'post', in_event.post)
+        setattr(event, 'post', active_event.post)
         edit_thread(event)
         update_event(event)
         logger.info(f"Post & Event updated after body changes: {event.id} - {event.summary}")
         
-        return event
-    
-    # Still active and no changes, return in_event
-    else:
-        return in_event
+        active_event = event
 
 
-def update_active_event(in_event):
+def update_active_event():
+
+    global active_event
     
-    event = check_active_event_for_manual_changes(in_event)
+    active_event = check_active_event_for_manual_changes()
+
+    if not active_event:
+        return
 
     # End active events 12 hours after start time
     if get_datetime(add_tz=True, tz=active_event.timezone) > (active_event.start + timedelta(hours=12)):
         logger.info(f"active_event active longer than 12 hours, setting to done")
         end_active_event(active_event)
 
-    elif event and event.meta['event_type'] in dyn_event_types:
-        logger.info(f"Sending active event to thread handlers for updating, last updated: {event.updated}")
-        event = do_event(event, update_only=True)
-
-    return event
+    elif active_event.meta['event_type'] in dyn_event_types:
+        logger.info(f"Sending active event to thread handlers for updating, last updated: {active_event.updated}")
+        do_event(active_event, update_only=True)
 
 
-def end_active_event(event):
-    event.meta['event_status'] = 'done'
-    update_event(event)
-    logger.info(f"Active event was set to done: {event.id} - {event.summary}")
+def end_active_event():
+    
+    global active_event
+    
+    active_event.meta['event_status'] = 'done'
+    update_event(active_event)
+    logger.info(f"Active event was set to done: {active_event.id} - {active_event.summary}")
+
+    active_event = None
 
 
 def update_playoff_data():
+
+    global playoff_data
+    
     # Set playoff_data for global use
     if get_env('IN_PLAYOFFS'):
         playoff_round, playoff_game_num, playoff_record = get_series_status()
@@ -119,18 +133,20 @@ def update_playoff_data():
 
 def check_if_prev_event_still_active():
 
+    global active_event
+
     prev_event = get_previous_event()
 
     if not prev_event:
         logger.info(f"Found no previous event")
-        return None
+        active_event = None
     
     try:
         pe_type = prev_event.meta['event_type']
         pe_status = prev_event.meta['event_status']
     except KeyError:
         logger.error(f"Previous event's meta was missing some required meta keys, ignoring previous event...")
-        return None
+        active_event = None
 
     # If previous event type is post and status is not done, game watch may possibly need to be restarted
     if pe_type == 'post' and pe_status != 'done':
@@ -138,27 +154,24 @@ def check_if_prev_event_still_active():
         # Check current time and resume game watch if event.start < 3 hours ago
         if get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
             logger.info("Previous event was type='post' & status!='done'")
-            active_event = do_event(prev_event)
-
-            return active_event
+            do_event(prev_event)
         
         # If previous event is too old to game watch, then assume there was no previous event
         else:
             logger.info(f"Previous event was type='post' & status!='done' but skipping game check as start time is too old: {prev_event.start}")
-            return None
-
+            active_event = None
 
     # If previous event still active, set post attribute and return event
     if pe_status == 'active':
         prev_post = get_thread(prev_event.meta['reddit_id'])
         setattr(prev_event, 'post', prev_post)
         logger.info(f"Previous event still active - {prev_event.summary}")
-        return prev_event
+        active_event = prev_event
     
     # Else, previous event no longer active, unset active_event
     else:
         logger.info("Previous event is no longer active")
-        return None
+        active_event = None
 
 def run():
 
@@ -175,27 +188,27 @@ def run():
     def _maint_tasks():
         # Maint tasks are things to do every hour likey get playoff updates, update sidebar and 
         # update active threads that have dynamic data.
-        # We expect this to get initiated at startup so do tasks then sleep
         
         logger.info("Maintanence tasks thread started...")
+
+        # Do these once at startup
+        update_sidebar()
+        update_playoff_data()
+        check_if_prev_event_still_active()
+        update_active_event()
         
         while bot_running:
-            
-            logger.info("Maintanence tasks running...")
+            # After doing once at startup, sleep
             sleep_time = (60*30) if get_env('DEBUG') == False else (60*2)
+            time.sleep(sleep_time)
 
-            # Updates sidebar & playoff data at each start/restart, plus each maint pass
+            # Then do tasks
+            logger.info("Maintanence tasks running...")
+
             update_sidebar()
             update_playoff_data()
-            
-            try:
-                if active_event:
-                    active_event = update_active_event(active_event)
-            # Catch when maint_tasks thread starts before globals are available
-            except UnboundLocalError:
-                sleep_time = 60
-
-            time.sleep(sleep_time)
+            check_if_prev_event_still_active()
+            update_active_event()
 
 
     # Initialize locals
@@ -228,10 +241,6 @@ def run():
             except AttributeError:
                 pass
 
-        # Check previous event to see if still active or needs doing
-        else:
-            active_event = check_if_prev_event_still_active()
-
         current_time = get_timestamp_from_datetime()
         seconds_till_event = get_timestamp_from_datetime(dt=next_event.start) - current_time
 
@@ -245,10 +254,10 @@ def run():
             # Update next_event.prev_reddit_id w/ reddit_id of current active_event & set active_event to done
             if active_event:
                 setattr(next_event, 'prev_reddit_id', active_event.meta['reddit_id'])
-                end_active_event(active_event)
+                end_active_event()
 
             # Send event to appropriate thread handler and make next_event the active_event
-            active_event = do_event(next_event)
+            do_event(next_event)
             time.sleep(30)
 
         # Not time to do next_event but there is an active_event; check for updates to it
@@ -257,7 +266,7 @@ def run():
             # Sleep, then refresh active_event for any changes
             logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}")
             time.sleep(30)
-            active_event = check_active_event_for_manual_changes(active_event)
+            check_active_event_for_manual_changes()
 
         # Not time to do next_event and no active_event
         else:
