@@ -7,6 +7,7 @@ from praw.exceptions import RedditAPIException
 
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
+from big_honey_bot.threads.static.templates import ThreadStats
 
 
 TARGET_SUB = get_env('TARGET_SUB')
@@ -115,3 +116,68 @@ def edit_thread(event):
 
     event.post.edit(event.body)
     logger.info(f"Thread updated on r/{TARGET_SUB} - {event.post.id}")
+
+
+def post_comment(thread, comment):
+    """Submit a new comment to a given thread"""
+
+    comment_obj = thread.reply(comment)
+
+    return comment_obj.id
+    
+
+def generate_thread_stats(prev_thread, curr_thread):
+    
+    def _get_thread_details(thread):
+        """Determine thread stats from given thread."""
+
+        thread.comments.replace_more(limit=None)
+
+        num_comments = thread.num_comments
+
+        top_comment = [None, 0, None, None]
+        total_karma = 0
+        all_authors = {}
+        most_posts = ['', 0]
+        most_karma = ['', 0]
+
+        for comment in thread.comments.list():
+            if not comment.author:
+                continue
+            all_authors.setdefault(comment.author.name, {'post_count': 0, 'karma': 0})
+            all_authors[comment.author.name]['post_count'] += 1
+            all_authors[comment.author.name]['karma'] += comment.score
+            total_karma += comment.score
+            if comment.score > top_comment[1]:
+                top_comment = [comment.author.name, comment.score, comment.body, comment.permalink]
+
+        for author, stats in all_authors.items():
+            stats['score'] = stats['post_count'] + stats['karma']
+            try:
+                stats['ratio'] = round((stats['karma'] / stats['post_count']), 2)
+            except ZeroDivisionError:
+                stats['ratio'] = 0
+            if stats['post_count'] > most_posts[1]:
+                most_posts = [author, stats['post_count']]
+            if stats['karma'] > most_karma[1]:
+                most_karma = [author, stats['karma']]
+
+        top_posters_names = sorted(all_authors, key=lambda x: (all_authors[x]['score']), reverse=True)
+        top_posters = []
+
+        for poster in top_posters_names[0:5]:
+            top_posters.append([poster,
+                                all_authors[poster]['post_count'],
+                                all_authors[poster]['karma'],
+                                all_authors[poster]['ratio']])
+
+        return [num_comments, len(all_authors), total_karma, top_comment, most_posts, most_karma, top_posters]
+
+    # Main logic
+    logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_thread.id}")
+    
+    details = _get_thread_details(prev_thread)
+    comment = ThreadStats.format_post(*details)
+    comment_id = post_comment(curr_thread, comment)
+
+    logger.info(f"Thread stats reply finished, ID: {comment_id}")
