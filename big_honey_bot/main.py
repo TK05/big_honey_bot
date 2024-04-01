@@ -153,9 +153,15 @@ def check_if_prev_event_still_active():
 
     # If previous event type is post and status is upcoming, game watch may possibly need to be restarted
     if pe_type == 'post' and pe_status == 'upcoming':
+
+        # First check if prev_event is same as next_event which will be handled by run
+        if next_event and (prev_event.id == next_event.id):
+            logger.info(f"Previous event was type={pe_type} & status={pe_status} but has same ID as next event, skipping game check")
+            active_event = prev_event
+            end_active_event()
     
         # Check current time and resume game watch if event.start < 3 hours ago
-        if get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
+        elif get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
             logger.info(f"Previous event was type={pe_type} & status={pe_status}, sending back to do_event")
             do_event(prev_event)
         
@@ -181,10 +187,12 @@ def run():
 
     # Initialize globals
     global playoff_data
+    global next_event
     global active_event
     global bot_running
 
     playoff_data = None
+    next_event = None
     active_event = None
     bot_running = True
 
