@@ -1,6 +1,7 @@
 .python-version
 *.env
 *.html
+**/.vscode/
 **/.idea/
 **/__pycache__/
 **/.venv
