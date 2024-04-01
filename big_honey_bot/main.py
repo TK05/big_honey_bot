@@ -3,7 +3,7 @@ import logging
 import threading
 from datetime import timedelta
 
-from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime, change_timezone, dyn_event_types
+from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime, dyn_event_types
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.sidebar.helpers import update_sidebar
 from big_honey_bot.playoffs.helpers import get_series_status
@@ -108,12 +108,13 @@ def end_active_event(event):
     logger.info(f"Active event was set to done: {event.id} - {event.summary}")
 
 
-def get_playoff_data():
+def update_playoff_data():
+    # Set playoff_data for global use
     if get_env('IN_PLAYOFFS'):
         playoff_round, playoff_game_num, playoff_record = get_series_status()
-        return [playoff_round, playoff_game_num, playoff_record]
+        playoff_data = [playoff_round, playoff_game_num, playoff_record]
     else:
-        return None
+        playoff_data = None
 
 
 def check_if_prev_event_still_active():
@@ -164,44 +165,44 @@ def run():
     def _maint_tasks():
         # Maint tasks are things to do every hour likey get playoff updates, update sidebar and 
         # update active threads that have dynamic data.
-        # We expect this to get initiated at startup so sleep first, then do tasks
+        # We expect this to get initiated at startup so do tasks then sleep
         
         logger.info("Maintanence tasks thread started...")
         
         while bot_running:
             
-            time.sleep((60*30) if get_env('DEBUG') == False else (60*2))
             logger.info("Maintanence tasks running...")
 
-            # Update sidebar and playoff_data first
+            # Updates sidebar & playoff data at each start/restart, plus each maint pass
             update_sidebar()
-            playoff_data = get_playoff_data()
+            update_playoff_data()
             
             if active_event:
-                update_active_event(active_event)
+                active_event = update_active_event(active_event)
                 pass
 
-
-    # Initialized startup variables
+            time.sleep((60*30) if get_env('DEBUG') == False else (60*2))
+    
+    # Initialize globals
     global playoff_data
     global active_event
     global bot_running
 
+    playoff_data = None
     active_event = None
     bot_running = True
+
+    # Initialize locals
     skip = False
 
-    # Update sidebar & playoff data at each start/restart
-    update_sidebar()
+    # Create separate thread for maint_tasks & start thread
+    maint_tasks_thread = threading.Thread(target=_maint_tasks, daemon=True)
+    maint_tasks_thread.start()   
 
-    playoff_data = get_playoff_data()
+    # Init debug logging
     logger.debug(f"IN_PLAYOFFS: {playoff_data}")
 
     while bot_running:
-
-        # Create separate thread for maint_tasks & start thread
-        maint_tasks_thread = threading.Thread(target=_maint_tasks, daemon=True)
-        maint_tasks_thread.start()
 
         next_event = get_next_event()
 
