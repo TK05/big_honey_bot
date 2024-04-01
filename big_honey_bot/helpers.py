@@ -29,7 +29,7 @@ hidden_tags = {
     "lio_start": "[](/lio_begin)",
     "lio_end": "[](/lio_end)",
     "dg_start": "[](/dg_begin)",
-    "dg_end": "[(/dg_end)]",
+    "dg_end": "[](/dg_end)]",
     "dl_start": "[](/dl_begin)",
     "dl_end": "[](/dl_end)"
 }
