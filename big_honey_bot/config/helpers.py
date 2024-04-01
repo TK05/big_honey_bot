@@ -1,5 +1,6 @@
 import logging
 import time
+import asyncio
 from pathlib import Path
 
 from dotenv import dotenv_values, load_dotenv
@@ -45,11 +46,11 @@ def get_env(env_key):
         return env_val
 
 
-def reload_env(sleep_time_sec):
+async def reload_env(sleep_time_sec):
     while True:
         load_dotenv()
         update_logger_level()
-        time.sleep(sleep_time_sec)
+        await asyncio.sleep(sleep_time_sec)
 
 
 def get_all_env():

@@ -1,6 +1,6 @@
 import time
 import logging
-import threading
+import asyncio
 from datetime import timedelta
 
 from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime, dyn_event_types
@@ -184,54 +184,46 @@ def check_if_prev_event_still_active():
         logger.info("Previous event is no longer active")
         active_event = None
 
-def run():
 
-    # Initialize globals
-    global playoff_data
-    global next_event
-    global active_event
+async def do_maint_tasks(init_maint_task):
+    # Maint tasks are things to do every maint_interval
+    # IE: get playoff updates, update sidebar and  update active threads that have dynamic data.
+    while True:
+        logger.info("Maintanence tasks running...")
 
-    playoff_data = None
-    next_event = None
-    active_event = None
-
-
-    def _maint_tasks():
-        # Maint tasks are things to do every maint_interval
-        # IE: get playoff updates, update sidebar and  update active threads that have dynamic data.
+        # Run tasks
+        update_sidebar()
+        update_playoff_data()
+        check_if_prev_event_still_active()
+        update_active_event()
         
-        while True:
-            logger.info("Maintanence tasks running...")
+        # Maint debug logging
+        logger.debug(f"Maint data -- playoff_data: {playoff_data}")
+        logger.debug(f"Maint data -- active_event: {active_event}")
 
-            # Run tasks
-            update_sidebar()
-            update_playoff_data()
-            check_if_prev_event_still_active()
-            update_active_event()
-            
-            # Maint debug logging
-            logger.debug(f"Maint data -- playoff_data: {playoff_data}")
-            logger.debug(f"Maint data -- active_event: {active_event}")
+        # Set maint_task_event to enable rest of tasks to run now
+        init_maint_task.set()
 
-            # Sleep at end
-            time.sleep(int(get_env('MAINT_INTERVAL')))
+        # Sleep at end
+        await asyncio.sleep(get_env('MAINT_INTERVAL'))
 
 
-    # Initialize locals
-    bot_running = True
+async def run_bhb(init_maint_task):
+
+    # Wait for maint_task
+    await init_maint_task.wait()
+
+    global next_event
+    
     skip = False
+    logger.info("Starting main event loop...")
 
-    # Create separate thread for maint_tasks & start thread
-    maint_tasks_thread = threading.Thread(target=_maint_tasks, daemon=True)
-    maint_tasks_thread.start()
-
-    while bot_running:
+    while True:
 
         next_event = get_next_event()
 
         if not next_event or next_event.meta['event_status'] == 'done':
             logger.warning(f"No next event found.... exiting")
-            bot_running = False
             break
 
         if active_event:
@@ -240,8 +232,9 @@ def run():
             try:
                 if active_event.id == next_event.id:
                     logger.info(f"active_event==next_event; active_event: {active_event.id} -- next_event: {next_event.id}, sleeping 30")
-                    time.sleep(30)
                     skip = True
+                    await asyncio.sleep(30)
+
             except AttributeError:
                 pass
 
@@ -261,14 +254,14 @@ def run():
             
             # Send event to appropriate thread handler and make next_event the active_event
             do_event(next_event)
-            time.sleep(30)
+            await asyncio.sleep(30)
 
         # Not time to do next_event but there is an active_event; check for updates to it
         elif active_event:
             
             # Sleep, then refresh active_event for any changes
             logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}")
-            time.sleep(30)
+            await asyncio.sleep(30)
             check_active_event_for_manual_changes()
 
         # Not time to do next_event and no active_event
@@ -278,16 +271,35 @@ def run():
                 # next_event start time is near, sleep exact amount
                 if seconds_till_event < 60:
                     logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_event)}, sleeping {seconds_till_event}")
-                    time.sleep(seconds_till_event)
+                    await asyncio.sleep(seconds_till_event)
                 
                 # next_event start time is far, sleep longer & update_sidebar after
                 else:
                     wait_time = seconds_till_event if seconds_till_event < 3600 else 3600
                     logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_event)}, sleeping {wait_time}")
-                    time.sleep(wait_time)
+                    await asyncio.sleep(wait_time)
             
             except ValueError:
                 logger.error(f"seconds_till_event was negative, exiting")
-                maint_tasks_thread.join()
-                bot_running = False
                 break
+
+
+async def run_bhb():
+
+    # Initialize globals
+    global playoff_data
+    global next_event
+    global active_event
+
+    playoff_data = None
+    next_event = None
+    active_event = None
+
+    # Create event so we do an initial maint_tasks before starting
+    init_maint_task = asyncio.Event()
+
+    # Schedule maintenance tasks to run every MAINT_INTERVAL
+    asyncio.create_task(do_maint_tasks(init_maint_task))
+
+    # Run BHB continuously
+    await run_bhb(init_maint_task)
