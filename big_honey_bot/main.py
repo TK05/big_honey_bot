@@ -1,5 +1,6 @@
 import time
 import logging
+import threading
 from datetime import timedelta
 
 from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_datetime, change_timezone, dyn_event_types
@@ -17,7 +18,7 @@ from big_honey_bot.events.main import get_event, get_next_event, update_event, g
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-def do_event(event, po_data, update_only=False):
+def do_event(event, update_only=False):
 
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
@@ -25,13 +26,13 @@ def do_event(event, po_data, update_only=False):
         logger.info(f"Custom body detected, updated @ {event.updated.strftime('%b %d, %H:%M')}")
 
     if event.meta['event_type'] in ['pre', 'game']:
-        game_thread_handler(event, po_data. update_only)
+        game_thread_handler(event, playoff_data, update_only)
         update_event_and_set_to_active(event)
 
     elif event.meta['event_type'] == 'post':
         # Set post game events to active prior to running game check
         update_event_and_set_to_active(event)
-        post_game_thread_handler(event, po_data)
+        post_game_thread_handler(event, playoff_data)
 
         # Then update event again after finish with data
         update_event_and_set_to_active(event)
@@ -61,7 +62,8 @@ def update_event_and_set_to_active(event):
     logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
 
 
-def refresh_active_event(in_event, po_data):
+def check_active_event_for_manual_changes(in_event):
+    
     event = get_event(in_event.id)
 
     # Catch when event type manually set to done
@@ -79,23 +81,25 @@ def refresh_active_event(in_event, po_data):
         
         return event
     
-    # If events w/ items that can update haven't been updated in > 1 hour, update them
-    if event.meta['event_type'] in dyn_event_types:
-        updated_at_tz = change_timezone(event.updated)
-        now_tz = get_datetime(add_tz=True)
-        delta = timedelta(hours=1) if get_env('DEBUG') == True else timedelta(minutes=2)
-
-        if (now_tz - updated_at_tz) < delta:
-            logger.info(f"Event with event_type='{event.meta['event_type']}' last updated > 1 hour ago, sending to do_event: {event.id}")
-            event = do_event(event, po_data, update_only=True)
-        else:
-            logger.debug(f"Event with event_type='{event.meta['event_type']}' last updated {updated_at_tz}. Doing nothing...")
-
-        return event
-    
     # Still active and no changes, return in_event
     else:
         return in_event
+
+
+def update_active_event(in_event):
+    
+    event = check_active_event_for_manual_changes(in_event)
+
+    # End active events 12 hours after start time
+    if get_datetime(add_tz=True, tz=active_event.timezone) > (active_event.start + timedelta(hours=12)):
+        logger.info(f"active_event active longer than 12 hours, setting to done")
+        end_active_event(active_event)
+
+    elif event and event.meta['event_type'] in dyn_event_types:
+        logger.info(f"Sending active event to thread handlers for updating, last updated: {event.updated}")
+        event = do_event(event, update_only=True)
+
+    return event
 
 
 def end_active_event(event):
@@ -112,7 +116,7 @@ def get_playoff_data():
         return None
 
 
-def check_if_prev_event_still_active(po_data):
+def check_if_prev_event_still_active():
 
     prev_event = get_previous_event()
 
@@ -133,7 +137,7 @@ def check_if_prev_event_still_active(po_data):
         # Check current time and resume game watch if event.start < 3 hours ago
         if get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
             logger.info("Previous event was type='post' & status!='done'")
-            active_event = do_event(prev_event, po_data)
+            active_event = do_event(prev_event)
 
             return active_event
         
@@ -157,19 +161,47 @@ def check_if_prev_event_still_active(po_data):
 
 def run():
 
-    # Update playoff data at each restart
-    playoff_data = get_playoff_data()
-    logger.debug(f"IN_PLAYOFFS: {playoff_data}")
+    def _maint_tasks():
+        # Maint tasks are things to do every hour likey get playoff updates, update sidebar and 
+        # update active threads that have dynamic data.
+        # We expect this to get initiated at startup so sleep first, then do tasks
+        
+        logger.info("Maintanence tasks thread started...")
+        
+        while bot_running:
+            
+            time.sleep((60*30) if get_env('DEBUG') == False else (60*2))
+            logger.info("Maintanence tasks running...")
 
-    # Update sidebar at each restart
-    update_sidebar()
+            # Update sidebar and playoff_data first
+            update_sidebar()
+            playoff_data = get_playoff_data()
+            
+            if active_event:
+                update_active_event(active_event)
+                pass
 
-    # Initialize startup variables
+
+    # Initialized startup variables
+    global playoff_data
+    global active_event
+    global bot_running
+
     active_event = None
     bot_running = True
     skip = False
 
+    # Update sidebar & playoff data at each start/restart
+    update_sidebar()
+
+    playoff_data = get_playoff_data()
+    logger.debug(f"IN_PLAYOFFS: {playoff_data}")
+
     while bot_running:
+
+        # Create separate thread for maint_tasks & start thread
+        maint_tasks_thread = threading.Thread(target=_maint_tasks, daemon=True)
+        maint_tasks_thread.start()
 
         next_event = get_next_event()
 
@@ -177,8 +209,6 @@ def run():
             logger.warning(f"No next event found.... exiting")
             bot_running = False
             break
-
-        playoff_data = get_playoff_data()
 
         if active_event:
 
@@ -193,7 +223,7 @@ def run():
 
         # Check previous event to see if still active or needs doing
         else:
-            active_event = check_if_prev_event_still_active(playoff_data)
+            active_event = check_if_prev_event_still_active()
 
         current_time = get_timestamp_from_datetime()
         seconds_till_event = get_timestamp_from_datetime(dt=next_event.start) - current_time
@@ -211,21 +241,16 @@ def run():
                 end_active_event(active_event)
 
             # Send event to appropriate thread handler and make next_event the active_event
-            active_event = do_event(next_event, playoff_data)
+            active_event = do_event(next_event)
             time.sleep(30)
 
         # Not time to do next_event but there is an active_event; check for updates to it
         elif active_event:
-
-            # End active events 12 hours after start time
-            if get_datetime(add_tz=True, tz=active_event.timezone) > (active_event.start + timedelta(hours=12)):
-                logger.info(f"active_event active longer than 12 hours, setting to done")
-                end_active_event(active_event)
             
             # Sleep, then refresh active_event for any changes
             logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}")
             time.sleep(30)
-            active_event = refresh_active_event(active_event, playoff_data)
+            active_event = check_active_event_for_manual_changes(active_event)
 
         # Not time to do next_event and no active_event
         else:
@@ -241,9 +266,6 @@ def run():
                     wait_time = seconds_till_event if seconds_till_event < 3600 else 3600
                     logger.info(f"{next_event.summary} in {timedelta(seconds=seconds_till_event)}, sleeping {wait_time}")
                     time.sleep(wait_time)
-                    
-                    # Update sidebar (roughly) every hour while no active_event
-                    update_sidebar()
             
             except ValueError:
                 logger.error(f"seconds_till_event was negative, exiting")
