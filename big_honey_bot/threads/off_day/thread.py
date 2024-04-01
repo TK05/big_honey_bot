@@ -243,7 +243,7 @@ def generate_thread_body(event=None):
         if static_bottom:
             body_events.append(static_bottom)
 
-    body = f"{hidden_tags['dg_start']}\n"
+    body = f"{hidden_tags['dg_start']}\n\n"
 
     if body_events:
         separator = "\n\n&nbsp;\n\n"

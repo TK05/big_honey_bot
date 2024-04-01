@@ -5,6 +5,13 @@ from big_honey_bot.config.main import setup
 from big_honey_bot.threads.static.headlines import gt_placeholders as gtp
 
 
+def replace_nbs(text):
+    # Attempt replacing non breaking spaces (NBS) with an emptry string to hopefully help with
+    # google cal to reddit thread formatting oddities
+    text = text.replace('\xa0', '', regex=True)
+    return text
+
+
 def lineup_injury_odds(team_name):
     """Scrapes for lineups, injuries and odds.
 
