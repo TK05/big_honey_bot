@@ -162,6 +162,16 @@ def check_if_prev_event_still_active():
 
 def run():
 
+    # Initialize globals
+    global playoff_data
+    global active_event
+    global bot_running
+
+    playoff_data = None
+    active_event = None
+    bot_running = True
+
+
     def _maint_tasks():
         # Maint tasks are things to do every hour likey get playoff updates, update sidebar and 
         # update active threads that have dynamic data.
@@ -172,25 +182,21 @@ def run():
         while bot_running:
             
             logger.info("Maintanence tasks running...")
+            sleep_time = (60*30) if get_env('DEBUG') == False else (60*2)
 
             # Updates sidebar & playoff data at each start/restart, plus each maint pass
             update_sidebar()
             update_playoff_data()
             
-            if active_event:
-                active_event = update_active_event(active_event)
-                pass
+            try:
+                if active_event:
+                    active_event = update_active_event(active_event)
+            # Catch when maint_tasks thread starts before globals are available
+            except UnboundLocalError:
+                sleep_time = 60
 
-            time.sleep((60*30) if get_env('DEBUG') == False else (60*2))
-    
-    # Initialize globals
-    global playoff_data
-    global active_event
-    global bot_running
+            time.sleep(sleep_time)
 
-    playoff_data = None
-    active_event = None
-    bot_running = True
 
     # Initialize locals
     skip = False
