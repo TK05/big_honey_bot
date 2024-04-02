@@ -209,7 +209,7 @@ async def update_sidebar():
     logger.info(f"Old-Reddit sidebar updated")
 
     # Get sidebar from new reddit
-    widgets = await subreddit.widgets
+    widgets = subreddit.widgets
     new_reddit_sidebar = None
     async for widget in widgets.sidebar():
         if isinstance(widget, asyncpraw.models.TextArea):
