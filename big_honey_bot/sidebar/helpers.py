@@ -180,8 +180,8 @@ async def update_sidebar():
     subreddit = await subreddit_task
 
     # Old Reddit
-    ors = await subreddit.wiki.get_page('config/sidebar')
-    old_reddit_sidebar = ors.content_md
+    old_reddit_sidebar = await subreddit.wiki.get_page('config/sidebar')
+    ors_content = old_reddit_sidebar.content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
@@ -193,20 +193,19 @@ async def update_sidebar():
 
     if not IS_OFFSEASON:
         record_sub = update_record(standings)
-        old_reddit_sidebar = record_regex.sub(record_sub, old_reddit_sidebar)
+        ors_content = record_regex.sub(record_sub, ors_content)
 
-    old_reddit_sidebar = reign_regex.sub(update_reign(), old_reddit_sidebar)
-    # old_reddit_sidebar = tripdub_regex.sub(update_tripdub(), old_reddit_sidebar)
-    # old_reddit_sidebar = munder_regex.sub(update_munder(standings), old_reddit_sidebar)
+    ors_content = reign_regex.sub(update_reign(), ors_content)
+    # ors_content = tripdub_regex.sub(update_tripdub(), ors_content)
+    # ors_content = munder_regex.sub(update_munder(standings), ors_content)
 
     if PLAYOFF_WATCH:
         p1_sub, p2_sub, p3_sub = update_playoff(standings)
-        old_reddit_sidebar = p1_regex.sub(p1_sub, old_reddit_sidebar)
-        old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
-        old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
+        ors_content = p1_regex.sub(p1_sub, ors_content)
+        ors_content = p2_regex.sub(p2_sub, ors_content)
+        ors_content = p3_regex.sub(p3_sub, ors_content)
 
-    sidebar = await subreddit.wiki['config/sidebar']
-    await sidebar.edit(old_reddit_sidebar)
+    await old_reddit_sidebar.edit(ors_content)
     logger.info(f"Old-Reddit sidebar updated")
 
     # Get sidebar from new reddit
