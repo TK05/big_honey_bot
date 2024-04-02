@@ -40,14 +40,14 @@ def add_meta_and_body(event):
 
 
 async def get_all_events():
-    async with create_service() as service:
+    async with await create_service() as service:
         all_events = service.get_events(order_by='startTime', single_events=True)
 
     return all_events
 
 
 async def get_all_events_with_meta():
-    async with create_service() as service:
+    async with await create_service() as service:
         events = service.get_events(order_by='startTime', single_events=True)
         all_events = []
 
@@ -59,7 +59,7 @@ async def get_all_events_with_meta():
 
 
 async def get_previous_event(penultimate=False, days=30):
-    async with create_service() as service:
+    async with await create_service() as service:
         now = get_datetime(to_tz=True, tz=setup['timezone'])
         events = service.get_events((now - timedelta(days=days)),now, order_by='startTime', timezone=setup['timezone'], single_events=True)
 
@@ -75,7 +75,7 @@ async def get_previous_event(penultimate=False, days=30):
 
 
 async def get_event(event_id):
-    async with create_service() as service:
+    async with await create_service() as service:
         event = service.get_event(event_id)
         add_meta_and_body(event)
 
@@ -95,7 +95,7 @@ async def get_next_event():
 
 
 async def find_event(query, past=None):
-    async with create_service() as service:
+    async with await create_service() as service:
         event = next(service.get_events(time_min=past, query=query))
         add_meta_and_body(event)
 
@@ -115,7 +115,7 @@ async def find_events_by_meta(**kwargs):
 
 
 async def create_event(event_data):
-    async with create_service() as service:
+    async with await create_service() as service:
         service.add_event(event_data)
 
 
@@ -129,22 +129,22 @@ async def update_event(event):
     event.description = f"{description_tags['meta_start']}{json.dumps(event.meta)}{description_tags['meta_end']}" \
                         f"{description_tags['body_start']}{event.body}{description_tags['body_end']}"
     
-    async with create_service() as service:
+    async with await create_service() as service:
         service.update_event(event)
 
 
 async def update_event_serial(event_json):
-    async with create_service() as service:
+    async with await create_service() as service:
         service.update_event(EventSerializer.to_object(event_json))
 
 
 async def delete_event(event):
-    async with create_service() as service:
+    async with await create_service() as service:
         service.delete_event(event)
 
 
 async def delete_all_events():
-    async with create_service() as service:
+    async with await create_service() as service:
         events = await get_all_events()
 
         for event in events:
