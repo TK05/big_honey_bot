@@ -1,4 +1,3 @@
-import time
 import logging
 import asyncio
 from datetime import timedelta
@@ -17,7 +16,7 @@ from big_honey_bot.events.main import get_event, get_next_event, update_event, g
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-def do_event(event, update_only=False):
+async def do_event(event, update_only=False):
 
     global active_event
 
@@ -45,8 +44,8 @@ def do_event(event, update_only=False):
     if get_env('THREAD_STATS') and not update_only:
         try:
             prev_event = get_previous_event(penultimate=True)
-            prev_thread = get_thread(prev_event.meta['reddit_id'])
-            generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.post)
+            prev_thread = await get_thread(prev_event.meta['reddit_id'])
+            await generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.post)
         except Exception as e:
             logger.error(f"Error caught while generating thread stats: {e}")
 
@@ -61,7 +60,7 @@ def update_event_and_set_to_active(event):
     active_event = event
 
 
-def check_active_event_for_manual_changes():
+async def check_active_event_for_manual_changes():
     
     global active_event
 
@@ -80,7 +79,7 @@ def check_active_event_for_manual_changes():
     if not hash_match(event.body, event.meta['body_hash']):
         logger.info(f"Update to active event's body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
         setattr(event, 'post', active_event.post)
-        edit_thread(event)
+        await edit_thread(event)
         update_event(event)
         logger.info(f"Post & Event updated after body changes: {event.id} - {event.summary}")
         
@@ -133,7 +132,7 @@ def update_playoff_data():
         playoff_data = None
 
 
-def check_if_prev_event_still_active():
+async def check_if_prev_event_still_active():
 
     global active_event
 
@@ -174,7 +173,7 @@ def check_if_prev_event_still_active():
 
     # If previous event still active, set post attribute and return event
     if pe_status == 'active':
-        prev_post = get_thread(prev_event.meta['reddit_id'])
+        prev_post = await get_thread(prev_event.meta['reddit_id'])
         setattr(prev_event, 'post', prev_post)
         logger.info(f"Previous event still active - {prev_event.summary}")
         active_event = prev_event

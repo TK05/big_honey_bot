@@ -112,7 +112,7 @@ def format_post(event, playoff_data, generate_summary):
     event.body = f"{top_links}\n\n&nbsp;\n\n{bs_tables}"
 
 
-def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
+async def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
     """Wait for game completion and, upon completion, create headline and body reflecting game result.
 
     If data returned is not the final boxscore, function will recursive call itself to later return
@@ -128,12 +128,12 @@ def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_pos
     if was_final:
         # Initial post contained non-finalized data; update existing post w/ finalized data
         if was_prev_post:
-            edit_thread(event)
+            await edit_thread(event)
         # Game is final and there was no initial post; create new thread
         else:
-            new_thread(event)
+            await new_thread(event)
 
     # Game finished but not final, create thread and rerun for only_final data
     else:
-        new_thread(event)
+        await new_thread(event)
         post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
