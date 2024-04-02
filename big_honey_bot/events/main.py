@@ -83,7 +83,8 @@ async def get_event(event_id):
 
 
 async def get_next_event():
-    for event in get_all_events():
+    all_events = await get_all_events()
+    for event in all_events:
         next_event = event
         break
 
