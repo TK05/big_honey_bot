@@ -85,9 +85,9 @@ def lineup_injury_odds(team_name):
         lineup_status[i] = status.split(' ')[0].strip()
 
     # TODO: consider storing & showing opening line and then updating current line to closing
-    ml = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[1]/span[1]/text()').get()
-    spread = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[2]/span[1]/text()').get()
-    ou = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[3]/span[1]/text()').get()
+    ml = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[1]/span[4]/text()').get()
+    spread = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[2]/span[4]/text()').get()
+    ou = game.xpath(f'.//div[@class="lineup__odds is-row"]/div[3]/span[4]/text()').get()
     ou = ou.strip(' Pts')
 
     betting_data = [ml, spread, ou]
