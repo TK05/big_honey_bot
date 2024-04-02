@@ -100,7 +100,7 @@ def update_active_event():
     # End active events 12 hours after start time
     if get_datetime(add_tz=True, tz=active_event.timezone) > (active_event.start + timedelta(hours=12)):
         logger.info(f"active_event active longer than 12 hours, setting to done")
-        end_active_event(active_event)
+        end_active_event()
 
     elif active_event.meta['event_type'] in dyn_event_types:
         logger.info(f"Sending active event to thread handlers for updating, last updated: {active_event.updated}")
