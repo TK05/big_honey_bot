@@ -180,7 +180,8 @@ async def update_sidebar():
     await subreddit
 
     # Old Reddit
-    old_reddit_sidebar = await subreddit.wiki['config/sidebar'].content_md
+    ors = await subreddit.wiki.get_page('config/sidebar')
+    old_reddit_sidebar = ors.content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
