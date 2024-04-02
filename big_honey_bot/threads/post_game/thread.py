@@ -1,5 +1,6 @@
 import random
 import logging
+import asyncio
 
 from big_honey_bot.helpers import get_datetime_from_str
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
@@ -91,7 +92,7 @@ def format_post(event, playoff_data, generate_summary):
 
         # Check for custom win/lose title from event.meta
         outcome_key = 'win' if win else 'lose'
-        event_new = get_event(event.id)
+        event_new = asyncio.run(get_event(event.id))
         custom_title = event_new.meta.get(outcome_key)
 
         if custom_title:
@@ -136,4 +137,4 @@ async def post_game_thread_handler(event, playoff_data, only_final=False, was_pr
     # Game finished but not final, create thread and rerun for only_final data
     else:
         await new_thread(event)
-        post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
+        await post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)

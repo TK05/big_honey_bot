@@ -22,7 +22,7 @@ async def do_event(event, update_only=False):
 
     # End active event prior to moving to new event (when update_only=False)
     if active_event and not update_only:
-        end_active_event()
+        await end_active_event()
 
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
@@ -30,32 +30,32 @@ async def do_event(event, update_only=False):
         logger.info(f"Custom body detected, updated @ {event.updated.strftime('%b %d, %H:%M')}")
 
     if event.meta['event_type'] in ['pre', 'game']:
-        game_thread_handler(event, playoff_data, update_only)
+        await game_thread_handler(event, playoff_data, update_only)
     elif event.meta['event_type'] == 'post':
-        post_game_thread_handler(event, playoff_data)
+        await post_game_thread_handler(event, playoff_data)
     elif event.meta['event_type'] == 'off':
-        off_day_thread_handler(event, update_only)
+        await off_day_thread_handler(event, update_only)
     else:
         logger.error(f"Event type while do_event has no instructions -- type: {event.meta['event_type']} -- {event.summary}")
     
-    update_event_and_set_to_active(event)
+    await update_event_and_set_to_active(event)
 
     # Add comment to new thread of thread stats for previous thread
     if get_env('THREAD_STATS') and not update_only:
         try:
-            prev_event = get_previous_event(penultimate=True)
+            prev_event = await get_previous_event(penultimate=True)
             prev_thread = await get_thread(prev_event.meta['reddit_id'])
             await generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.post)
         except Exception as e:
             logger.error(f"Error caught while generating thread stats: {e}")
 
 
-def update_event_and_set_to_active(event):
+async def update_event_and_set_to_active(event):
     
     global active_event
     
     event.meta['event_status'] = 'active'
-    update_event(event)
+    await update_event(event)
     logger.info(f"Event updated and set to active: {event.id} - {event.summary}")
     active_event = event
 
@@ -68,7 +68,7 @@ async def check_active_event_for_manual_changes():
         logger.debug("active_event=None during check for manual changes")
         return
     
-    event = get_event(active_event.id)
+    event = await get_event(active_event.id)
 
     # Catch when event type manually set to done
     if event.meta['event_status'] == 'done':
@@ -80,17 +80,17 @@ async def check_active_event_for_manual_changes():
         logger.info(f"Update to active event's body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
         setattr(event, 'post', active_event.post)
         await edit_thread(event)
-        update_event(event)
+        await update_event(event)
         logger.info(f"Post & Event updated after body changes: {event.id} - {event.summary}")
         
         active_event = event
 
 
-def update_active_event():
+async def update_active_event():
 
     global active_event
     
-    check_active_event_for_manual_changes()
+    await check_active_event_for_manual_changes()
 
     if not active_event:
         logger.debug("active_event=None during update of active event")
@@ -99,14 +99,14 @@ def update_active_event():
     # End active events 12 hours after start time
     if get_datetime(add_tz=True, tz=active_event.timezone) > (active_event.start + timedelta(hours=12)):
         logger.info(f"active_event active longer than 12 hours, setting to done")
-        end_active_event()
+        await end_active_event()
 
     elif active_event.meta['event_type'] in dyn_event_types:
         logger.info(f"Sending active event to thread handlers for updating, last updated: {active_event.updated}")
-        do_event(active_event, update_only=True)
+        await do_event(active_event, update_only=True)
 
 
-def end_active_event():
+async def end_active_event():
     
     global active_event
 
@@ -114,19 +114,19 @@ def end_active_event():
         return
     
     active_event.meta['event_status'] = 'done'
-    update_event(active_event)
+    await update_event(active_event)
     logger.info(f"Active event was set to done: {active_event.id} - {active_event.summary}")
 
     active_event = None
 
 
-def update_playoff_data():
+async def update_playoff_data():
 
     global playoff_data
     
     # Set playoff_data for global use
     if get_env('IN_PLAYOFFS'):
-        playoff_round, playoff_game_num, playoff_record = get_series_status()
+        playoff_round, playoff_game_num, playoff_record = await get_series_status()
         playoff_data = [playoff_round, playoff_game_num, playoff_record]
     else:
         playoff_data = None
@@ -136,7 +136,7 @@ async def check_if_prev_event_still_active():
 
     global active_event
 
-    prev_event = get_previous_event()
+    prev_event = await get_previous_event()
 
     if not prev_event:
         logger.info(f"Found no previous event")
@@ -158,18 +158,18 @@ async def check_if_prev_event_still_active():
         if next_event and (prev_event.id == next_event.id):
             logger.info(f"Previous event was type={pe_type} & status={pe_status} but has same ID as next event, skipping game check")
             active_event = prev_event
-            end_active_event()
+            await end_active_event()
     
         # Check current time and resume game watch if event.start < 3 hours ago
         elif get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
             logger.info(f"Previous event was type={pe_type} & status={pe_status}, sending back to do_event")
-            do_event(prev_event)
+            await do_event(prev_event)
         
         # If previous event is too old to game watch, then set to done
         else:
             logger.info(f"Previous event was type={pe_type} & status={pe_status} but skipping game check as start time is too old: {prev_event.start}")
             active_event = prev_event
-            end_active_event()
+            await end_active_event()
 
     # If previous event still active, set post attribute and return event
     if pe_status == 'active':
@@ -190,11 +190,15 @@ async def do_maint_tasks(init_maint_task):
     while True:
         logger.info("Maintanence tasks running...")
 
-        # Run tasks
-        update_sidebar()
-        update_playoff_data()
-        check_if_prev_event_still_active()
-        update_active_event()
+        # Async tasks
+        t1 = asyncio.create_task(update_sidebar())
+        t2 = asyncio.create_task(update_playoff_data())
+        await t1
+        await t2
+
+        # Need to be done in order
+        await check_if_prev_event_still_active()
+        await update_active_event()
         
         # Maint debug logging
         logger.debug(f"Maint data -- playoff_data: {playoff_data}")
@@ -219,7 +223,7 @@ async def bhb_main_loop(init_maint_task):
 
     while True:
 
-        next_event = get_next_event()
+        next_event = await get_next_event()
 
         if not next_event or next_event.meta['event_status'] == 'done':
             logger.warning(f"No next event found.... exiting")
@@ -252,7 +256,7 @@ async def bhb_main_loop(init_maint_task):
                 setattr(next_event, 'prev_reddit_id', active_event.meta['reddit_id'])
             
             # Send event to appropriate thread handler and make next_event the active_event
-            do_event(next_event)
+            await do_event(next_event)
             await asyncio.sleep(30)
 
         # Not time to do next_event but there is an active_event; check for updates to it
@@ -261,7 +265,7 @@ async def bhb_main_loop(init_maint_task):
             # Sleep, then refresh active_event for any changes
             logger.debug(f"next_event: {next_event.summary} -- active_event: {active_event.summary}")
             await asyncio.sleep(30)
-            check_active_event_for_manual_changes()
+            await check_active_event_for_manual_changes()
 
         # Not time to do next_event and no active_event
         else:

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, timedelta
 
 from big_honey_bot.helpers import (
@@ -84,7 +85,7 @@ def create_schedule(start, end, playoffs=True, count_down=False):
         new_schedule[post_stamp]['meta']['title_hash'] = create_hash(new_schedule[post_stamp]['summary'])
         new_schedule[post_stamp]['meta']['body_hash'] = create_hash(new_schedule[post_stamp]['description'])
 
-    existing_events = get_all_events_with_meta()
+    existing_events = asyncio.run(get_all_events_with_meta())
     for event in existing_events:
         if event.meta['event_type'] == 'pre':
             try:

@@ -10,7 +10,7 @@ from big_honey_bot.events.main import get_next_event, find_events_by_meta
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-def validate_next_game():
+async def validate_next_game():
 
     # early exit if not next_event.event_type == pre
     if next_event.meta['event_type'] != 'pre':
@@ -22,7 +22,7 @@ def validate_next_game():
         # skip validation if we fail getting the next game
         return
 
-    next_event = get_next_event()
+    next_event = await get_next_event()
     next_game_ts = int(next_game_dict['start_ts'])
     next_event_ts = int(next_event.meta['game_utc'])
 
@@ -41,7 +41,7 @@ def validate_next_game():
     # found next game and next game are on same day, but different times. adjust
     #   upcoming pre/game/post events to reflect correct game time
     else:
-        events_to_update = find_events_by_meta(nba_id=next_game_dict)
+        events_to_update = await find_events_by_meta(nba_id=next_game_dict)
 
         for event in events_to_update:
             # change event start & end times
