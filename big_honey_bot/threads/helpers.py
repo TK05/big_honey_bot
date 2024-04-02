@@ -2,6 +2,7 @@ import requests
 from parsel import Selector
 
 from big_honey_bot.config.main import setup
+from big_honey_bot.config.helpers import get_env
 from big_honey_bot.threads.static.headlines import gt_placeholders as gtp
 
 
@@ -10,6 +11,17 @@ def replace_nbs(text):
     # google cal to reddit thread formatting oddities
     text = text.replace('\xa0', '')
     return text
+
+
+def get_flair_uuid_from_event_type(event_type):
+    flair_map = {
+        "pre": get_env('FLAIR_PRE'),
+        "game": get_env('FLAIR_GAME'),
+        "post": get_env('FLAIR_POST'),
+        "off": get_env('FLAIR_OFF')
+    }
+
+    return flair_map.get(event_type)
 
 
 def lineup_injury_odds(team_name):
