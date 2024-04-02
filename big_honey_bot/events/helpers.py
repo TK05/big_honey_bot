@@ -6,7 +6,7 @@ from google.oauth2 import service_account
 from big_honey_bot.config.helpers import get_env
 
 
-async def create_service(calendar_id=None, credentials_string=None):
+def create_service(calendar_id=None, credentials_string=None):
     calendar_id = calendar_id or get_env('GOOGLE_CALENDAR_ID')
     scopes = ['https://www.googleapis.com/auth/calendar']
 
