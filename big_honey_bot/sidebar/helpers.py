@@ -174,10 +174,10 @@ async def update_sidebar():
 
     logger.info(f"Updating sidebar @ {get_str_from_datetime(fmt='%H:%M')}")
 
-    standings = asyncio.create_task(get_standings())
-    subreddit = asyncio.create_task(get_subreddit())
-    await standings
-    await subreddit
+    standings_task = asyncio.create_task(get_standings())
+    subreddit_task = asyncio.create_task(get_subreddit())
+    standings = await standings_task
+    subreddit = await subreddit_task
 
     # Old Reddit
     ors = await subreddit.wiki.get_page('config/sidebar')
