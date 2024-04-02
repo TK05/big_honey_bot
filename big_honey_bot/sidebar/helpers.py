@@ -1,9 +1,10 @@
 import re
 import logging
+import asyncio
 from datetime import date, timedelta
 
 import requests
-import praw
+import asyncpraw
 from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
@@ -11,12 +12,12 @@ from nba_api.stats.static import teams
 from big_honey_bot.helpers import get_datetime, get_str_from_datetime
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
+from big_honey_bot.threads.main import get_subreddit
 
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-USER_AGENT = setup['user_agent']
 YEAR = setup['season']
 TEAM = setup['team']
 
@@ -24,20 +25,9 @@ UPDATE_SIDEBAR = get_env('UPDATE_SIDEBAR')
 PLAYOFF_WATCH = get_env('PLAYOFF_WATCH')
 IS_OFFSEASON = get_env('IS_OFFSEASON')
 
-TARGET_SUB = get_env('TARGET_SUB')
-USERNAME = get_env('PRAW_USERNAME')
-PASSWORD = get_env('PRAW_PASSWORD')
-CLIENT_ID = get_env('PRAW_CLIENT_ID')
-CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
 
-reddit = praw.Reddit(client_id=CLIENT_ID,
-                     client_secret=CLIENT_SECRET,
-                     username=USERNAME,
-                     password=PASSWORD,
-                     user_agent=USER_AGENT)
-
-
-def get_standings():
+async def get_standings():
+    # TODO: async version of nba_api?
     raw_standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
     headers = raw_standings['resultSets'][0]['headers']
     standings = {'West': {}, 'East': {}}
@@ -82,7 +72,7 @@ def update_record(standings):
     return f"Record: {tf_rec} | #{tf_rank} in the {tf_conf}"
 
 
-def update_tripdub():
+async def update_tripdub():
     """Grabs Jokic's current triple-double count and dunk count."""
 
     # TODO: URL's could change in the future.
@@ -176,18 +166,21 @@ def update_reign():
     return f"Reign Day #{reign_days}"
 
 
-def update_sidebar():
+async def update_sidebar():
     """Updates sidebar for both new and old reddit."""
 
-    if not UPDATE_SIDEBAR:
+    if not get_env('UPDATE_SIDEBAR'):
         return
 
     logger.info(f"Updating sidebar @ {get_str_from_datetime(fmt='%H:%M')}")
 
-    standings = get_standings()
+    standings = asyncio.create_task(get_standings())
+    subreddit = asyncio.create_task(get_subreddit())
+    await standings
+    await subreddit
 
     # Old Reddit
-    old_reddit_sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar'].content_md
+    old_reddit_sidebar = await subreddit.wiki['config/sidebar'].content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
@@ -211,15 +204,15 @@ def update_sidebar():
         old_reddit_sidebar = p2_regex.sub(p2_sub, old_reddit_sidebar)
         old_reddit_sidebar = p3_regex.sub(p3_sub, old_reddit_sidebar)
 
-    sidebar = reddit.subreddit(TARGET_SUB).wiki['config/sidebar']
-    sidebar.edit(old_reddit_sidebar)
+    sidebar = await subreddit.wiki['config/sidebar']
+    await sidebar.edit(old_reddit_sidebar)
     logger.info(f"Old-Reddit sidebar updated")
 
-    # New Reddit
-    widgets = reddit.subreddit(TARGET_SUB).widgets
+    # Get sidebar from new reddit
+    widgets = await subreddit.widgets
     new_reddit_sidebar = None
-    for widget in widgets.sidebar:
-        if isinstance(widget, praw.models.TextArea):
+    async for widget in widgets.sidebar():
+        if isinstance(widget, asyncpraw.models.TextArea):
             new_reddit_sidebar = widget
             break
 
@@ -239,5 +232,5 @@ def update_sidebar():
         new_text = p3_regex.sub(p3_sub, new_text)
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
-    new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
+    await new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
     logger.info(f"New-Reddit sidebar updated")
