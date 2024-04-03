@@ -80,7 +80,7 @@ def playoff_headline(opp_team, game_start, win, final_score, playoff_data):
     return headline
 
 
-def format_post(event, playoff_data, generate_summary):
+async def format_post(event, playoff_data, generate_summary):
     """Create body of post-game thread as markdown text."""
 
     bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
@@ -91,7 +91,7 @@ def format_post(event, playoff_data, generate_summary):
 
         # Check for custom win/lose title from event.meta
         outcome_key = 'win' if win else 'lose'
-        event_new = asyncio.run(get_event(event.id))
+        event_new = await get_event(event.id)
         custom_title = event_new.meta.get(outcome_key)
 
         if custom_title:
@@ -123,7 +123,7 @@ async def post_game_thread_handler(event, playoff_data, only_final=False, was_pr
     logger.info(f"Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
     generate_summary = True if not was_prev_post else False
-    format_post(event, playoff_data, generate_summary)
+    await format_post(event, playoff_data, generate_summary)
 
     if was_final:
         # Initial post contained non-finalized data; update existing post w/ finalized data
