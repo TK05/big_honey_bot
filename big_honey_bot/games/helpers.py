@@ -14,15 +14,13 @@ from big_honey_bot.config.main import setup, OUTPUT_PATH
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 
 
-DEBUG = get_env('DEBUG')
-
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def request_schedule(url, headers, file_name):
 
     # import from file_name if it exists, otherwise scrape page using requests
-    if DEBUG:
+    if get_env('DEBUG'):
         try:
             OUTPUT_PATH.mkdir()
         except FileExistsError:

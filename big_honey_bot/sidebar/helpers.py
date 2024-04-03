@@ -21,10 +21,6 @@ logger = logging.getLogger(get_pname_fname_str(__file__))
 YEAR = setup['season']
 TEAM = setup['team']
 
-UPDATE_SIDEBAR = get_env('UPDATE_SIDEBAR')
-PLAYOFF_WATCH = get_env('PLAYOFF_WATCH')
-IS_OFFSEASON = get_env('IS_OFFSEASON')
-
 
 async def get_standings():
     # TODO: async version of nba_api?
@@ -200,7 +196,7 @@ async def update_sidebar():
     # ors_content = tripdub_regex.sub(update_tripdub(), ors_content)
     # ors_content = munder_regex.sub(update_munder(standings), ors_content)
 
-    if PLAYOFF_WATCH:
+    if get_env('PLAYOFF_WATCH'):
         p1_sub, p2_sub, p3_sub = update_playoff(standings)
         ors_content = p1_regex.sub(p1_sub, ors_content)
         ors_content = p2_regex.sub(p2_sub, ors_content)
@@ -226,7 +222,7 @@ async def update_sidebar():
     # new_text = tripdub_regex.sub(update_tripdub(), new_text)
     # new_text = munder_regex.sub(update_munder(standings), new_text)
 
-    if PLAYOFF_WATCH:
+    if get_env('PLAYOFF_WATCH'):
         p1_sub, p2_sub, p3_sub = update_playoff(standings)
         new_text = p1_regex.sub(p1_sub, new_text)
         new_text = p2_regex.sub(p2_sub, new_text)

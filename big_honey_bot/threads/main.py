@@ -4,19 +4,11 @@ import time
 import asyncprawcore
 from asyncpraw.exceptions import APIException
 
-from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.threads.models import Reddit
 from big_honey_bot.threads.helpers import replace_nbs, get_flair_uuid_from_event_type
 from big_honey_bot.threads.static.templates import ThreadStats
 
-
-TARGET_SUB = get_env('TARGET_SUB')
-USERNAME = get_env('PRAW_USERNAME')
-PASSWORD = get_env('PRAW_PASSWORD')
-CLIENT_ID = get_env('PRAW_CLIENT_ID')
-CLIENT_SECRET = get_env('PRAW_CLIENT_SECRET')
-USER_AGENT = setup['user_agent']
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
@@ -60,7 +52,7 @@ async def new_thread(event):
             logger.info(f"Unstickied previous post - {prev_post.title}")
         except AttributeError:
             async for post in subreddit.hot(limit=2):
-                if post.author.name == USERNAME:
+                if post.author.name == get_env('USERNAME'):
                     await post.mod.sticky(state=False)
                     logger.info(f"Unstickied - {post.title}")
                     break
@@ -87,7 +79,7 @@ async def new_thread(event):
         await post.mod.sticky(bottom=False)
         await post.mod.suggested_sort(sort='new')
 
-        logger.info(f"Thread posted to r/{TARGET_SUB} - {post.id}")
+        logger.info(f"Thread posted to r/{get_env('TARGET_SUB')} - {post.id}")
 
         setattr(event, 'post', post)
         event.meta['reddit_id'] = post.id
@@ -105,7 +97,7 @@ async def edit_thread(event):
     event.body = replace_nbs(event.body)
     await event.post.edit(event.body)
 
-    logger.info(f"Thread updated on r/{TARGET_SUB} - {event.post.id}")
+    logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {event.post.id}")
 
 
 async def post_comment(thread, comment):
