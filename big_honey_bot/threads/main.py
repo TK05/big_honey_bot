@@ -7,6 +7,7 @@ from asyncpraw.exceptions import APIException
 
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
+from big_honey_bot.threads.models import Reddit
 from big_honey_bot.threads.helpers import replace_nbs, get_flair_uuid_from_event_type
 from big_honey_bot.threads.static.templates import ThreadStats
 
@@ -21,28 +22,6 @@ USER_AGENT = setup['user_agent']
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-async def get_reddit():
-    
-    reddit = asyncpraw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        username=USERNAME,
-        password=PASSWORD,
-        user_agent=USER_AGENT
-        )
-    reddit.validate_on_submit = True
-    
-    return reddit
-
-
-async def get_subreddit():
-    
-    reddit = await get_reddit()
-    subreddit = await reddit.subreddit(TARGET_SUB)
-    
-    return subreddit
-
-
 async def get_thread(post_id, fetch=True):
     """Find thread by ID
 
@@ -51,14 +30,15 @@ async def get_thread(post_id, fetch=True):
     :returns: post if found else None
     :rtype: class praw.models.reddit.submission.Submission or NoneType
     """
-    reddit = await get_reddit()
-    post = await reddit.submission(id=post_id, fetch=fetch)
 
-    try:
-        post.title
-        return post
-    except asyncprawcore.NotFound:
-        return None
+    async with Reddit() as reddit:
+        post = await reddit.submission(id=post_id, fetch=fetch)
+
+        try:
+            post.title
+            return post
+        except asyncprawcore.NotFound:
+            return None
 
 
 async def new_thread(event):
@@ -71,46 +51,47 @@ async def new_thread(event):
     :rtype: NoneType
     """
 
-    subreddit = await get_subreddit()
+    with Reddit() as reddit:
+        subreddit = await reddit._subreddit()
 
-    # Unsticky the correct post
-    try:
-        prev_post = await get_thread(event.prev_reddit_id, fetch=False)
-        await prev_post.mod.sticky(state=False)
-        logger.info(f"Unstickied previous post - {prev_post.title}")
-    except AttributeError:
-        async for post in subreddit.hot(limit=2):
-            if post.author.name == USERNAME:
-                await post.mod.sticky(state=False)
-                logger.info(f"Unstickied - {post.title}")
-                break
-
-    
-    flair_uuid = get_flair_uuid_from_event_type(event.meta['event_type'])
-    event.body = replace_nbs(event.body)
-    
-    post_attempts = 5
-    while post_attempts > 0:
+        # Unsticky the correct post
         try:
-            post = await subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
-        except APIException:
-            logger.error(f"Flair UUID ({flair_uuid}) is not valid for type={event.meta['event_type']}, attempting again without flair")
-            flair_uuid = None
-        # TODO: see if better handling of other/common praw errors
-        except asyncprawcore.BadRequest:
-            time.sleep(30)
-        else:
-            post_attempts = 0
-        finally:
-            post_attempts -= 1
+            prev_post = await get_thread(event.prev_reddit_id, fetch=False)
+            await prev_post.mod.sticky(state=False)
+            logger.info(f"Unstickied previous post - {prev_post.title}")
+        except AttributeError:
+            async for post in subreddit.hot(limit=2):
+                if post.author.name == USERNAME:
+                    await post.mod.sticky(state=False)
+                    logger.info(f"Unstickied - {post.title}")
+                    break
+
         
-    await post.mod.sticky(bottom=False)
-    await post.mod.suggested_sort(sort='new')
+        flair_uuid = get_flair_uuid_from_event_type(event.meta['event_type'])
+        event.body = replace_nbs(event.body)
+        
+        post_attempts = 5
+        while post_attempts > 0:
+            try:
+                post = await subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
+            except APIException:
+                logger.error(f"Flair UUID ({flair_uuid}) is not valid for type={event.meta['event_type']}, attempting again without flair")
+                flair_uuid = None
+            # TODO: see if better handling of other/common praw errors
+            except asyncprawcore.BadRequest:
+                time.sleep(30)
+            else:
+                post_attempts = 0
+            finally:
+                post_attempts -= 1
+            
+        await post.mod.sticky(bottom=False)
+        await post.mod.suggested_sort(sort='new')
 
-    logger.info(f"Thread posted to r/{TARGET_SUB} - {post.id}")
+        logger.info(f"Thread posted to r/{TARGET_SUB} - {post.id}")
 
-    setattr(event, 'post', post)
-    event.meta['reddit_id'] = post.id
+        setattr(event, 'post', post)
+        event.meta['reddit_id'] = post.id
 
 
 async def edit_thread(event):

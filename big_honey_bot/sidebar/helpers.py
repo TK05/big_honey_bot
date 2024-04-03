@@ -12,7 +12,7 @@ from nba_api.stats.static import teams
 from big_honey_bot.helpers import get_datetime, get_str_from_datetime
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
-from big_honey_bot.threads.main import get_subreddit
+from big_honey_bot.threads.models import Reddit
 
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
@@ -174,8 +174,9 @@ async def update_sidebar():
 
     logger.info(f"Updating sidebar @ {get_str_from_datetime(fmt='%H:%M')}")
 
+    reddit = Reddit()
     standings_task = asyncio.create_task(get_standings())
-    subreddit_task = asyncio.create_task(get_subreddit())
+    subreddit_task = asyncio.create_task(reddit._subreddit())
     standings = await standings_task
     subreddit = await subreddit_task
 
@@ -185,8 +186,8 @@ async def update_sidebar():
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
-    tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
-    munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
+    # tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
+    # munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
     p1_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
     p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
     p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
@@ -234,3 +235,5 @@ async def update_sidebar():
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
     await new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
     logger.info(f"New-Reddit sidebar updated")
+
+    await reddit.close()
