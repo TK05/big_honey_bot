@@ -116,7 +116,7 @@ async def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
         results = {}
         
         comments = await thread.comments()
-        comments.replace_more(limit=None)
+        await comments.replace_more(limit=None)
         all_comments = await comments.list()
 
         top_comment = [None, 0, None, None]
