@@ -188,7 +188,7 @@ async def update_sidebar():
     p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
     p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
 
-    if not IS_OFFSEASON:
+    if not get_env('IS_OFFSEASON'):
         record_sub = update_record(standings)
         ors_content = record_regex.sub(record_sub, ors_content)
 
@@ -215,7 +215,7 @@ async def update_sidebar():
 
     new_text = new_reddit_sidebar.text
 
-    if not IS_OFFSEASON:
+    if not get_env('IS_OFFSEASON'):
         new_text = record_regex.sub(record_sub, new_text)
 
     new_text = reign_regex.sub(update_reign(), new_text)
