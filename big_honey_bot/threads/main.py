@@ -1,7 +1,6 @@
 import logging
 import time
 
-import asyncpraw
 import asyncprawcore
 from asyncpraw.exceptions import APIException
 
