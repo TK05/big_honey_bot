@@ -99,7 +99,7 @@ async def update_next_event():
     global next_event
 
     if active_event:
-        if not next_event.meta.get('prev_reddit_id') or next_event.meta['reddit_id'] == "":
+        if not next_event.meta.get('prev_reddit_id') or next_event.meta['prev_reddit_id'] == "":
             next_event.meta['prev_reddit_id'] = active_event.meta['reddit_id']
             await update_event(next_event)
             logger.info(f"Updating next_event's prev_reddit_id with reddit_id of active_event -- prev_reddit_id: {next_event.meta['prev_reddit_id']}")
