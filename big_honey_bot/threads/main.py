@@ -47,7 +47,7 @@ async def new_thread(event):
 
         # Unsticky the correct post
         try:
-            prev_post = await get_thread(event.prev_reddit_id, fetch=False)
+            prev_post = await get_thread(event.meta['prev_reddit_id'], fetch=False)
             await prev_post.mod.sticky(state=False)
             logger.info(f"Unstickied previous post - {prev_post.title}")
         except AttributeError:
@@ -81,7 +81,6 @@ async def new_thread(event):
 
         logger.info(f"Thread posted to r/{get_env('TARGET_SUB')} - {post.id}")
 
-        setattr(event, 'post', post)
         event.meta['reddit_id'] = post.id
 
 
@@ -94,8 +93,12 @@ async def edit_thread(event):
     :rtype: NoneType
     """
 
+    # First get post from reddit
+    post = await get_thread(event.meta['reddit_id'])
+
+    # Clean then replace post w/ current event's body
     event.body = replace_nbs(event.body)
-    await event.post.edit(event.body)
+    await post.edit(event.body)
 
     logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {event.post.id}")
 
@@ -108,7 +111,7 @@ async def post_comment(thread, comment):
     return comment_obj.id
     
 
-async def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
+async def generate_thread_stats(prev_thread, prev_event_type, curr_reddit_id):
     
     async def _get_thread_details(thread):
         """Determine thread stats from given thread."""
@@ -166,11 +169,12 @@ async def generate_thread_stats(prev_thread, prev_event_type, curr_thread):
         return results
 
     # Main logic
-    logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_thread.id}")
+    logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_reddit_id}")
     
     results = await _get_thread_details(prev_thread)
     results['thread_type'] = prev_event_type
     comment = ThreadStats.format_post(results)
+    curr_thread = await get_thread(curr_reddit_id)
     comment_id = await post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")

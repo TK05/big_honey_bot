@@ -10,7 +10,7 @@ from big_honey_bot.threads.main import edit_thread, get_thread, generate_thread_
 from big_honey_bot.threads.game.thread import game_thread_handler
 from big_honey_bot.threads.off_day.thread import off_day_thread_handler
 from big_honey_bot.threads.post_game.thread import post_game_thread_handler
-from big_honey_bot.events.main import get_event, get_next_event, update_event, get_previous_event
+from big_honey_bot.events.main import get_event, get_next_event, update_event, get_previous_event, find_events_by_meta
 
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
@@ -19,10 +19,6 @@ logger = logging.getLogger(get_pname_fname_str(__file__))
 async def do_event(event, update_only=False):
 
     global active_event
-
-    # End active event prior to moving to new event (when update_only=False)
-    if active_event and not update_only:
-        await end_active_event()
 
     if not hash_match(event.summary, event.meta['title_hash']):
         logger.info(f"Custom title detected: {event.summary}")
@@ -37,17 +33,28 @@ async def do_event(event, update_only=False):
         await off_day_thread_handler(event, update_only)
     else:
         logger.error(f"Event type while do_event has no instructions -- type: {event.meta['event_type']} -- {event.summary}")
-    
-    await update_event_and_set_to_active(event)
 
     # Add comment to new thread of thread stats for previous thread
     if get_env('THREAD_STATS') and not update_only:
-        try:
-            prev_event = await get_previous_event(penultimate=True)
-            prev_thread = await get_thread(prev_event.meta['reddit_id'])
-            await generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.post)
-        except Exception as e:
-            logger.error(f"Error caught while generating thread stats: {e}")
+        if not event.meta.get('prev_reddit_id'):
+            logger.warn(f"Could not generate thread stats as event has no prev_reddit_id set -- {event.summary}")
+        elif active_event and (active_event.meta['reddit_id'] != event.meta['prev_reddit_id']):
+            logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
+                        f"{active_event.meta['reddit_id']} != {event.meta['prev_reddit_id']}")
+        else:
+            try:
+                prev_event = await find_events_by_meta({'reddit_id': event.meta['prev_reddit_id']})
+                prev_thread = await get_thread(prev_event.meta['reddit_id'])
+                await generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.meta['reddit_id'])
+            except Exception as e:
+                logger.error(f"Error caught while generating thread stats: {e}")
+
+    # End active event after posting (when update_only=False)
+    if active_event and not update_only:
+        await end_active_event()
+
+    # Set this event to active and update event
+    await update_event_and_set_to_active(event)
 
 
 async def update_event_and_set_to_active(event):
@@ -78,12 +85,29 @@ async def check_active_event_for_manual_changes():
     # Update post if event body has been changed since last check
     if not hash_match(event.body, event.meta['body_hash']):
         logger.info(f"Update to active event's body found, updated @ {event.updated.strftime('%b %d, %H:%M')}")
-        setattr(event, 'post', active_event.post)
+        
+        # Update thread on reddit and then update event to store new hash
         await edit_thread(event)
         await update_event(event)
+
         logger.info(f"Post & Event updated after body changes: {event.id} - {event.summary}")
         
         active_event = event
+
+
+async def update_next_event():
+
+    global next_event
+
+    if active_event:
+        if not next_event.meta.get(['prev_reddit_id']) or next_event.meta['reddit_id'] == "":
+            next_event.meta['prev_reddit_id'] = active_event.meta['reddit_id']
+            await update_event(next_event)
+            logger.info(f"Updating next_event's prev_reddit_id with reddit_id of active_event -- prev_reddit_id: {next_event.meta['prev_reddit_id']}")
+        elif next_event.meta['prev_reddit_id'] != active_event.meta['reddit_id']:
+            next_event.meta['prev_reddit_id'] = active_event.meta['reddit_id']
+            await update_event(next_event)
+            logger.warn(f"next_event's prev_reddit_id did not match active_event's reddit_id, updating: prev_reddit_id {next_event.meta['prev_reddit_id']} ")
 
 
 async def update_active_event():
@@ -171,10 +195,8 @@ async def check_if_prev_event_still_active():
             active_event = prev_event
             await end_active_event()
 
-    # If previous event still active, set post attribute and return event
+    # If previous event still active, set active_event
     if pe_status == 'active':
-        prev_post = await get_thread(prev_event.meta['reddit_id'])
-        setattr(prev_event, 'post', prev_post)
         logger.info(f"Previous event still active - {prev_event.summary}")
         active_event = prev_event
     
@@ -199,6 +221,10 @@ async def do_maint_tasks(init_maint_task):
         # Need to be done in order
         await check_if_prev_event_still_active()
         await update_active_event()
+
+        # Continually check active_event.reddit_id==next_event.prev_reddit_id
+        if active_event and next_event:
+            await update_next_event()
         
         # Maint debug logging
         logger.debug(f"Maint data -- playoff_data: {playoff_data}")
@@ -237,6 +263,9 @@ async def bhb_main_loop(init_maint_task):
                     logger.info(f"active_event==next_event; active_event: {active_event.id} -- next_event: {next_event.id}, sleeping 30")
                     skip = True
                     await asyncio.sleep(30)
+                else:
+                    # Set prev_reddit_id on next_event w/ reddit_id of active_event
+                    await update_next_event()
 
             except AttributeError:
                 pass
@@ -250,10 +279,6 @@ async def bhb_main_loop(init_maint_task):
 
         # Time to do next_event
         elif seconds_till_event <= 0 and next_event.meta['event_type']:
-
-            # Update next_event.prev_reddit_id w/ reddit_id of current active_event
-            if active_event:
-                setattr(next_event, 'prev_reddit_id', active_event.meta['reddit_id'])
             
             # Send event to appropriate thread handler and make next_event the active_event
             await do_event(next_event)
