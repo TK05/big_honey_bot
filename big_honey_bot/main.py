@@ -6,7 +6,7 @@ from big_honey_bot.helpers import hash_match, get_datetime, get_timestamp_from_d
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.sidebar.helpers import update_sidebar
 from big_honey_bot.playoffs.helpers import get_series_status
-from big_honey_bot.threads.main import edit_thread, get_thread, generate_thread_stats
+from big_honey_bot.threads.main import edit_thread, generate_thread_stats
 from big_honey_bot.threads.game.thread import game_thread_handler
 from big_honey_bot.threads.off_day.thread import off_day_thread_handler
 from big_honey_bot.threads.post_game.thread import post_game_thread_handler
@@ -44,8 +44,7 @@ async def do_event(event, update_only=False):
         else:
             try:
                 prev_event = await find_events_by_meta({'reddit_id': event.meta['prev_reddit_id']})
-                prev_thread = await get_thread(prev_event.meta['reddit_id'])
-                await generate_thread_stats(prev_thread, prev_event.meta['event_type'], event.meta['reddit_id'])
+                await generate_thread_stats(prev_event.meta['reddit_id'], prev_event.meta['event_type'], event.meta['reddit_id'])
             except Exception as e:
                 logger.error(f"Error caught while generating thread stats: {e}")
 

@@ -13,25 +13,6 @@ from big_honey_bot.threads.static.templates import ThreadStats
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-async def get_thread(post_id, fetch=True):
-    """Find thread by ID
-
-    :param post_id: ID of post to be found
-    :type post_id: str
-    :returns: post if found else None
-    :rtype: class praw.models.reddit.submission.Submission or NoneType
-    """
-
-    async with Reddit() as reddit:
-        post = await reddit.submission(id=post_id, fetch=fetch)
-
-        try:
-            post.title
-            return post
-        except asyncprawcore.NotFound:
-            return None
-
-
 async def new_thread(event):
     """Posts new thread. Uses PRAW settings from env & config.py. Unstickies previous post or any other thread with
     "THREAD" in the title. Stickies new thread and sorts by "new".
@@ -42,12 +23,12 @@ async def new_thread(event):
     :rtype: NoneType
     """
 
-    with Reddit() as reddit:
+    async with Reddit() as reddit:
         subreddit = await reddit._subreddit()
 
         # Unsticky the correct post
         try:
-            prev_post = await get_thread(event.meta['prev_reddit_id'], fetch=False)
+            prev_post = await reddit.submission(event.meta['prev_reddit_id'], fetch=True)
             await prev_post.mod.sticky(state=False)
             logger.info(f"Unstickied previous post - {prev_post.title}")
         except AttributeError:
@@ -79,9 +60,9 @@ async def new_thread(event):
         await post.mod.sticky(bottom=False)
         await post.mod.suggested_sort(sort='new')
 
-        logger.info(f"Thread posted to r/{get_env('TARGET_SUB')} - {post.id}")
+    logger.info(f"Thread posted to r/{get_env('TARGET_SUB')} - {post.id}")
 
-        event.meta['reddit_id'] = post.id
+    event.meta['reddit_id'] = post.id
 
 
 async def edit_thread(event):
@@ -93,12 +74,12 @@ async def edit_thread(event):
     :rtype: NoneType
     """
 
-    # First get post from reddit
-    post = await get_thread(event.meta['reddit_id'])
+    async with Reddit() as reddit:
+        post = await reddit.submission(id=event.meta['reddit_id'], fetch=True)
 
-    # Clean then replace post w/ current event's body
-    event.body = replace_nbs(event.body)
-    await post.edit(event.body)
+        # Clean then replace post w/ current event's body
+        event.body = replace_nbs(event.body)
+        await post.edit(event.body)
 
     logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {event.post.id}")
 
@@ -111,7 +92,7 @@ async def post_comment(thread, comment):
     return comment_obj.id
     
 
-async def generate_thread_stats(prev_thread, prev_event_type, curr_reddit_id):
+async def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
     
     async def _get_thread_details(thread):
         """Determine thread stats from given thread."""
@@ -170,11 +151,15 @@ async def generate_thread_stats(prev_thread, prev_event_type, curr_reddit_id):
 
     # Main logic
     logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_reddit_id}")
-    
-    results = await _get_thread_details(prev_thread)
-    results['thread_type'] = prev_event_type
-    comment = ThreadStats.format_post(results)
-    curr_thread = await get_thread(curr_reddit_id)
-    comment_id = await post_comment(curr_thread, comment)
+
+    async with Reddit() as reddit:
+        prev_thread = await reddit.submission(id=prev_reddit_id, fetch=True)
+        results = await _get_thread_details(prev_thread)
+
+        results['thread_type'] = prev_event_type
+        comment = ThreadStats.format_post(results)
+
+        curr_thread = await reddit.submission(id=curr_reddit_id, fetch=False)
+        comment_id = await post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")
