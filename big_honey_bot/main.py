@@ -41,12 +41,13 @@ async def do_event(event, update_only=False):
         elif active_event and (active_event.meta['reddit_id'] != event.meta['prev_reddit_id']):
             logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
                         f"{active_event.meta['reddit_id']} != {event.meta['prev_reddit_id']}")
-        else:
+        elif active_event:
             try:
-                prev_event = await find_events_by_meta({'reddit_id': event.meta['prev_reddit_id']})
-                await generate_thread_stats(prev_event.meta['reddit_id'], prev_event.meta['event_type'], event.meta['reddit_id'])
+                await generate_thread_stats(active_event.meta['reddit_id'], active_event.meta['event_type'], event.meta['reddit_id'])
             except Exception as e:
                 logger.error(f"Error caught while generating thread stats: {e}")
+        else:
+            logger.error(f"Could not generate thread stats due to no active event")
 
     # End active event after posting (when update_only=False)
     if active_event and not update_only:
