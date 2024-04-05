@@ -186,7 +186,12 @@ async def check_if_prev_event_still_active():
     
         # Check current time and resume game watch if event.start < 3 hours ago
         elif get_datetime(add_tz=True, tz=prev_event.timezone) < (prev_event.start + timedelta(hours=3)):
-            logger.info(f"Previous event was type={pe_type} & status={pe_status}, sending back to do_event")
+            logger.info(f"Previous event was type={pe_type} & status={pe_status}, checking penultimate event")
+            pen_event = await get_previous_event(penultimate=True)
+            if pen_event.meta['event_type'] == 'active':
+                active_event = pen_event
+                logger.info(f"Setting penultimate event to active: {pen_event.summary}")
+            logger.info(f"Sending previous event with event_type={pe_type} to do_event")
             await do_event(prev_event)
         
         # If previous event is too old to game watch, then set to done
