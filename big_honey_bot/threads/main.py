@@ -81,7 +81,7 @@ async def edit_thread(event):
         event.body = replace_nbs(event.body)
         await post.edit(event.body)
 
-    logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {post.id}")
+        logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {post.id}")
 
 
 async def post_comment(thread, comment):
