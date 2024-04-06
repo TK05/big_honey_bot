@@ -259,7 +259,7 @@ async def do_maint_tasks(init_maint_task):
         init_maint_task.set()
 
         # Sleep at end
-        await asyncio.sleep(int(get_env('MAINT_INTERVAL')))
+        await asyncio.sleep(int(get_env('MAINT_INTERVAL_MIN')) * 60)
 
 
 async def bhb_main_loop(init_maint_task):
@@ -351,7 +351,7 @@ async def run_bhb():
     # Create event so we do an initial maint_tasks before starting
     init_maint_task = asyncio.Event()
 
-    # Schedule maintenance tasks to run every MAINT_INTERVAL
+    # Schedule maintenance tasks to run every maintanence cycle
     asyncio.create_task(do_maint_tasks(init_maint_task))
 
     # Run BHB continuously
