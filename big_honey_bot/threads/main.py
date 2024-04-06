@@ -150,10 +150,9 @@ async def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id)
         return results
 
     # Main logic
-    logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_reddit_id}")
-
     async with Reddit() as reddit:
         prev_thread = await reddit.submission(id=prev_reddit_id, fetch=True)
+        logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_reddit_id}")
         results = await _get_thread_details(prev_thread)
 
         results['thread_type'] = prev_event_type
