@@ -36,18 +36,38 @@ async def do_event(event, update_only=False):
 
     # Add comment to new thread of thread stats for previous thread
     if get_env('THREAD_STATS') and not update_only:
+        prev_thread_id = None
+        prev_thread_type = None
+
+        # Only generate thread stats if currente event has prev_reddit_id set
         if not event.meta.get('prev_reddit_id'):
             logger.warn(f"Could not generate thread stats as event has no prev_reddit_id set -- {event.summary}")
-        elif active_event and (active_event.meta['reddit_id'] != event.meta['prev_reddit_id']):
-            logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
-                        f"{active_event.meta['reddit_id']} != {event.meta['prev_reddit_id']}")
+        
+        # If still active event; gen thread stats from that thread
         elif active_event:
+            if active_event.meta['reddit_id'] == event.meta['prev_reddit_id']:
+                prev_thread_id = active_event.meta['reddit_id']
+                prev_thread_type = active_event.meta['event_type']
+            else:
+                logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
+                        f"{active_event.meta['reddit_id']} != {event.meta['prev_reddit_id']}")
+        
+        # If no active event; get penultimate previous event and check that
+        else:
+            prev_event = await get_previous_event(penultimate=True)
+            if prev_event.meta['reddit_id'] == event.meta['prev_reddit_id']:
+                prev_thread_id = prev_event.meta['reddit_id']
+                prev_thread_type = prev_event.meta['event_type']
+            else:
+                logger.warn(f"Did not generate thread stats as prev_event.reddit_id != event.prev_reddit_id -- " \
+                        f"{prev_event.meta['reddit_id']} != {event.meta['prev_reddit_id']}")
+        
+        # If previous thread found, generate thread stats
+        if prev_thread_id and prev_thread_type:
             try:
-                await generate_thread_stats(active_event.meta['reddit_id'], active_event.meta['event_type'], event.meta['reddit_id'])
+                await generate_thread_stats(prev_thread_id, prev_thread_type, event.meta['reddit_id'])
             except Exception as e:
                 logger.error(f"Error caught while generating thread stats: {e}")
-        else:
-            logger.error(f"Could not generate thread stats due to no active event")
 
     # End active event after posting (when update_only=False)
     if active_event and not update_only:
