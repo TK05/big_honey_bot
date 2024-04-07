@@ -36,7 +36,7 @@ async def do_event(event, update_only=False):
 
     # Create thread stats of prev event on new event
     if not update_only:
-        generate_thread_stats(event, update_only)
+        generate_thread_stats(event)
 
     # End active event after posting (when update_only=False)
     if active_event and not update_only:
