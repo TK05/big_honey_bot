@@ -16,7 +16,7 @@ async def get_series_status():
     :rtype: tuple
     """
 
-    response = await requests.get(nba_api_playoff_url).json()
+    response = requests.get(nba_api_playoff_url).json()
 
     for each_round in response['pb']['r']:
         current_round = each_round['id']
