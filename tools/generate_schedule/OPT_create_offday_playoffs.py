@@ -17,12 +17,12 @@ from big_honey_bot.config.main import setup
 from tools.generate_schedule.STEP3_create_calendar import update_calendar
 
 
-CREATE_IN_SEASON_OFF_DAY_EVENTS = True # Uses all_events.json and creates off-day events for days w/ no games
-PLAYOFFS_HAVE_STARTED = False # Events created denote playoff day #, increments w/ each day using range below
-PLAYOFFS_START_DATE = date(2023, 4, 15) # Day playoffs start
-PLAYOFFS_END_DATE = date(2023, 6, 18) # Day playoffs end (IE: game 7 of finals)
+CREATE_IN_SEASON_OFF_DAY_EVENTS = False # Uses all_events.json and creates off-day events for days w/ no games
+PLAYOFFS_HAVE_STARTED = True # Events created denote playoff day #, increments w/ each day using range below
+PLAYOFFS_START_DATE = date(2024, 4, 20) # Day playoffs start
+PLAYOFFS_END_DATE = date(2024, 6, 23) # Day playoffs end (IE: game 7 of finals)
 CREATE_OFF_SEASON_EVENTS = False # If not in season & not playoffs; this will create off-season events w/ count up to day of first game using range below
-OFF_SEASON_START_DATE = date(2023, 10, 10) # Day after NBA finals have finished
+OFF_SEASON_START_DATE = date(2024, 6, 24) # Day after NBA finals have finished
 OFF_SEASON_END_DATE = date(2023, 10, 24) # Day of first NBA regular season game
 FILE_NAME_IN = 'all_events.json'
 FILE_NAME_OUT = 'off_day_events.json'
@@ -30,7 +30,6 @@ FILE_NAME_OUT = 'off_day_events.json'
 
 def create_schedule(start, end, playoffs=True, count_down=False):
     now = get_datetime(add_tz=True)
-    pgpt = setup['pre_game_post_hour'].split(':')
     new_schedule = {}
     for d in range((end - now.date()).days):
         post_date = now + timedelta(days=d+1)
@@ -38,8 +37,8 @@ def create_schedule(start, end, playoffs=True, count_down=False):
             "year": post_date.year,
             "month": post_date.month,
             "day": post_date.day,
-            "hour": int(pgpt[0]),
-            "minute": int(pgpt[1])
+            "hour": int(setup['pre_game_post_hour']),
+            "minute": int(0)
         }
         post_time = get_datetime(dt=post_time_dict, add_tz=True)
         post_stamp = int(post_time.timestamp())
