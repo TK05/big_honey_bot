@@ -31,6 +31,7 @@ def get_nba_games(playoffs=False):
 
     def get_game_data(game, for_team=''):
         game_data = []
+
         time_utc = get_datetime_from_str(dt_str=game['gameDateTimeUTC'], fmt='%Y-%m-%dT%H:%M:%SZ', add_tz=True, tz='UTC')
         time_local_dt = change_timezone(dt=time_utc, tz=setup['timezone'])
         date_local = get_str_from_datetime(dt=time_local_dt, fmt=platform_mo_day_fmt)
@@ -38,21 +39,28 @@ def get_nba_games(playoffs=False):
         time_link = f"https://dateful.com/time-zone-converter?t=" \
                     f"{get_str_from_datetime(dt=time_local_dt, fmt=f'{platform_hr_min_fmt} %p')}" \
                     f"&tz={setup['location']}&"
+        
+        away_team = game['awayTeam']['teamName'] if game['awayTeam']['teamId'] != 0 else "TBD"
+        home_team = game['homeTeam']['teamName'] if game['homeTeam']['teamId'] != 0 else "TBD"
+
+        game_data.append(f"{away_team} @ {home_team}")
         game_data.append(f"{date_local} - [{time_local}]({time_link})" if for_team else f"[{time_local}]({time_link})")
-        game_data.append(f"{game['awayTeam']['teamName']} @ {game['homeTeam']['teamName']}")
         nat_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['nationalTvBroadcasters']]
 
-        if for_team:
-            if playoffs:
+        if playoffs:
+            if game['seriesGameNumber'] == "":
+                    game_data.insert(0, game['gameLabel'])
+            else:
                 game_data.insert(0, game['seriesGameNumber'])
+            if not for_team:
+                game_data.append(game['seriesText'])
+
+        if for_team:
             home_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['homeTvBroadcasters']]
             away_tv = [i['broadcasterDisplay'] for i in game['broadcasters']['awayTvBroadcasters']]
             tv_ordered = [nat_tv, home_tv] if for_team == 'home' else [nat_tv, away_tv]
             game_data.append(", ".join([i for s in tv_ordered for i in s]))
         else:
-            if playoffs:
-                game_data.insert(0, game['seriesGameNumber'])
-                game_data.append(game['seriesText'])
             odds = lineup_injury_odds(game['homeTeam']['teamName'])[-1]
             game_data.append(" ".join(odds) if "N/A" not in odds else "")
             game_data.append(", ".join(nat_tv))
@@ -214,7 +222,7 @@ def generate_thread_body(event=None):
 
     if team_games:
         if in_playoffs:
-            row_to_add = [f"|Upcoming {setup['team']} Playoff Games|||", "|:--|:--|:--|:--|", []]
+            row_to_add = [f"|Upcoming|{setup['team']}|Playoff|Games|", "|:--|:--|:--|:--|", []]
         else:
             row_to_add = [f"|{setup['team']} Next {len(team_games)}|||", "|:--|:--|:--|", []]
 
@@ -225,9 +233,9 @@ def generate_thread_body(event=None):
 
     if todays_games:
         if in_playoffs:
-            row_to_add = ["|Today's Playoff Games||||", "|:--|:--|:--|:--|:--|:--|", []]
+            row_to_add = ["|Today's|Playoff|Games||||", "|:--|:--|:--|:--|:--|:--|", []]
         else:
-            row_to_add = ["|Today's Games||||", "|:--|:--|:--|:--|", []]
+            row_to_add = ["|Today's|Games|||", "|:--|:--|:--|:--|", []]
 
         for game in todays_games:
             row_to_add[-1].append(game)
