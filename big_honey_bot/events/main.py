@@ -5,6 +5,7 @@ from abc import ABC
 from html.parser import HTMLParser
 
 from gcsa.serializers.event_serializer import EventSerializer
+from retrying import retry
 
 from big_honey_bot.helpers import setup, description_tags, create_hash, get_datetime
 from big_honey_bot.events.helpers import create_service
@@ -39,6 +40,7 @@ def add_meta_and_body(event):
             event = set_meta_and_body(event)
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def get_all_events():
     service = create_service()
     all_events = service.get_events(order_by='startTime', single_events=True)
@@ -46,6 +48,7 @@ async def get_all_events():
     return all_events
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def get_all_events_with_meta():
     service = create_service()
     events = service.get_events(order_by='startTime', single_events=True)
@@ -58,6 +61,7 @@ async def get_all_events_with_meta():
     return all_events
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def get_previous_event(penultimate=False, days=30):
     service = create_service()
     now = get_datetime(to_tz=True, tz=setup['timezone'])
@@ -74,6 +78,7 @@ async def get_previous_event(penultimate=False, days=30):
     return event
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def get_event(event_id):
     service = create_service()
     event = service.get_event(event_id)
@@ -82,6 +87,7 @@ async def get_event(event_id):
     return event
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def get_next_event():
     all_events = await get_all_events()
     for event in all_events:
@@ -95,6 +101,7 @@ async def get_next_event():
         return None
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def find_event(query, past=None):
     service = create_service()
     event = next(service.get_events(time_min=past, query=query))
@@ -103,6 +110,7 @@ async def find_event(query, past=None):
     return event
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def find_events_by_meta(**kwargs):
     all_events = await get_all_events_with_meta()
 
@@ -115,11 +123,13 @@ async def find_events_by_meta(**kwargs):
     return matches
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def create_event(event_data):
     service = create_service()
     service.add_event(event_data)
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def update_event(event):
     service = create_service()
 
@@ -134,16 +144,19 @@ async def update_event(event):
     service.update_event(event)
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def update_event_serial(event_json):
     service = create_service()
     service.update_event(EventSerializer.to_object(event_json))
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def delete_event(event):
     service = create_service()
     service.delete_event(event)
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 async def delete_all_events():
     service = create_service()
     events = await get_all_events()
