@@ -11,9 +11,8 @@ setup = {
     'timezone': 'US/Mountain',
     'timezone_short': 'MT',
     'pre_game_post_hour': "8",  # hour (24) to post pre game thread
-    # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/1',  # Preseason
-    # 'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/2',  # Regular Season
-    'espn_url': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/3',  # Postseason
+    # ESPN uses 3 different pages for full season schedule; 1=preseason, 2=regular season, 3=postseason
+    'espn_url_template': 'http://www.espn.com/nba/team/schedule/_/name/den/seasontype/{}',
     'espn_headers': {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',

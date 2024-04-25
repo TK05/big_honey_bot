@@ -96,43 +96,46 @@ def get_espn_schedule_dict():
             utc, game date, espn id
     """
 
-    response = request_schedule(setup['espn_url'], setup['espn_headers'], 'espn_schedule.html')
-
-    response_selector = Selector(text=response)
-    games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
     espn_data = dict()
 
-    for game in games_raw:
-        """ Creates the following:
-                UTC timestamp as game key (string) and initializes an empty dict.
-                espn_data[utc_key]['game_start']    = mo/day/yr hr:mn am/pm
-                espn_data[utc_key]['espn_id']       = espn ID for game
-        """
+    # ESPN uses 3 different pages for full season schedule; 1=preseason, 2=regular season, 3=postseason
+    for i in range(1,4):
 
-        date_raw = game.xpath('./td[@class="Table__TD"][1]/span/text()').get()
-        time_raw = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/text()').get()
+        response = request_schedule(setup['espn_url'].format(i), setup['espn_headers'], 'espn_schedule.html')
+        response_selector = Selector(text=response)
+        games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
 
-        if not time_raw or time_raw == 'TBD':    # ignore game if it has already been played or TBD
-            continue
+        for game in games_raw:
+            """ Creates the following:
+                    UTC timestamp as game key (string) and initializes an empty dict.
+                    espn_data[utc_key]['game_start']    = mo/day/yr hr:mn am/pm
+                    espn_data[utc_key]['espn_id']       = espn ID for game
+            """
 
-        utc_key, date = espn_convert_date_time(date_raw, time_raw)
-        
-        # store utc_key as string since they're converted to strings in JSON already
-        utc_key = str(utc_key)
-        espn_data[utc_key] = dict()
-        espn_data[utc_key]['game_start'] = date
+            date_raw = game.xpath('./td[@class="Table__TD"][1]/span/text()').get()
+            time_raw = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/text()').get()
 
-        game_id_url = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/@href').get()
-        game_id_raw = game_id_url.split('/')
-        game_id = game_id_raw[-2]
+            if not time_raw or time_raw == 'TBD':    # ignore game if it has already been played or TBD
+                continue
 
-        # Ensure game_is an integer to catch potential future URI schema changes
-        try:
-            int(game_id)
-        except ValueError:
-            raise ValueError(f"ESPN game_id unexpectedly not an int: {game_id}")
-        
-        espn_data[utc_key]['espn_id'] = game_id
+            utc_key, date = espn_convert_date_time(date_raw, time_raw)
+
+            # store utc_key as string since they're converted to strings in JSON already
+            utc_key = str(utc_key)
+            espn_data[utc_key] = dict()
+            espn_data[utc_key]['game_start'] = date
+
+            game_id_url = game.xpath('./td[@class="Table__TD"][3]/span[1]/a/@href').get()
+            game_id_raw = game_id_url.split('/')
+            game_id = game_id_raw[-2]
+
+            # Ensure game_is an integer to catch potential future URI schema changes
+            try:
+                int(game_id)
+            except ValueError:
+                raise ValueError(f"ESPN game_id unexpectedly not an int: {game_id}")
+
+            espn_data[utc_key]['espn_id'] = game_id
 
     return espn_data
 
