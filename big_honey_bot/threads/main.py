@@ -26,18 +26,18 @@ async def new_thread(event):
     async with Reddit() as reddit:
         subreddit = await reddit._subreddit()
 
-        # Unsticky the correct post
-        try:
-            prev_post = await reddit.submission(event.meta['prev_reddit_id'], fetch=True)
+        # Try to unsticky the correct post
+        prev_post = await reddit.submission(event.meta['prev_reddit_id'], fetch=True)
+
+        if prev_post.author == get_env('USERNAME') and prev_post.stickied:
             await prev_post.mod.sticky(state=False)
             logger.info(f"Unstickied previous post - {prev_post.title}")
-        except (AttributeError, KeyError):
+        else:
             async for post in subreddit.hot(limit=2):
                 if post.author.name == get_env('USERNAME'):
                     await post.mod.sticky(state=False)
                     logger.info(f"Unstickied - {post.title}")
                     break
-
         
         flair_uuid = get_flair_uuid_from_event_type(event.meta['event_type'])
         event.body = replace_nbs(event.body)
