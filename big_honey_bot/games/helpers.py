@@ -101,7 +101,7 @@ def get_espn_schedule_dict():
     # ESPN uses 3 different pages for full season schedule; 1=preseason, 2=regular season, 3=postseason
     for i in range(1,4):
 
-        response = request_schedule(setup['espn_url'].format(i), setup['espn_headers'], 'espn_schedule.html')
+        response = request_schedule(setup['espn_url_template'].format(i), setup['espn_headers'], 'espn_schedule.html')
         response_selector = Selector(text=response)
         games_raw = response_selector.xpath('.//tbody[@class="Table__TBODY"]//tr')  # each item is an entire game's details
 
