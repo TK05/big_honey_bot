@@ -27,12 +27,12 @@ async def new_thread(event):
         subreddit = await reddit._subreddit()
 
         # Try to unsticky the correct post
-        prev_post = await reddit.submission(event.meta['prev_reddit_id'], fetch=True)
-
-        if prev_post.author == get_env('USERNAME') and prev_post.stickied:
-            await prev_post.mod.sticky(state=False)
-            logger.info(f"Unstickied previous post - {prev_post.title}")
-        else:
+        try:
+            prev_post = await reddit.submission(event.meta['prev_reddit_id'], fetch=True)
+            if prev_post.author == get_env('USERNAME') and prev_post.stickied:
+                await prev_post.mod.sticky(state=False)
+                logger.info(f"Unstickied previous post - {prev_post.title}")
+        except KeyError:
             async for post in subreddit.hot(limit=2):
                 if post.author.name == get_env('USERNAME'):
                     await post.mod.sticky(state=False)
