@@ -8,6 +8,7 @@ from big_honey_bot.config.helpers import get_pname_fname_str
 
 
 SEASON = setup['season']
+GD_TEMPLATE = setup['nba_game_detail_template']
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
@@ -22,8 +23,8 @@ def status_check(nba_id, only_final):
     Arguments: nba_id -> nba.com game ID
                only_final -> boolean, True meaning only game_status == 3 is an
                acceptable end condition.
-    Return: Returns None for the purpose of pausing any subsequent functions until
-    the game is complete.
+    Return: final_version -> boolean, true if game_status=3, else false
+            game_data -> dict, JSON of game data
     """
 
     game_ongoing = True
@@ -32,9 +33,7 @@ def status_check(nba_id, only_final):
 
     while game_ongoing:
 
-        r = requests.get(f"http://data.nba.com/data/v2015/json/mobile_teams"
-                         f"/nba/{SEASON}/scores/gamedetail/{nba_id}_gamedetail.json")
-        game_data = r.json()
+        game_data = requests.get(GD_TEMPLATE.format(SEASON, nba_id)).json()
 
         game_status = game_data['g']['st']
         current_quarter = game_data['g']['p']
@@ -59,13 +58,8 @@ def status_check(nba_id, only_final):
 
         logger.info(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}, Score: {away_score}-{home_score}")
 
-        # Sleep while game hasn't started
-        if game_status == 1:
-            time.sleep(60*15)
-            continue
-
-        # Sleep when game is in quarters (1..3)
-        if current_quarter <= 3:
+        # Sleep while game hasn't started or when game is in quarters (1..3)
+        if game_status == 1 or current_quarter <= 3:
             time.sleep(60*15)
             continue
 
@@ -121,4 +115,4 @@ def status_check(nba_id, only_final):
             time.sleep(30)
             continue
 
-    return final_version
+    return final_version, game_data

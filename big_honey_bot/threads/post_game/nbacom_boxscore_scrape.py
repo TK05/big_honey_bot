@@ -7,8 +7,6 @@ from big_honey_bot.threads.static.templates import PostGame
 
 
 SEASON = setup['season']
-# TODO: This URL could change in the future.
-URL_TEMPLATE = "http://data.nba.com/data/v2015/json/mobile_teams/nba/{}/scores/gamedetail/{}_gamedetail.json"
 
 
 def team_boxscore(team_ident, team_data):
@@ -143,7 +141,7 @@ def generate_headline_data(game_data, home_away):
     return win, margin, final_score
 
 
-def generate_markdown_tables(game_id, home_away):
+def generate_markdown_tables(game_data, home_away):
     """Calls appropriate functions to generate a markdown boxscore.
 
     Arguments: game_id -> nba.com game_id
@@ -155,11 +153,9 @@ def generate_markdown_tables(game_id, home_away):
             final_score -> string of final score
     """
 
-    response = requests.get(URL_TEMPLATE.format(SEASON, game_id)).json()
-
-    qtr_table, extra_info_table, btm_info = game_boxscore(response)
-    away_box, top_tm_table = team_boxscore('vls', response)
-    home_box, bot_tm_table = team_boxscore('hls', response)
+    qtr_table, extra_info_table, btm_info = game_boxscore(game_data)
+    away_box, top_tm_table = team_boxscore('vls', game_data)
+    home_box, bot_tm_table = team_boxscore('hls', game_data)
 
     # Quarter by quarter table and team stats table
     md_return = f"{qtr_table}\n\n" \
@@ -172,6 +168,6 @@ def generate_markdown_tables(game_id, home_away):
     else:
         md_return += f"{away_box}\n\n{home_box}\n\n{extra_info_table}\n\n{btm_info}"
 
-    win, margin, final_score = generate_headline_data(response, home_away)
+    win, margin, final_score = generate_headline_data(game_data, home_away)
 
     return md_return, win, margin, final_score

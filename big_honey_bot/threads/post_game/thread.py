@@ -80,10 +80,10 @@ def playoff_headline(opp_team, game_start, win, final_score, playoff_data):
     return headline
 
 
-async def format_post(event, playoff_data, generate_summary):
+async def format_post(event, game_data, playoff_data, generate_summary):
     """Create body of post-game thread as markdown text."""
 
-    bs_tables, win, margin, final_score = generate_markdown_tables(event.meta['nba_id'], event.meta['home_away'])
+    bs_tables, win, margin, final_score = generate_markdown_tables(game_data, event.meta['home_away'])
 
     # Only create a summary headline if event needs one, otherwise use existing
     # This avoids having event and post w/ different headlines
@@ -119,11 +119,11 @@ async def post_game_thread_handler(event, playoff_data, only_final=False, was_pr
     finalized data to edit the thread."""
 
     logger.info(f"Sending to game_status_check, final version only: {str(only_final)}")
-    was_final = status_check(event.meta["nba_id"], only_final)
+    was_final, game_data = status_check(event.meta["nba_id"], only_final)
     logger.info(f"Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
     generate_summary = True if not was_prev_post else False
-    await format_post(event, playoff_data, generate_summary)
+    await format_post(event, game_data, playoff_data, generate_summary)
 
     if was_final:
         # Initial post contained non-finalized data; update existing post w/ finalized data
