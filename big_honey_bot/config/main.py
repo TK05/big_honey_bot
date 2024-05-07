@@ -1,5 +1,10 @@
-from big_honey_bot.config.helpers import OUTPUT_PATH
+from pathlib import Path
 
+
+OUTPUT_PATH = Path.cwd().joinpath("out")
+
+if not OUTPUT_PATH.exists():
+    OUTPUT_PATH.mkdir()
 
 ENV_RELOAD_INTERVAL_SEC = 60
 LOG_FILENAME = "big_honey_bot.log"

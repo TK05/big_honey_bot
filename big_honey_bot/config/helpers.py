@@ -7,12 +7,6 @@ from dotenv import dotenv_values, load_dotenv
 from big_honey_bot.config.main import ENV_RELOAD_INTERVAL_SEC
 
 
-OUTPUT_PATH = Path.cwd().joinpath("out")
-
-if not OUTPUT_PATH.exists():
-    OUTPUT_PATH.mkdir()
-
-
 def strtobool(val):
     """Convert a string representation of truth to true (1) or false (0).
 
