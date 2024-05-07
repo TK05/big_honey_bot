@@ -26,8 +26,8 @@ class Subreddit:
         self.reddit_instance = reddit_instance
         self.subreddit_name = subreddit_name
 
-    async def __call__(self):
-        return await self.reddit_instance.subreddit(self.subreddit_name)
+    def __call__(self):
+        return self.reddit_instance.subreddit(self.subreddit_name)
     
     def __getattr__(self, attr):
         return getattr(self.reddit_instance.subreddit(self.subreddit_name), attr)

@@ -190,7 +190,7 @@ def generate_game_body(event):
     event.body = event.body.replace(description_tags['referees'], f"{referees}\n")
 
 
-async def game_thread_handler(event, playoff_data, update_only):
+def game_thread_handler(event, playoff_data, update_only):
     """Generates thread title and body for event. Posts generated thread.
 
     :param event: Event to generate thread for
@@ -210,7 +210,7 @@ async def game_thread_handler(event, playoff_data, update_only):
         else:
             generate_title(event)
         logger.info(f"Created headline: {event.summary}")
-        await new_thread(event)
+        new_thread(event)
     else:
         logger.info(f"Updating existing thread with new event data: {event.summary}")
-        await edit_thread(event)
+        edit_thread(event)

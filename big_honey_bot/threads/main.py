@@ -1,8 +1,8 @@
 import logging
 import time
 
-import asyncprawcore
-from asyncpraw.exceptions import APIException
+import prawcore
+from praw.exceptions import APIException
 
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.threads.models import Reddit
@@ -13,7 +13,7 @@ from big_honey_bot.threads.static.templates import ThreadStats
 logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
-async def new_thread(event):
+def new_thread(event):
     """Posts new thread. Uses PRAW settings from env & config.py. Unstickies previous post or any other thread with
     "THREAD" in the title. Stickies new thread and sorts by "new".
 
@@ -23,19 +23,19 @@ async def new_thread(event):
     :rtype: NoneType
     """
 
-    async with Reddit() as reddit:
-        subreddit = await reddit._subreddit()
+    with Reddit() as reddit:
+        subreddit = reddit._subreddit()
 
         # Try to unsticky the correct post
         try:
-            prev_post = await reddit.submission(event.meta['prev_reddit_id'], fetch=True)
+            prev_post = reddit.submission(event.meta['prev_reddit_id'], fetch=True)
             if prev_post.author == get_env('USERNAME') and prev_post.stickied:
-                await prev_post.mod.sticky(state=False)
+                prev_post.mod.sticky(state=False)
                 logger.info(f"Unstickied previous post - {prev_post.title}")
         except KeyError:
-            async for post in subreddit.hot(limit=2):
+            for post in subreddit.hot(limit=2):
                 if post.author.name == get_env('USERNAME'):
-                    await post.mod.sticky(state=False)
+                    post.mod.sticky(state=False)
                     logger.info(f"Unstickied - {post.title}")
                     break
         
@@ -45,27 +45,27 @@ async def new_thread(event):
         post_attempts = 5
         while post_attempts > 0:
             try:
-                post = await subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
+                post = subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
             except APIException:
                 logger.error(f"Flair UUID ({flair_uuid}) is not valid for type={event.meta['event_type']}, attempting again without flair")
                 flair_uuid = None
             # TODO: see if better handling of other/common praw errors
-            except asyncprawcore.BadRequest:
+            except prawcore.BadRequest:
                 time.sleep(30)
             else:
                 post_attempts = 0
             finally:
                 post_attempts -= 1
             
-        await post.mod.sticky(bottom=False)
-        await post.mod.suggested_sort(sort='new')
+        post.mod.sticky(bottom=False)
+        post.mod.suggested_sort(sort='new')
 
     logger.info(f"Thread posted to r/{get_env('TARGET_SUB')} - {post.id}")
 
     event.meta['reddit_id'] = post.id
 
 
-async def edit_thread(event):
+def edit_thread(event):
     """Edits body of existing thread
 
     :param event: event object
@@ -74,34 +74,34 @@ async def edit_thread(event):
     :rtype: NoneType
     """
 
-    async with Reddit() as reddit:
-        post = await reddit.submission(id=event.meta['reddit_id'], fetch=True)
+    with Reddit() as reddit:
+        post = reddit.submission(id=event.meta['reddit_id'], fetch=True)
 
         # Clean then replace post w/ current event's body
         event.body = replace_nbs(event.body)
-        await post.edit(event.body)
+        post.edit(event.body)
 
         logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {post.id}")
 
 
-async def post_comment(thread, comment):
+def post_comment(thread, comment):
     """Submit a new comment to a given thread"""
 
-    comment_obj = await thread.reply(comment)
+    comment_obj = thread.reply(comment)
 
     return comment_obj.id
     
 
-async def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
+def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
     
-    async def _get_thread_details(thread):
+    def _get_thread_details(thread):
         """Determine thread stats from given thread."""
 
         results = {}
         
-        comments = await thread.comments()
-        await comments.replace_more(limit=None)
-        all_comments = await comments.list()
+        comments = thread.comments()
+        comments.replace_more(limit=None)
+        all_comments = comments.list()
 
         top_comment = [None, 0, None, None]
         total_karma = 0
@@ -150,15 +150,15 @@ async def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id)
         return results
 
     # Main logic
-    async with Reddit() as reddit:
-        prev_thread = await reddit.submission(id=prev_reddit_id, fetch=True)
+    with Reddit() as reddit:
+        prev_thread = reddit.submission(id=prev_reddit_id, fetch=True)
         logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_reddit_id}")
-        results = await _get_thread_details(prev_thread)
+        results = _get_thread_details(prev_thread)
 
         results['thread_type'] = prev_event_type
         comment = ThreadStats.format_post(results)
 
-        curr_thread = await reddit.submission(id=curr_reddit_id, fetch=False)
-        comment_id = await post_comment(curr_thread, comment)
+        curr_thread = reddit.submission(id=curr_reddit_id, fetch=False)
+        comment_id = post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")

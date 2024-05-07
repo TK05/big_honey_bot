@@ -1,6 +1,5 @@
 import random
 import logging
-import asyncio
 
 from big_honey_bot.helpers import get_datetime_from_str
 from big_honey_bot.config.helpers import get_pname_fname_str
@@ -80,7 +79,7 @@ def playoff_headline(opp_team, game_start, win, final_score, playoff_data):
     return headline
 
 
-async def format_post(event, game_data, playoff_data, generate_summary):
+def format_post(event, game_data, playoff_data, generate_summary):
     """Create body of post-game thread as markdown text."""
 
     bs_tables, win, margin, final_score = generate_markdown_tables(game_data, event.meta['home_away'])
@@ -91,7 +90,7 @@ async def format_post(event, game_data, playoff_data, generate_summary):
 
         # Check for custom win/lose title from event.meta
         outcome_key = 'win' if win else 'lose'
-        event_new = await get_event(event.id)
+        event_new = get_event(event.id)
         custom_title = event_new.meta.get(outcome_key)
 
         if custom_title:
@@ -112,7 +111,7 @@ async def format_post(event, game_data, playoff_data, generate_summary):
     event.body = f"{top_links}\n\n&nbsp;\n\n{bs_tables}"
 
 
-async def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
+def post_game_thread_handler(event, playoff_data, only_final=False, was_prev_post=False):
     """Wait for game completion and, upon completion, create headline and body reflecting game result.
 
     If data returned is not the final boxscore, function will recursive call itself to later return
@@ -123,17 +122,17 @@ async def post_game_thread_handler(event, playoff_data, only_final=False, was_pr
     logger.info(f"Generating thread data for {event.summary} - Final Version: {str(was_final)}")
 
     generate_summary = True if not was_prev_post else False
-    await format_post(event, game_data, playoff_data, generate_summary)
+    format_post(event, game_data, playoff_data, generate_summary)
 
     if was_final:
         # Initial post contained non-finalized data; update existing post w/ finalized data
         if was_prev_post:
-            await edit_thread(event)
+            edit_thread(event)
         # Game is final and there was no initial post; create new thread
         else:
-            await new_thread(event)
+            new_thread(event)
 
     # Game finished but not final, create thread and rerun for only_final data
     else:
-        await new_thread(event)
-        await post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)
+        new_thread(event)
+        post_game_thread_handler(event, playoff_data, only_final=True, was_prev_post=True)

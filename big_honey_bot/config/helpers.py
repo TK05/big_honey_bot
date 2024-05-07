@@ -1,9 +1,10 @@
 import logging
 import time
-import asyncio
 from pathlib import Path
 
 from dotenv import dotenv_values, load_dotenv
+
+from big_honey_bot.config.main import ENV_RELOAD_INTERVAL_SEC
 
 
 OUTPUT_PATH = Path.cwd().joinpath("out")
@@ -46,11 +47,11 @@ def get_env(env_key):
         return env_val
 
 
-async def reload_env(sleep_time_sec):
+def reload_env():
     while True:
         load_dotenv()
         update_logger_level()
-        await asyncio.sleep(sleep_time_sec)
+        time.sleep(ENV_RELOAD_INTERVAL_SEC)
 
 
 def get_all_env():

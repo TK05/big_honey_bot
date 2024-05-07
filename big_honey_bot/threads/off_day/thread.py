@@ -280,7 +280,7 @@ def generate_thread_body(event=None):
             event.body = re.sub(dg_pattern, body, event.body)
 
 
-async def off_day_thread_handler(event, update_only=False):
+def off_day_thread_handler(event, update_only=False):
     """Generates thread title and body for event. Posts generated thread.
 
     :param event: Event to generate thread for
@@ -293,10 +293,10 @@ async def off_day_thread_handler(event, update_only=False):
 
     if not update_only:
         logger.info(f"Created headline: {event.summary}")
-        await new_thread(event)
+        new_thread(event)
     else:
         logger.info(f"Updating existing thread with new event data: {event.summary}")
-        await edit_thread(event)
+        edit_thread(event)
 
 
 if __name__ == "__main__":

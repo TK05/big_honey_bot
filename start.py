@@ -1,18 +1,19 @@
 import logging
-import asyncio
+import threading
 
 from big_honey_bot.main import run_bhb
-from big_honey_bot.config.main import OUTPUT_PATH, LOG_FILENAME, ENV_RELOAD_INTERVAL_SEC
+from big_honey_bot.config.main import OUTPUT_PATH, LOG_FILENAME
 from big_honey_bot.config.helpers import configure_logging, reload_env, get_env, get_pname_fname_str
 
 
-async def main():
-    # create task to reload .env every ENV_RELOAD_INTERVAL_SEC
-    asyncio.create_task(reload_env(int(ENV_RELOAD_INTERVAL_SEC)))
+def main():
+    # create thread to reload .env every ENV_RELOAD_INTERVAL_SEC
+    reload_env_thread = threading.Thread(target=reload_env)
+    reload_env_thread.start()
 
     # start run_bhb main event loop
     logger.info("Starting big_honey_bot....")
-    await run_bhb()
+    run_bhb()
 
 
 if __name__ == "__main__":
@@ -28,4 +29,4 @@ if __name__ == "__main__":
         logger.debug(f"All env variables: {get_all_env()}")
 
     # start run_bhb main event loop
-    asyncio.run(main())
+    main()

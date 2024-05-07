@@ -41,7 +41,7 @@ def add_meta_and_body(event):
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def get_all_events():
+def get_all_events():
     service = create_service()
     all_events = service.get_events(order_by='startTime', single_events=True)
 
@@ -49,7 +49,7 @@ async def get_all_events():
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def get_all_events_with_meta():
+def get_all_events_with_meta():
     service = create_service()
     events = service.get_events(order_by='startTime', single_events=True)
     all_events = []
@@ -62,7 +62,7 @@ async def get_all_events_with_meta():
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def get_previous_event(penultimate=False, days=30):
+def get_previous_event(penultimate=False, days=30):
     service = create_service()
     now = get_datetime(to_tz=True, tz=setup['timezone'])
     events = service.get_events((now - timedelta(days=days)),now, order_by='startTime', timezone=setup['timezone'], single_events=True)
@@ -79,7 +79,7 @@ async def get_previous_event(penultimate=False, days=30):
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def get_event(event_id):
+def get_event(event_id):
     service = create_service()
     event = service.get_event(event_id)
     add_meta_and_body(event)
@@ -88,8 +88,8 @@ async def get_event(event_id):
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def get_next_event():
-    all_events = await get_all_events()
+def get_next_event():
+    all_events = get_all_events()
     for event in all_events:
         next_event = event
         break
@@ -102,7 +102,7 @@ async def get_next_event():
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def find_event(query, past=None):
+def find_event(query, past=None):
     service = create_service()
     event = next(service.get_events(time_min=past, query=query))
     add_meta_and_body(event)
@@ -111,8 +111,8 @@ async def find_event(query, past=None):
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def find_events_by_meta(**kwargs):
-    all_events = await get_all_events_with_meta()
+def find_events_by_meta(**kwargs):
+    all_events = get_all_events_with_meta()
 
     matches = []
 
@@ -124,13 +124,13 @@ async def find_events_by_meta(**kwargs):
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def create_event(event_data):
+def create_event(event_data):
     service = create_service()
     service.add_event(event_data)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def update_event(event):
+def update_event(event):
     service = create_service()
 
     # Update hashes before updating event
@@ -145,21 +145,21 @@ async def update_event(event):
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def update_event_serial(event_json):
+def update_event_serial(event_json):
     service = create_service()
     service.update_event(EventSerializer.to_object(event_json))
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def delete_event(event):
+def delete_event(event):
     service = create_service()
     service.delete_event(event)
 
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-async def delete_all_events():
+def delete_all_events():
     service = create_service()
-    events = await get_all_events()
+    events = get_all_events()
 
     for event in events:
         service.delete_event(event)

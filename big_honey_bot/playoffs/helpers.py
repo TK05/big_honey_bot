@@ -9,7 +9,7 @@ SEASON = setup['season']
 nba_api_playoff_url = f'https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/{SEASON}/scores/00_playoff_bracket.json'
 
 
-async def get_series_status():
+def get_series_status():
     """
     Gets playoff series status given TEAM configured
     :returns: (current round (int), game number (int), series record [list])

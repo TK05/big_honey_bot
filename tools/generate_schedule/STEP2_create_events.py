@@ -16,7 +16,7 @@ from big_honey_bot.threads.static.templates import Game
 from tools.models import GameEvent
 
 
-IN_PLAYOFFS = False
+IN_PLAYOFFS = True
 PRE_FILE_NAME = 'schedule_scrape_output.json'
 POST_FILE_NAME = 'all_events.json'
 

@@ -1,10 +1,9 @@
 import re
 import logging
-import asyncio
 from datetime import date, timedelta
 
 import requests
-import asyncpraw
+import praw
 from parsel import Selector
 from nba_api.stats.endpoints import leaguestandingsv3
 from nba_api.stats.static import teams
@@ -22,8 +21,7 @@ YEAR = setup['season']
 TEAM = setup['team']
 
 
-async def get_standings():
-    # TODO: async version of nba_api?
+def get_standings():
     raw_standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
     headers = raw_standings['resultSets'][0]['headers']
     standings = {'West': {}, 'East': {}}
@@ -68,7 +66,7 @@ def update_record(standings):
     return f"Record: {tf_rec} | #{tf_rank} in the {tf_conf}"
 
 
-async def update_tripdub():
+def update_tripdub():
     """Grabs Jokic's current triple-double count and dunk count."""
 
     # TODO: URL's could change in the future.
@@ -162,7 +160,7 @@ def update_reign():
     return f"Reign Day #{reign_days}"
 
 
-async def update_sidebar():
+def update_sidebar():
     """Updates sidebar for both new and old reddit."""
 
     if not get_env('UPDATE_SIDEBAR'):
@@ -171,13 +169,11 @@ async def update_sidebar():
     logger.info(f"Updating sidebar @ {get_str_from_datetime(fmt='%H:%M')}")
 
     reddit = Reddit()
-    standings_task = asyncio.create_task(get_standings())
-    subreddit_task = asyncio.create_task(reddit._subreddit())
-    standings = await standings_task
-    subreddit = await subreddit_task
+    subreddit = reddit._subreddit()
+    standings = get_standings()
 
     # Old Reddit
-    old_reddit_sidebar = await subreddit.wiki.get_page('config/sidebar')
+    old_reddit_sidebar = subreddit.wiki.get_page('config/sidebar')
     ors_content = old_reddit_sidebar.content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
@@ -202,14 +198,14 @@ async def update_sidebar():
         ors_content = p2_regex.sub(p2_sub, ors_content)
         ors_content = p3_regex.sub(p3_sub, ors_content)
 
-    await old_reddit_sidebar.edit(ors_content)
+    old_reddit_sidebar.edit(ors_content)
     logger.info(f"Old-Reddit sidebar updated")
 
     # Get sidebar from new reddit
     widgets = subreddit.widgets
     new_reddit_sidebar = None
-    async for widget in widgets.sidebar():
-        if isinstance(widget, asyncpraw.models.TextArea):
+    for widget in widgets.sidebar():
+        if isinstance(widget, praw.models.TextArea):
             new_reddit_sidebar = widget
             break
 
@@ -229,7 +225,5 @@ async def update_sidebar():
         new_text = p3_regex.sub(p3_sub, new_text)
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
-    await new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
+    new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
     logger.info(f"New-Reddit sidebar updated")
-
-    await reddit.close()
