@@ -28,7 +28,7 @@ def new_thread(event):
 
         # Try to unsticky the correct post
         try:
-            prev_post = reddit.submission(event.meta['prev_reddit_id'], fetch=True)
+            prev_post = reddit.submission(event.meta['prev_reddit_id'])
             if prev_post.author == get_env('USERNAME') and prev_post.stickied:
                 prev_post.mod.sticky(state=False)
                 logger.info(f"Unstickied previous post - {prev_post.title}")
