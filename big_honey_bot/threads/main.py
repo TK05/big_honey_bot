@@ -75,7 +75,7 @@ def edit_thread(event):
     """
 
     with Reddit() as reddit:
-        post = reddit.submission(id=event.meta['reddit_id'], fetch=True)
+        post = reddit.submission(id=event.meta['reddit_id'])
 
         # Clean then replace post w/ current event's body
         event.body = replace_nbs(event.body)
