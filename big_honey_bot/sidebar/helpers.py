@@ -204,7 +204,7 @@ def update_sidebar():
     # Get sidebar from new reddit
     widgets = subreddit.widgets
     new_reddit_sidebar = None
-    for widget in widgets.sidebar():
+    for widget in widgets.sidebar:
         if isinstance(widget, praw.models.TextArea):
             new_reddit_sidebar = widget
             break
