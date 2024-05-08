@@ -1,10 +1,10 @@
-import asyncpraw
+import praw
 
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_env
 
 
-class Reddit(asyncpraw.Reddit):
+class Reddit(praw.Reddit):
     
     def __init__(self):
         super().__init__(
