@@ -173,8 +173,8 @@ def update_sidebar():
     standings = get_standings()
 
     # Old Reddit
-    old_reddit_sidebar = subreddit.wiki.get_page('config/sidebar')
-    ors_content = old_reddit_sidebar.content_md
+    old_reddit_sidebar = subreddit.wiki['config/sidebar']
+    ors_content = subreddit.wiki['config/sidebar'].content_md
 
     record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
     reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
