@@ -151,14 +151,14 @@ def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
 
     # Main logic
     with Reddit() as reddit:
-        prev_thread = reddit.submission(id=prev_reddit_id, fetch=True)
+        prev_thread = reddit.submission(id=prev_reddit_id)
         logger.info(f"Gathering stats for: {prev_thread.id}, Replying to: {curr_reddit_id}")
         results = _get_thread_details(prev_thread)
 
         results['thread_type'] = prev_event_type
         comment = ThreadStats.format_post(results)
 
-        curr_thread = reddit.submission(id=curr_reddit_id, fetch=False)
+        curr_thread = reddit.submission(id=curr_reddit_id)
         comment_id = post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")
