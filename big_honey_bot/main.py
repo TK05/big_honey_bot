@@ -61,8 +61,8 @@ def generate_thread_stats(curr_event):
         # If still active event; gen thread stats from that thread
         elif active_event:
             if active_event.meta.get('reddit_id') and active_event.meta.get('reddit_id') == curr_event.meta.get('prev_reddit_id'):
-                prev_thread_id = active_event.meta['reddit_id']
-                prev_thread_type = active_event.meta['event_type']
+                prev_thread_id = active_event.meta.get('reddit_id')
+                prev_thread_type = active_event.meta.get('event_type')
             else:
                 logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
                     f"{active_event.meta.get('reddit_id')} != {curr_event.meta.get('prev_reddit_id')}")
@@ -71,8 +71,8 @@ def generate_thread_stats(curr_event):
         else:
             prev_event = get_previous_event(penultimate=True)
             if prev_event.meta.get('reddit_id') and prev_event.meta.get('reddit_id') == curr_event.meta.get('prev_reddit_id'):
-                prev_thread_id = prev_event.meta['reddit_id']
-                prev_thread_type = prev_event.meta['event_type']
+                prev_thread_id = prev_event.meta.get('reddit_id')
+                prev_thread_type = prev_event.meta.get('event_type')
             else:
                 logger.warn(f"Did not generate thread stats as prev_event.reddit_id != event.prev_reddit_id -- " \
                     f"{prev_event.meta.get('reddit_id')} != {curr_event.meta.get('prev_reddit_id')}")
@@ -80,7 +80,7 @@ def generate_thread_stats(curr_event):
         # If previous thread found, generate thread stats
         if prev_thread_id and prev_thread_type:
             try:
-                gts(prev_thread_id, prev_thread_type, curr_event.meta['reddit_id'])
+                gts(prev_thread_id, prev_thread_type, curr_event.meta.get('reddit_id'))
             except Exception as e:
                 logger.error(f"Error caught while generating thread stats: {e}")
 
@@ -128,14 +128,14 @@ def update_next_event():
     global next_event
 
     if active_event:
-        if not next_event.meta.get('prev_reddit_id') or next_event.meta['prev_reddit_id'] == "":
-            next_event.meta['prev_reddit_id'] = active_event.meta['reddit_id']
+        if not next_event.meta.get('prev_reddit_id') or next_event.meta.get('prev_reddit_id') == "":
+            next_event.meta['prev_reddit_id'] = active_event.meta.get('reddit_id')
             update_event(next_event)
-            logger.info(f"Updating next_event's prev_reddit_id with reddit_id of active_event -- prev_reddit_id: {next_event.meta['prev_reddit_id']}")
-        elif next_event.meta['prev_reddit_id'] != active_event.meta['reddit_id']:
-            next_event.meta['prev_reddit_id'] = active_event.meta['reddit_id']
+            logger.info(f"Updating next_event's prev_reddit_id with reddit_id of active_event -- prev_reddit_id: {next_event.meta.get('prev_reddit_id')}")
+        elif active_event.meta.get('reddit_id') and next_event.meta.get('prev_reddit_id') != active_event.meta.get('reddit_id'):
+            next_event.meta['prev_reddit_id'] = active_event.meta.get('reddit_id')
             update_event(next_event)
-            logger.warn(f"next_event's prev_reddit_id did not match active_event's reddit_id, updating: prev_reddit_id {next_event.meta['prev_reddit_id']} ")
+            logger.warn(f"next_event's prev_reddit_id did not match active_event's reddit_id, updating: prev_reddit_id {next_event.meta.get('prev_reddit_id')} ")
 
 
 def update_active_event():
