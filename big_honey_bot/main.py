@@ -65,7 +65,7 @@ def generate_thread_stats(curr_event):
                 prev_thread_type = active_event.meta['event_type']
             else:
                 logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
-                    f"{active_event.meta['reddit_id']} != {curr_event.meta['prev_reddit_id']}")
+                    f"{active_event.meta.get('reddit_id')} != {curr_event.meta.get('prev_reddit_id')}")
         
         # If no active event; get penultimate previous event and check that
         else:
@@ -75,7 +75,7 @@ def generate_thread_stats(curr_event):
                 prev_thread_type = prev_event.meta['event_type']
             else:
                 logger.warn(f"Did not generate thread stats as prev_event.reddit_id != event.prev_reddit_id -- " \
-                    f"{prev_event.meta['reddit_id']} != {curr_event.meta['prev_reddit_id']}")
+                    f"{prev_event.meta.get('reddit_id')} != {curr_event.meta.get('prev_reddit_id')}")
         
         # If previous thread found, generate thread stats
         if prev_thread_id and prev_thread_type:
