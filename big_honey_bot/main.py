@@ -60,22 +60,22 @@ def generate_thread_stats(curr_event):
         
         # If still active event; gen thread stats from that thread
         elif active_event:
-            if active_event.meta['reddit_id'] == curr_event.meta['prev_reddit_id']:
+            if active_event.meta.get('reddit_id') and active_event.meta.get('reddit_id') == curr_event.meta.get('prev_reddit_id'):
                 prev_thread_id = active_event.meta['reddit_id']
                 prev_thread_type = active_event.meta['event_type']
             else:
                 logger.warn(f"Did not generate thread stats as active_event.reddit_id != event.prev_reddit_id -- " \
-                        f"{active_event.meta['reddit_id']} != {curr_event.meta['prev_reddit_id']}")
+                    f"{active_event.meta['reddit_id']} != {curr_event.meta['prev_reddit_id']}")
         
         # If no active event; get penultimate previous event and check that
         else:
             prev_event = get_previous_event(penultimate=True)
-            if prev_event.meta['reddit_id'] == curr_event.meta['prev_reddit_id']:
+            if prev_event.meta.get('reddit_id') and prev_event.meta.get('reddit_id') == curr_event.meta.get('prev_reddit_id'):
                 prev_thread_id = prev_event.meta['reddit_id']
                 prev_thread_type = prev_event.meta['event_type']
             else:
                 logger.warn(f"Did not generate thread stats as prev_event.reddit_id != event.prev_reddit_id -- " \
-                        f"{prev_event.meta['reddit_id']} != {curr_event.meta['prev_reddit_id']}")
+                    f"{prev_event.meta['reddit_id']} != {curr_event.meta['prev_reddit_id']}")
         
         # If previous thread found, generate thread stats
         if prev_thread_id and prev_thread_type:
