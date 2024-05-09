@@ -242,6 +242,9 @@ def check_if_prev_event_still_active():
 def do_maint_tasks():
     # Maint tasks are things to do every maint_interval
     # IE: get playoff updates, update sidebar and  update active threads that have dynamic data.
+
+    global initialized
+
     while True:
         logger.info("Maintanence tasks running...")
 
@@ -259,6 +262,9 @@ def do_maint_tasks():
         logger.debug(f"Maint data -- playoff_data: {playoff_data}")
         logger.debug(f"Maint data -- active_event: {active_event}")
 
+        # Set global initialized to true to enable main loop to run
+        initialized = True
+
         # Sleep at end
         time.sleep(int(get_env('MAINT_INTERVAL_MIN')) * 60)
 
@@ -266,6 +272,10 @@ def do_maint_tasks():
 def bhb_main_loop():
 
     global next_event
+
+    # On startup; wait for global initalized variable to be true (maint loop done once)
+    while not initialized:
+        time.sleep(1)
     
     skip = False
     logger.info("Starting main event loop...")
@@ -341,10 +351,12 @@ def run_bhb():
     global playoff_data
     global next_event
     global active_event
+    global initialized
 
     playoff_data = None
     next_event = None
     active_event = None
+    initialized = False
 
     # Create maint thread, and start
     maint_thread = threading.Thread(target=do_maint_tasks)
