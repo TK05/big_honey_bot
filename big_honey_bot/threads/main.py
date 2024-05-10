@@ -99,9 +99,7 @@ def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
 
         results = {}
         
-        comments = thread.comments()
-        comments.replace_more(limit=None)
-        all_comments = comments.list()
+        all_comments = thread.comments.replace_more(limit=None).list()
 
         top_comment = [None, 0, None, None]
         total_karma = 0
