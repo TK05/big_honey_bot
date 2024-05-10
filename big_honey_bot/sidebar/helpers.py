@@ -198,8 +198,11 @@ def update_sidebar():
         ors_content = p2_regex.sub(p2_sub, ors_content)
         ors_content = p3_regex.sub(p3_sub, ors_content)
 
-    old_reddit_sidebar.edit(ors_content)
-    logger.info(f"Old-Reddit sidebar updated")
+    try:
+        old_reddit_sidebar.edit(ors_content)
+        logger.info(f"Old-Reddit sidebar updated")
+    except Exception as e:
+        logger.error(f"Unable to edit Old-Reddit sidebar: {e}")
 
     # Get sidebar from new reddit
     widgets = subreddit.widgets
@@ -225,5 +228,9 @@ def update_sidebar():
         new_text = p3_regex.sub(p3_sub, new_text)
 
     style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
-    new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
-    logger.info(f"New-Reddit sidebar updated")
+
+    try:
+        new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
+        logger.info(f"New-Reddit sidebar updated")
+    except Exception as e:
+        logger.error(f"Unable to edit New-Reddit sidebar: {e}")
