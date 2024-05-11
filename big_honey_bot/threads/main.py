@@ -98,16 +98,15 @@ def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
         """Determine thread stats from given thread."""
 
         results = {}
-        
-        all_comments = thread.comments.replace_more(limit=None).list()
-
         top_comment = [None, 0, None, None]
         total_karma = 0
         all_authors = {}
         most_posts = ['', 0]
         most_karma = ['', 0]
 
-        for comment in all_comments:
+        thread.comments.replace_more(limit=None)
+
+        for comment in thread.comments.list():
             if not comment.author:
                 continue
             all_authors.setdefault(comment.author.name, {'post_count': 0, 'karma': 0})
@@ -160,3 +159,9 @@ def generate_thread_stats(prev_reddit_id, prev_event_type, curr_reddit_id):
         comment_id = post_comment(curr_thread, comment)
 
     logger.info(f"Thread stats reply finished, ID: {comment_id}")
+
+
+if __name__ == '__main__':
+    prev_id = '1cp8v6z'
+    curr_id = '1cpi55k'
+    generate_thread_stats(prev_id, 'post', curr_id)
