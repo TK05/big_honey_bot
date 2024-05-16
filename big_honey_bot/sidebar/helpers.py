@@ -173,63 +173,65 @@ def update_sidebar():
     standings = get_standings()
 
     # Old Reddit
-    old_reddit_sidebar = subreddit.wiki['config/sidebar']
-    ors_content = subreddit.wiki['config/sidebar'].content_md
-
-    record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
-    reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
-    # tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
-    # munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
-    p1_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
-    p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
-    p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
-
-    if not get_env('IS_OFFSEASON'):
-        record_sub = update_record(standings)
-        ors_content = record_regex.sub(record_sub, ors_content)
-
-    ors_content = reign_regex.sub(update_reign(), ors_content)
-    # ors_content = tripdub_regex.sub(update_tripdub(), ors_content)
-    # ors_content = munder_regex.sub(update_munder(standings), ors_content)
-
-    if get_env('PLAYOFF_WATCH'):
-        p1_sub, p2_sub, p3_sub = update_playoff(standings)
-        ors_content = p1_regex.sub(p1_sub, ors_content)
-        ors_content = p2_regex.sub(p2_sub, ors_content)
-        ors_content = p3_regex.sub(p3_sub, ors_content)
-
     try:
+        old_reddit_sidebar = subreddit.wiki['config/sidebar']
+        ors_content = subreddit.wiki['config/sidebar'].content_md
+
+        record_regex = re.compile(r"((?<=\(/record\))[^\n]*)")
+        reign_regex = re.compile(r"((?<=\(/reign\))[^\n]*)")
+        # tripdub_regex = re.compile(r"((?<=\(/tripdub\))[^\n]*)")
+        # munder_regex = re.compile(r"((?<=\(/munder\))[^\n]*)")
+        p1_regex = re.compile(r"((?<=\(/playoff1\))[^\n]*)")
+        p2_regex = re.compile(r"((?<=\(/playoff2\))[^\n]*)")
+        p3_regex = re.compile(r"((?<=\(/playoff3\))[^\n]*)")
+
+        if not get_env('IS_OFFSEASON'):
+            record_sub = update_record(standings)
+            ors_content = record_regex.sub(record_sub, ors_content)
+
+        ors_content = reign_regex.sub(update_reign(), ors_content)
+        # ors_content = tripdub_regex.sub(update_tripdub(), ors_content)
+        # ors_content = munder_regex.sub(update_munder(standings), ors_content)
+
+        if get_env('PLAYOFF_WATCH'):
+            p1_sub, p2_sub, p3_sub = update_playoff(standings)
+            ors_content = p1_regex.sub(p1_sub, ors_content)
+            ors_content = p2_regex.sub(p2_sub, ors_content)
+            ors_content = p3_regex.sub(p3_sub, ors_content)
+
+        # Update sidebar
         old_reddit_sidebar.edit(ors_content)
         logger.info(f"Old-Reddit sidebar updated")
     except Exception as e:
         logger.error(f"Unable to edit Old-Reddit sidebar: {e}")
 
-    # Get sidebar from new reddit
-    widgets = subreddit.widgets
-    new_reddit_sidebar = None
-    for widget in widgets.sidebar:
-        if isinstance(widget, praw.models.TextArea):
-            new_reddit_sidebar = widget
-            break
-
-    new_text = new_reddit_sidebar.text
-
-    if not get_env('IS_OFFSEASON'):
-        new_text = record_regex.sub(record_sub, new_text)
-
-    new_text = reign_regex.sub(update_reign(), new_text)
-    # new_text = tripdub_regex.sub(update_tripdub(), new_text)
-    # new_text = munder_regex.sub(update_munder(standings), new_text)
-
-    if get_env('PLAYOFF_WATCH'):
-        p1_sub, p2_sub, p3_sub = update_playoff(standings)
-        new_text = p1_regex.sub(p1_sub, new_text)
-        new_text = p2_regex.sub(p2_sub, new_text)
-        new_text = p3_regex.sub(p3_sub, new_text)
-
-    style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
-
+    # New reddit
     try:
+        widgets = subreddit.widgets
+        new_reddit_sidebar = None
+        for widget in widgets.sidebar:
+            if isinstance(widget, praw.models.TextArea):
+                new_reddit_sidebar = widget
+                break
+
+        new_text = new_reddit_sidebar.text
+
+        if not get_env('IS_OFFSEASON'):
+            new_text = record_regex.sub(record_sub, new_text)
+
+        new_text = reign_regex.sub(update_reign(), new_text)
+        # new_text = tripdub_regex.sub(update_tripdub(), new_text)
+        # new_text = munder_regex.sub(update_munder(standings), new_text)
+
+        if get_env('PLAYOFF_WATCH'):
+            p1_sub, p2_sub, p3_sub = update_playoff(standings)
+            new_text = p1_regex.sub(p1_sub, new_text)
+            new_text = p2_regex.sub(p2_sub, new_text)
+            new_text = p3_regex.sub(p3_sub, new_text)
+
+        style = {'backgroundColor': '#FFFFFF', 'headerColor': '#014980'}
+
+        # Update sidebar
         new_reddit_sidebar.mod.update(shortName='Season Info', text=new_text, styles=style)
         logger.info(f"New-Reddit sidebar updated")
     except Exception as e:
