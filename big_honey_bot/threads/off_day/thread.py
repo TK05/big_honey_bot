@@ -201,7 +201,7 @@ def generate_thread_body(event=None):
         current_doy = int(get_str_from_datetime(fmt="%j"))
 
         for i in sorted(se.keys()):
-            if se[i]["start_doy"] <= current_doy <= se[i]["end_doy"]:
+            if se[i]["start_day"] <= current_doy <= se[i]["end_day"]:
                 events_today.append(f"|{se[i]['desc']}|{se[i]['date_str']}|{format_links(se[i]['links'])}|")
             elif i < current_doy:
                 pass

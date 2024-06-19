@@ -1,64 +1,71 @@
 # datetime.strftime(datetime.strptime("July 02, 2022", "%B %d, %Y"), "%j")
 events = {
-    188: {
-        "start_doy": 188,
-        "end_doy": 198,
-        "date_str": "July 7-17",
-        "desc": "NBA Summer League 2023 (Las Vegas, NV)",
-        "links": {"NBA.com": "https://www.nba.com/summer-league/2023"}
+    178: {
+        "start_day": 178,
+        "end_day": 178,
+        "date_str": "June 26",
+        "desc": "NBA Draft 2024 (First Round) - 6:00 PM MT",
+        "links": {"NBA.com": "https://www.nba.com/news/nba-draft-2024-two-nights-official-release"}
      },
-    190: {
-        "start_doy": 190,
-        "end_doy": 190,
-        "date_str": "July 9",
-        "desc": "Nuggets vs. Hawks - 7:30 PM MT",
-        "links": {"ESPN": "https://www.espn.com/nba-summer-league/game?gameId=401558329&league=nba-summer-las-vegas"}
-    },
-    193: {
-        "start_doy": 193,
-        "end_doy": 193,
-        "date_str": "July 12",
-        "desc": "Nuggets vs. Jazz - 7:30 PM MT",
-        "links": {"ESPN": "https://www.espn.com/nba-summer-league/game?gameId=401558349&league=nba-summer-las-vegas"}
-    },
-    195: {
-        "start_doy": 195,
-        "end_doy": 195,
-        "date_str": "July 14",
-        "desc": "Nuggets vs. Heat - 7:00 PM MT",
-        "links": {"ESPN": "https://www.espn.com/nba-summer-league/game?gameId=401558364&league=nba-summer-las-vegas"}
-    },
-    223: {
-        "start_doy": 223,
-        "end_doy": 224,
-        "date_str": "August 11-12",
-        "desc": "Naismith Memorial Basketball Hall of Fame Enshrinement Weekend (Springfield, MA)",
+    179: {
+        "start_day": 179,
+        "end_day": 179,
+        "date_str": "June 27",
+        "desc": "NBA Draft 2024 (Second Round) - 2:00 PM MT",
+        "links": {"NBA.com": "https://www.nba.com/news/nba-draft-2024-two-nights-official-release"}
+     },
+    182: {
+        "start_day": 182,
+        "end_day": 182,
+        "date_str": "June 30",
+        "desc": "Free agent negotiation starts (beginning at 4 p.m. MT)",
         "links": {}
     },
-    237: {
-        "start_doy": 237,
-        "end_doy": 253,
-        "date_str": "August 25 - September 10",
-        "desc": "FIBA Basketball World Cup (Philippines / Japan / Indonesia)",
-        "links": {"FIBA.basketball": "https://www.fiba.basketball/basketballworldcup/2023"}
+    187: {
+        "start_day": 187,
+        "end_day": 187,
+        "date_str": "July 5",
+        "desc": "Free agent signing starts (10:01 p.m. MT)",
+        "links": {}
+    },
+    194: {
+        "start_day": 194,
+        "end_day": 204,
+        "date_str": "July 12-22",
+        "desc": "NBA Summer League",
+        "links": {"NBA.com": "https://www.nba.com/summer-league/2024"}
+    },
+    208: {
+        "start_day": 208,
+        "end_day": 224,
+        "date_str": "July 26 - August 11",
+        "desc": "Paris 2024 Olympic Games",
+        "links": {}
+    },
+    278: {
+        "start_day": 278,
+        "end_day": 278,
+        "date_str": "October 4 & 6",
+        "desc": "NBA Abu Dhabi Games 2024 (Nuggets vs. Celtics)",
+        "links": {}
     },
     # 186: {
-    #     "start_doy": 186,
-    #     "end_doy": 188,
+    #     "start_day": 186,
+    #     "end_day": 188,
     #     "date_str": "July 5-7",
     #     "desc": "SLC Summer League - (Grizzlies, Thunder, 76ers, Jazz)",
     #     "links": {}
     # },
     # 187: {
-    #     "start_doy": 187,
-    #     "end_doy": 187,
+    #     "start_day": 187,
+    #     "end_day": 187,
     #     "date_str": "July 6",
     #     "desc": "Teams may begin signing free agents to contracts (12:01PM ET)",
     #     "links": {}
     # },
     # 188: {
-    #     "start_doy": 188,
-    #     "end_doy": 198,
+    #     "start_day": 188,
+    #     "end_day": 198,
     #     "date_str": "July 7-17",
     #     "desc": "NBA2K23 Summer League in Las Vegas (All 30 teams)",
     #     "links": {
@@ -66,8 +73,8 @@ events = {
     #     }
     # },
     # 189: {
-    #     "start_doy": 189,
-    #     "end_doy": 189,
+    #     "start_day": 189,
+    #     "end_day": 189,
     #     "date_str": "July 8",
     #     "desc": "Denver vs. Minnesota - 7:00PM - NBA TV - Summer League Game 1",
     #     "links": {
@@ -75,8 +82,8 @@ events = {
     #     }
     # },
     # 191: {
-    #     "start_doy": 191,
-    #     "end_doy": 191,
+    #     "start_day": 191,
+    #     "end_day": 191,
     #     "date_str": "July 10",
     #     "desc": "Denver vs. Cleveland - 5:00PM - ESPNU - Summer League Game 2",
     #     "links": {
@@ -84,8 +91,8 @@ events = {
     #     }
     # },
     # 194: {
-    #     "start_doy": 194,
-    #     "end_doy": 194,
+    #     "start_day": 194,
+    #     "end_day": 194,
     #     "date_str": "July 13",
     #     "desc": "Denver vs. LA Clippers - 8:00PM - NBA TV - Summer League Game 3",
     #     "links": {
@@ -93,8 +100,8 @@ events = {
     #     }
     # },
     # 196: {
-    #     "start_doy": 196,
-    #     "end_doy": 196,
+    #     "start_day": 196,
+    #     "end_day": 196,
     #     "date_str": "July 15",
     #     "desc": "Denver vs. Philadelphia - 4:00PM - NBA TV - Summer League Game 4",
     #     "links": {
@@ -102,8 +109,8 @@ events = {
     #     }
     # },
     # 229: {
-    #     "start_doy": 229,
-    #     "end_doy": 229,
+    #     "start_day": 229,
+    #     "end_day": 229,
     #     "date_str": "August 17",
     #     "desc": "Serbia @ Slovenia - NT Friendly - 12:15AM MDT - Ljubjana, Slovenia",
     #     "links": {
@@ -111,8 +118,8 @@ events = {
     #     }
     # },
     # 231: {
-    #     "start_doy": 231,
-    #     "end_doy": 231,
+    #     "start_day": 231,
+    #     "end_day": 231,
     #     "date_str": "August 19",
     #     "desc": "Serbia vs. Italy - NT Friendly - 10:00AM MDT - Hamburg, Germany",
     #     "links": {
@@ -120,8 +127,8 @@ events = {
     #     }
     # },
     # 232.1: {
-    #     "start_doy": 232,
-    #     "end_doy": 232,
+    #     "start_day": 232,
+    #     "end_day": 232,
     #     "date_str": "August 20",
     #     "desc": "Serbia vs. Czech Republic - NT Friendly - 10:00AM MDT - Hamburg, Germany",
     #     "links": {
@@ -129,8 +136,8 @@ events = {
     #     }
     # },
     # 232.2: {
-    #     "start_doy": 232,
-    #     "end_doy": 232,
+    #     "start_day": 232,
+    #     "end_day": 232,
     #     "date_str": "August 20",
     #     "desc": "Serbia @ Germany - NT Friendly - 12:30AM MDT - Hamburg, Germany",
     #     "links": {
@@ -138,8 +145,8 @@ events = {
     #     }
     # },
     # 237: {
-    #     "start_doy": 237,
-    #     "end_doy": 237,
+    #     "start_day": 237,
+    #     "end_day": 237,
     #     "date_str": "August 25",
     #     "desc": "Serbia vs. Greece - World Cup Qualifier - 10:00AM MDT - Belgrade, Serbia",
     #     "links": {
@@ -147,8 +154,8 @@ events = {
     #     }
     # },
     # 240: {
-    #     "start_doy": 240,
-    #     "end_doy": 240,
+    #     "start_day": 240,
+    #     "end_day": 240,
     #     "date_str": "August 28",
     #     "desc": "Serbia @ Turkey - World Cup Qualifier - 9:00AM MDT - Istanbul, Turkey",
     #     "links": {
@@ -156,8 +163,8 @@ events = {
     #     }
     # },
     # 245: {
-    #     "start_doy": 245,
-    #     "end_doy": 245,
+    #     "start_day": 245,
+    #     "end_day": 245,
     #     "date_str": "September 2",
     #     "desc": "Serbia vs. Netherlands - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
     #     "links": {
@@ -165,8 +172,8 @@ events = {
     #     }
     # },
     # 246.1: {
-    #     "start_doy": 246,
-    #     "end_doy": 246,
+    #     "start_day": 246,
+    #     "end_day": 246,
     #     "date_str": "September 3",
     #     "desc": "Serbia vs. Czech Republic - Eurobasket '22 - 9:30AM MDT - Prague, Czech Republic",
     #     "links": {
@@ -174,8 +181,8 @@ events = {
     #     }
     # },
     # 246.2: {
-    #     "start_doy": 246,
-    #     "end_doy": 246,
+    #     "start_day": 246,
+    #     "end_day": 246,
     #     "date_str": "September 3",
     #     "desc": "Serbia vs. Finland - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
     #     "links": {
@@ -183,8 +190,8 @@ events = {
     #     }
     # },
     # 249: {
-    #     "start_doy": 249,
-    #     "end_doy": 249,
+    #     "start_day": 249,
+    #     "end_day": 249,
     #     "date_str": "September 6",
     #     "desc": "Serbia vs. Isreal - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
     #     "links": {
@@ -192,8 +199,8 @@ events = {
     #     }
     # },
     # 251: {
-    #     "start_doy": 251,
-    #     "end_doy": 251,
+    #     "start_day": 251,
+    #     "end_day": 251,
     #     "date_str": "September 8",
     #     "desc": "Serbia vs. Poland - Eurobasket '22 - 1:00PM MDT - Prague, Czech Republic",
     #     "links": {
@@ -201,43 +208,43 @@ events = {
     #     }
     # },
     # 252: {
-    #     "start_doy": 252,
-    #     "end_doy": 253,
+    #     "start_day": 252,
+    #     "end_day": 253,
     #     "date_str": "September 9-10",
     #     "desc": "Naismith Memorial Basketball Hall of Fame Enshrinement Weekend (Springfield, MA)",
     #     "links": {}
     # },
     # 270: {
-    #     "start_doy": 270,
-    #     "end_doy": 270,
+    #     "start_day": 270,
+    #     "end_day": 270,
     #     "date_str": "September 27",
     #     "desc": "NBA training camps open",
     #     "links": {}
     # },
     # 273: {
-    #     "start_doy": 273,
-    #     "end_doy": 273,
+    #     "start_day": 273,
+    #     "end_day": 273,
     #     "date_str": "September 30",
     #     "desc": "NBA preseason games begin",
     #     "links": {}
     # },
     # 287: {
-    #     "start_doy": 287,
-    #     "end_doy": 287,
+    #     "start_day": 287,
+    #     "end_day": 287,
     #     "date_str": "October 14",
     #     "desc": "NBA preseason ends",
     #     "links": {}
     # },
     # 290: {
-    #     "start_doy": 290,
-    #     "end_doy": 290,
+    #     "start_day": 290,
+    #     "end_day": 290,
     #     "date_str": "October 17",
     #     "desc": "Rosters set for start of 2022-23 NBA regular season (5pm ET)",
     #     "links": {}
     # },
     # 291: {
-    #     "start_doy": 291,
-    #     "end_doy": 291,
+    #     "start_day": 291,
+    #     "end_day": 291,
     #     "date_str": "October 18",
     #     "desc": "NBA regular season begins",
     #     "links": {}
