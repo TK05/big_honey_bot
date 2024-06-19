@@ -265,9 +265,10 @@ def generate_thread_body(event=None):
         body += f"{body_events[-1][0]}\n{body_events[-1][1]}\n"
         body += "\n".join(body_events[-1][2])
 
-    # Add last updated timestamp to end
-    last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
-    body += f"\n{last_updated_time}\n{hidden_tags['dg_end']}"
+    # # Add last updated timestamp to end
+    # last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
+    # body += f"\n{last_updated_time}\n{hidden_tags['dg_end']}"
+    body += f"\n{hidden_tags['dg_end']}"
 
     if not event:
         print(body)
