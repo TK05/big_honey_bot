@@ -1,39 +1,46 @@
 # datetime.strftime(datetime.strptime("July 02, 2022", "%B %d, %Y"), "%j")
 events = {
-    178: {
-        "start_day": 178,
-        "end_day": 178,
-        "date_str": "June 26",
-        "desc": "NBA Draft 2024 (First Round) - 6:00 PM MT",
-        "links": {"NBA.com": "https://www.nba.com/news/nba-draft-2024-two-nights-official-release"}
-     },
-    179: {
-        "start_day": 179,
-        "end_day": 179,
-        "date_str": "June 27",
-        "desc": "NBA Draft 2024 (Second Round) - 2:00 PM MT",
-        "links": {"NBA.com": "https://www.nba.com/news/nba-draft-2024-two-nights-official-release"}
-     },
-    182: {
-        "start_day": 182,
-        "end_day": 182,
-        "date_str": "June 30",
-        "desc": "Free agent negotiation starts (beginning at 4 p.m. MT)",
-        "links": {}
-    },
-    187: {
-        "start_day": 187,
-        "end_day": 187,
-        "date_str": "July 5",
-        "desc": "Free agent signing starts (10:01 p.m. MT)",
-        "links": {}
-    },
+    # 178: {
+    #     "start_day": 178,
+    #     "end_day": 178,
+    #     "date_str": "June 26",
+    #     "desc": "NBA Draft 2024 (First Round) - 6:00 PM MT",
+    #     "links": {"NBA.com": "https://www.nba.com/news/nba-draft-2024-two-nights-official-release"}
+    #  },
+    # 179: {
+    #     "start_day": 179,
+    #     "end_day": 179,
+    #     "date_str": "June 27",
+    #     "desc": "NBA Draft 2024 (Second Round) - 2:00 PM MT",
+    #     "links": {"NBA.com": "https://www.nba.com/news/nba-draft-2024-two-nights-official-release"}
+    #  },
+    # 182: {
+    #     "start_day": 182,
+    #     "end_day": 182,
+    #     "date_str": "June 30",
+    #     "desc": "Free agent negotiation starts (beginning at 4 p.m. MT)",
+    #     "links": {}
+    # },
+    # 187: {
+    #     "start_day": 187,
+    #     "end_day": 187,
+    #     "date_str": "July 5",
+    #     "desc": "Free agent signing starts (10:01 p.m. MT)",
+    #     "links": {}
+    # },
     194: {
         "start_day": 194,
         "end_day": 204,
         "date_str": "July 12-22",
         "desc": "NBA Summer League",
         "links": {"NBA.com": "https://www.nba.com/summer-league/2024"}
+    },
+    202: {
+        "start_day": 202,
+        "end_day": 202,
+        "date_str": "July 20",
+        "desc": "Nuggets vs. Pelicans @ 7:00PM - Summer League",
+        "links": {}
     },
     208: {
         "start_day": 208,
@@ -47,6 +54,13 @@ events = {
         "end_day": 278,
         "date_str": "October 4 & 6",
         "desc": "NBA Abu Dhabi Games 2024 (Nuggets vs. Celtics)",
+        "links": {}
+    },
+    296: {
+        "start_day": 296,
+        "end_day": 296,
+        "date_str": "October 22",
+        "desc": "Start of the 2024-25 NBA regular season",
         "links": {}
     },
     # 186: {
