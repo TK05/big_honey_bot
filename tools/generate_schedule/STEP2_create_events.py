@@ -10,13 +10,14 @@ from big_honey_bot.helpers import (
     description_tags,
     platform_hr_min_fmt
 )
+from big_honey_bot.config.helpers import get_env
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.static.lookups import team_lookup
 from big_honey_bot.threads.static.templates import Game
 from tools.models import GameEvent
 
 
-IN_PLAYOFFS = True
+IN_PLAYOFFS = get_env('IN_PLAYOFFS')
 PRE_FILE_NAME = 'schedule_scrape_output.json'
 POST_FILE_NAME = 'all_events.json'
 
@@ -37,7 +38,7 @@ def create_pre_game_event(schedule):
         event_ts = str(get_timestamp_from_datetime(dt=event_dt))
         start_time = get_datetime_from_timestamp(ts=event_ts, to_tz=True, tz=setup['timezone'])
 
-        game_time = get_str_from_timestamp(ts=game_ts, fmt=platform_hr_min_fmt, to_tz=True)
+        game_time = get_str_from_timestamp(ts=game_ts, fmt=f'{platform_hr_min_fmt} %p', to_tz=True)
         description = Game.pre_game_body(
             time=game_time,
             tz=setup['timezone_short'],
