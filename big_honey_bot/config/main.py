@@ -10,7 +10,7 @@ ENV_RELOAD_INTERVAL_SEC = 60
 LOG_FILENAME = "big_honey_bot.log"
 
 setup = {
-    'season': 2024,  # Start year. EX: 18-19 season = 2018
+    'season': 2025,  # Start year. EX: 18-19 season = 2018
     'team': 'Nuggets',
     'location': 'Denver',
     'timezone': 'US/Mountain',
