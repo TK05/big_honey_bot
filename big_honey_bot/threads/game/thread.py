@@ -49,7 +49,7 @@ def generate_title(event):
     team_focus_id = teams.find_teams_by_nickname(TEAM)[0]['id']
     opp_team_id = teams.find_teams_by_nickname(event.meta['opponent'])[0]['id']
 
-    standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
+    standings = leaguestandingsv3.LeagueStandingsV3().get_dict()
 
     # find index for 'Record' header
     for i, h in enumerate(standings['resultSets'][0]['headers']):

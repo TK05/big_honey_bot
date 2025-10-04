@@ -22,7 +22,7 @@ TEAM = setup['team']
 
 
 def get_standings():
-    raw_standings = leaguestandingsv3.LeagueStandingsV3(headers=setup['nba_api_headers']).get_dict()
+    raw_standings = leaguestandingsv3.LeagueStandingsV3().get_dict()
     headers = raw_standings['resultSets'][0]['headers']
     standings = {'West': {}, 'East': {}}
 
