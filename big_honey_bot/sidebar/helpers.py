@@ -168,9 +168,14 @@ def update_sidebar():
 
     logger.info(f"Updating sidebar @ {get_str_from_datetime(fmt='%H:%M')}")
 
-    reddit = Reddit()
-    subreddit = reddit._subreddit()
-    standings = get_standings()
+    try:
+        reddit = Reddit()
+        subreddit = reddit._subreddit()
+        standings = get_standings()
+    except Exception as e:
+        logger.error(f"Unable to start update_sidebar: {e}")
+        return
+    
 
     # Old Reddit
     try:
