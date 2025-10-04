@@ -48,22 +48,25 @@ def generate_title(event):
 
     team_focus_id = teams.find_teams_by_nickname(TEAM)[0]['id']
     opp_team_id = teams.find_teams_by_nickname(event.meta['opponent'])[0]['id']
+    try:
+        standings = leaguestandingsv3.LeagueStandingsV3().get_dict()
 
-    standings = leaguestandingsv3.LeagueStandingsV3().get_dict()
+        # find index for 'Record' header
+        for i, h in enumerate(standings['resultSets'][0]['headers']):
+            if h == 'Record':
+                rec_idx = i
+            elif h == 'TeamID':
+                id_idx = i
 
-    # find index for 'Record' header
-    for i, h in enumerate(standings['resultSets'][0]['headers']):
-        if h == 'Record':
-            rec_idx = i
-        elif h == 'TeamID':
-            id_idx = i
-
-    # iterate over results for record of both teams
-    for team in standings['resultSets'][0]['rowSet']:
-        if team[id_idx] == team_focus_id:
-            tf_rec = team[rec_idx]
-        elif team[id_idx] == opp_team_id:
-            opp_rec = team[rec_idx]
+        # iterate over results for record of both teams
+        for team in standings['resultSets'][0]['rowSet']:
+            if team[id_idx] == team_focus_id:
+                tf_rec = team[rec_idx]
+            elif team[id_idx] == opp_team_id:
+                opp_rec = team[rec_idx]
+    except requests.exceptions.ReadTimeout:
+        tf_rec = str()
+        opp_rec = str()
 
     date_str, time_str = format_date_and_time(event.meta['game_start'])
 
