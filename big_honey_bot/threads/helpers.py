@@ -1,3 +1,4 @@
+import re
 import requests
 from parsel import Selector
 
@@ -116,3 +117,13 @@ def create_templatized_headline(event_type, home_away, opponent, in_playoffs):
             ret_str += f"{setup['team']} {gtp['our_record']} {f_map[home_away]} {opponent} {gtp['opp_record']} | {gtp['date_and_time']}"
 
     return ret_str
+
+
+def parse_game_clock(gc_str):
+    # format as of 10/23/2025: 	"PT10M20.00S"
+    matches = re.findall(r'(\d+)M(\d+)\.(\d+)S', gc_str)[0]
+    minutes = int(matches[0])
+    seconds = int(matches[1])
+    sub_sec = int(matches[2])
+    
+    return [minutes, seconds, sub_sec]

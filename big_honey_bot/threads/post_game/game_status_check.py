@@ -1,26 +1,18 @@
 import time
 import logging
-import re
 
 import requests
 
 from big_honey_bot.config.main import setup
 from big_honey_bot.config.helpers import get_pname_fname_str
+from big_honey_bot.threads.helpers import parse_game_clock
+from big_honey_bot.threads.post_game.helpers import key_paths, get_value
 
 
 SEASON = setup['season']
 GD_TEMPLATE = setup['nba_game_detail_template']
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
-
-def _parse_game_clock(gc_str):
-    # format as of 10/23/2025: 	"PT10M20.00S"
-    matches = re.findall(r'(\d+)M(\d+)\.(\d+)S', gc_str)[0]
-    minutes = int(matches[0])
-    seconds = int(matches[1])
-    sub_sec = int(matches[2])
-    
-    return minutes, seconds, sub_sec
 
 
 def status_check(nba_id, only_final):
@@ -43,14 +35,17 @@ def status_check(nba_id, only_final):
 
     while game_ongoing:
 
-        game_data = requests.get(GD_TEMPLATE.format(nba_id)).json()
+        raw_data = requests.get(GD_TEMPLATE.format(nba_id)).json()
+        game_data = get_value(raw_data, key_paths.get("game"))
+        home_stats = get_value(raw_data, key_paths.get("home_stats"))
+        away_stats = get_value(raw_data, key_paths.get("away_stats"))
 
-        game_status = game_data['game']['gameStatus']
-        game_status_text = game_data['game']['gameStatusText']
-        current_quarter = game_data['game']['period']
-        away_score = game_data['game']['awayTeam']['score']
-        home_score = game_data['game']['homeTeam']['score']
-        min_left, sec_left, sub_sec_left = _parse_game_clock(game_data['game']['gameClock'])
+        game_status = game_data['gameStatus']
+        game_status_text = game_data['gameStatusText']
+        current_quarter = game_data['period']
+        home_score = home_stats['points']
+        away_score = away_stats['points']
+        min_left, sec_left, sub_sec_left = parse_game_clock(game_data['gameClock'])
 
         logger.info(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_status_text}, Score: {away_score}-{home_score}")
 

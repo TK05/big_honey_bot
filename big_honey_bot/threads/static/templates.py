@@ -53,9 +53,10 @@ class PostGame(object):
 
     @staticmethod
     def extra_game_string(lead_chng, time_tied, duration, attend, officials):
+        gametime = f"{duration // 60}:{duration % 60}"
         ret_str = (f"**Lead Changes: {lead_chng}** | "
                    f"**Times Tied: {time_tied}** | "
-                   f"**Gametime: {duration}** | "
+                   f"**Gametime: {gametime}** | "
                    f"**Attendance: {attend}**\n\n"
                    f"*Officials: {', '.join([official for official in officials])}*")
 
@@ -73,7 +74,7 @@ class PostGame(object):
         return f"{header}\n{fmt}\n"
 
     @staticmethod
-    def player_row(name, mp, fg, tp, ft, oreb, reb, ast, tov, stl, blk, pf, pts, pm, team=False):
+    def stat_row(name, mp, fg, tp, ft, oreb, reb, ast, tov, stl, blk, pf, pts, pm, team=False):
         if not team:
             row = f"{name}|{mp}|{fg}|{tp}|{ft}|{oreb}|{reb}|{ast}|{tov}|{stl}|{blk}|{pf}|{pts}|{pm}|"
         else:
