@@ -37,12 +37,12 @@ def status_check(nba_id, only_final):
 
         raw_data = requests.get(GD_TEMPLATE.format(nba_id)).json()
         game_data = get_value(raw_data, key_paths.get("game"))
-        home_stats = get_value(raw_data, key_paths.get("home_stats"))
-        away_stats = get_value(raw_data, key_paths.get("away_stats"))
+        home_stats = get_value(game_data, key_paths.get("home_stats"))
+        away_stats = get_value(game_data, key_paths.get("away_stats"))
+        current_quarter = get_value(game_data, key_paths.get("period"))
 
         game_status = game_data['gameStatus']
         game_status_text = game_data['gameStatusText']
-        current_quarter = game_data['period']
         home_score = home_stats['points']
         away_score = away_stats['points']
         min_left, sec_left, sub_sec_left = parse_game_clock(game_data['gameClock'])
@@ -91,7 +91,7 @@ def status_check(nba_id, only_final):
             if not final_checked_once and not only_final:
                 final_checked_once = True
                 # Sleep longer if close margin
-                if margin >= 4:
+                if margin <= 4:
                     time.sleep(60)
                 else:
                     time.sleep(10)

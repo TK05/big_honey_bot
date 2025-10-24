@@ -1,17 +1,17 @@
+# assumes starting with base game dict
 key_paths = {
-    "game": "game",
-    "away_team": "game.awayTeam",                                  
-    "away_tricode": "game.awayTeam.teamTricode",
-    "away_stats": "game.awayTeam.statistics",
-    "away_players": "game.awayTeam.players",
-    "away_periods": "game.awayTeam.periods",
-    "home_team": "game.homeTeam",                                  
-    "home_tricode": "game.homeTeam.teamTricode",
-    "home_stats": "game.homeTeam.statistics",
-    "home_players": "game.homeTeam.players",
-    "home_periods": "game.homeTeam.periods",
-    "officials": "game.officials",
-    "game_periods": "game.periods",
+    "away_team": "awayTeam",                                  
+    "away_tricode": "awayTeam.teamTricode",
+    "away_stats": "awayTeam.statistics",
+    "away_players": "awayTeam.players",
+    "away_periods": "awayTeam.periods",
+    "home_team": "homeTeam",                                  
+    "home_tricode": "homeTeam.teamTricode",
+    "home_stats": "homeTeam.statistics",
+    "home_players": "homeTeam.players",
+    "home_periods": "homeTeam.periods",
+    "officials": "officials",
+    "period": "period",
 }
 
 
