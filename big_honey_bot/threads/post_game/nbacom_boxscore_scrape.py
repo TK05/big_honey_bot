@@ -1,5 +1,3 @@
-from decimal import Decimal, ROUND_HALF_UP
-
 from big_honey_bot.config.main import setup
 from big_honey_bot.threads.static.templates import PostGame
 from big_honey_bot.threads.helpers import parse_game_clock
@@ -21,11 +19,11 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
         team_str,
         0,
         f'{team_stats["fieldGoalsMade"]}-{team_stats["fieldGoalsAttempted"]} '
-        f'({round(team_stats["fieldGoalsPercentage"] * 100, 1)})',
+        f'({round((team_stats["fieldGoalsPercentage"] * 100), 1)})',
         f'{team_stats["threePointersMade"]}-{team_stats["threePointersAttempted"]} '
-        f'({round(team_stats['threePointersPercentage'] * 100, 1)})',
+        f'({round((team_stats['threePointersPercentage'] * 100), 1)})',
         f'{team_stats["freeThrowsMade"]}-{team_stats["freeThrowsAttempted"]} '
-        f'({round(team_stats["freeThrowsPercentage"] * 100, 1)})',
+        f'({round((team_stats["freeThrowsPercentage"] * 100), 1)})',
         team_stats["reboundsOffensive"],
         team_stats["reboundsTotal"],
         team_stats["assists"],
@@ -50,9 +48,9 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
                 f'{pd["nameI"]}{("^^" + pd.get("position", ""))}',
                 f'{mp}:{sp}',
                 f'{pd["fieldGoalsMade"]}-{pd["fieldGoalsAttempted"]}'
-                f'{pd["fieldGoalsMade"]}-{pd["fieldGoalsAttempted"]} ({round(pd["fieldGoalsPercentage"] * 100, 1)})',
-                f'{pd["threePointersMade"]}-{pd["threePointersAttempted"]} ({round(pd["threePointersPercentage"] * 100, 1)})',
-                f'{pd["freeThrowsMade"]}-{pd["freeThrowsAttempted"]} ({round(pd["freeThrowsPercentage"] * 100, 1)})',
+                f'{pd["fieldGoalsMade"]}-{pd["fieldGoalsAttempted"]} ({round((pd["fieldGoalsPercentage"] * 100), 1)})',
+                f'{pd["threePointersMade"]}-{pd["threePointersAttempted"]} ({(round(pd["threePointersPercentage"] * 100), 1)})',
+                f'{pd["freeThrowsMade"]}-{pd["freeThrowsAttempted"]} ({(round(pd["freeThrowsPercentage"] * 100), 1)})',
                 pd["reboundsOffensive"],
                 pd["reboundsTotal"],
                 pd["assists"],
