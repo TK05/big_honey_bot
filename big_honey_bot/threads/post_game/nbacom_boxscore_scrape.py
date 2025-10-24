@@ -46,20 +46,19 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
             mp, sp, ss = parse_game_clock(ps['minutes'])
             player_data = [
                 f'{pd["nameI"]}{("^^" + pd.get("position", ""))}',
-                f'{mp}:{sp}',
-                f'{pd["fieldGoalsMade"]}-{pd["fieldGoalsAttempted"]}'
-                f'{pd["fieldGoalsMade"]}-{pd["fieldGoalsAttempted"]} ({round((pd["fieldGoalsPercentage"] * 100), 1)})',
-                f'{pd["threePointersMade"]}-{pd["threePointersAttempted"]} ({(round(pd["threePointersPercentage"] * 100), 1)})',
-                f'{pd["freeThrowsMade"]}-{pd["freeThrowsAttempted"]} ({(round(pd["freeThrowsPercentage"] * 100), 1)})',
-                pd["reboundsOffensive"],
-                pd["reboundsTotal"],
-                pd["assists"],
-                pd["turnovers"],
-                pd["steals"],
-                pd["blocks"],
-                pd["foulsPersonal"],
-                pd["points"],
-                pd["plusMinusPoints"],
+                f'{mp}:{sp:02d}',
+                f'{ps["fieldGoalsMade"]}-{ps["fieldGoalsAttempted"]} ({round((ps["fieldGoalsPercentage"] * 100), 1)})',
+                f'{ps["threePointersMade"]}-{ps["threePointersAttempted"]} ({(round(ps["threePointersPercentage"] * 100), 1)})',
+                f'{ps["freeThrowsMade"]}-{ps["freeThrowsAttempted"]} ({(round(ps["freeThrowsPercentage"] * 100), 1)})',
+                ps["reboundsOffensive"],
+                ps["reboundsTotal"],
+                ps["assists"],
+                ps["turnovers"],
+                ps["steals"],
+                ps["blocks"],
+                ps["foulsPersonal"],
+                ps["points"],
+                ps["plusMinusPoints"],
             ]
 
             player_rows += PostGame.stat_row(*player_data)
@@ -97,24 +96,20 @@ def game_boxscore(gd, ats, att, atpe, hts, htt, htpe, off):
 
     for stats, team_str in [[ats, att], [hts, htt]]:
         game_info_rows += PostGame.extra_g_info_row(
-            team = team_str,
-            pitp = stats['pointsInThePaint'],
-            scp = stats['pointsSecondChance'],
-            fbpts = stats['pointsFastBreak'],
-            bigld = stats['biggestLead'],
-            benpts = stats['benchPoints'],
-            tottov = stats['turnoversTotal'],
-            tovpts = stats['pointsFromTurnovers'],
+            team=team_str,
+            pitp=stats['pointsInThePaint'],
+            scp=stats['pointsSecondChance'],
+            fbpts=stats['pointsFastBreak'],
+            bigld=stats['biggestLead'],
+            benpts=stats['benchPoints'],
+            tottov=stats['turnoversTotal'],
+            tovpts=stats['pointsFromTurnovers'],
         )
 
     # Generate each team quarter-by-quarter scores
-    for team, stats, team_str in [[atpe, ats, att], [htpe, hts, htt]]:
-        q_pts = [team[p]['score'] for p in range(0, gd['period'])]
-        qbq_rows += PostGame.qbq_row(
-            team = team_str,
-            finale = stats['points'],
-            *q_pts,
-        )
+    for p_stats, stats, team_str in [[atpe, ats, att], [htpe, hts, htt]]:
+        q_pts = [p_stats[p]['score'] for p in range(0, gd['period'])]
+        qbq_rows += PostGame.qbq_row(team_str, stats['points'], *q_pts)
 
     # Extra data; lead changes, times tied, gametime, attendance, officials
     officials = []
@@ -122,11 +117,11 @@ def game_boxscore(gd, ats, att, atpe, hts, htt, htpe, off):
         officials.append(f"{official['name']}")
 
     extra_string = PostGame.extra_game_string(
-        lead_chng = hts['leadChanges'],
-        time_tied = hts['timesTied'],
-        duration = gd['duration'],
-        attend = gd['attendance'],
-        officials = officials,
+        lead_chng=hts['leadChanges'],
+        time_tied=hts['timesTied'],
+        duration=gd['duration'],
+        attend=gd['attendance'],
+        officials=officials,
     )
 
     return (f"{PostGame.qbq_head_and_fmt(gd['period'])}{qbq_rows}\n\n&nbsp;\n\n",
@@ -170,26 +165,26 @@ def generate_markdown_tables(game_data, home_away):
     """
 
     qtr_table, extra_info_table, btm_info = game_boxscore(
-        gd = game_data,
-        ats = get_value(game_data, key_paths.get("away_stats")),
-        att = get_value(game_data, key_paths.get("away_tricode")),
-        atpe = get_value(game_data, key_paths.get("away_periods")),
-        hts = get_value(game_data, key_paths.get("home_stats")),
-        htt = get_value(game_data, key_paths.get("home_tricode")),
-        htpe = get_value(game_data, key_paths.get("home_tricode")),
-        off = get_value(game_data, key_paths.get("officials")),
+        gd=game_data,
+        ats=get_value(game_data, key_paths.get("away_stats")),
+        att=get_value(game_data, key_paths.get("away_tricode")),
+        atpe=get_value(game_data, key_paths.get("away_periods")),
+        hts=get_value(game_data, key_paths.get("home_stats")),
+        htt=get_value(game_data, key_paths.get("home_tricode")),
+        htpe=get_value(game_data, key_paths.get("home_periods")),
+        off=get_value(game_data, key_paths.get("officials"))
     )
     away_box, top_tm_table = team_boxscore(
         get_value(game_data, key_paths.get("away_stats")),
         get_value(game_data, key_paths.get("away_players")),
         get_value(game_data, key_paths.get("away_tricode")),
-        home_away,
+        home_away
     )
     home_box, bot_tm_table = team_boxscore(
         get_value(game_data, key_paths.get("home_stats")),
         get_value(game_data, key_paths.get("home_players")),
         get_value(game_data, key_paths.get("home_tricode")),
-        home_away,
+        home_away
     )
 
     # Quarter by quarter table and team stats table
@@ -206,7 +201,7 @@ def generate_markdown_tables(game_data, home_away):
     win, margin, final_score = generate_headline_data(
         get_value(game_data, key_paths.get("away_stats")),
         get_value(game_data, key_paths.get("home_stats")),
-        home_away,
+        home_away
         )
 
     return md_return, win, margin, final_score

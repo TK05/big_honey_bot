@@ -1,5 +1,6 @@
 # assumes starting with base game dict
 key_paths = {
+    "game": "game",
     "away_team": "awayTeam",                                  
     "away_tricode": "awayTeam.teamTricode",
     "away_stats": "awayTeam.statistics",
