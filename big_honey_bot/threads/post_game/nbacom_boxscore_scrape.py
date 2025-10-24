@@ -170,7 +170,7 @@ def generate_markdown_tables(game_data, home_away):
     """
 
     qtr_table, extra_info_table, btm_info = game_boxscore(
-        gd = get_value(game_data, key_paths.get("game")),
+        gd = game_data,
         ats = get_value(game_data, key_paths.get("away_stats")),
         att = get_value(game_data, key_paths.get("away_tricode")),
         atpe = get_value(game_data, key_paths.get("away_periods")),
