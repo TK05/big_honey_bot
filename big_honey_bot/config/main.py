@@ -32,7 +32,7 @@ setup = {
         'If-Modified-Since': 'Sat, 30 Sep 2023 21:05:15 GMT',
     },
     'nba_url': 'https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json',  # nba.com json schedule
-    'nba_game_detail_template': 'http://data.nba.com/data/v2015/json/mobile_teams/nba/{}/scores/gamedetail/{}_gamedetail.json',
+    'nba_game_detail_template': 'https://cdn.nba.com/static/json/liveData/boxscore/boxscore_{}.json',
     'user_agent': 'BigHoneyBot_by_TK05',
     'nba_api_headers': {
         'Host': 'stats.nba.com',

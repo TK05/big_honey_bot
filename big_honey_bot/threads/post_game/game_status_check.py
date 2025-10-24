@@ -1,5 +1,6 @@
 import time
 import logging
+import re
 
 import requests
 
@@ -11,6 +12,15 @@ SEASON = setup['season']
 GD_TEMPLATE = setup['nba_game_detail_template']
 
 logger = logging.getLogger(get_pname_fname_str(__file__))
+
+def _parse_game_clock(gc_str):
+    # format as of 10/23/2025: 	"PT10M20.00S"
+    matches = re.findall(r'(\d+)M(\d+)\.(\d+)S', gc_str)[0]
+    minutes = int(matches[0])
+    seconds = int(matches[1])
+    sub_sec = int(matches[2])
+    
+    return minutes, seconds, sub_sec
 
 
 def status_check(nba_id, only_final):
@@ -33,23 +43,16 @@ def status_check(nba_id, only_final):
 
     while game_ongoing:
 
-        game_data = requests.get(GD_TEMPLATE.format(SEASON, nba_id)).json()
+        game_data = requests.get(GD_TEMPLATE.format(nba_id)).json()
 
-        game_status = game_data['g']['st']
-        current_quarter = game_data['g']['p']
-        away_score = game_data['g']['vls']['s']
-        home_score = game_data['g']['hls']['s']
+        game_status = game_data['game']['gameStatus']
+        game_status_text = game_data['game']['gameStatusText']
+        current_quarter = game_data['game']['period']
+        away_score = game_data['game']['awayTeam']['score']
+        home_score = game_data['game']['homeTeam']['score']
+        min_left, sec_left, sub_sec_left = _parse_game_clock(game_data['game']['gameClock'])
 
-        # Sleep further when game clock is not initialized
-        if game_data['g']['cl']:
-            min_left = int(game_data['g']['cl'].split(':')[0])
-            sec_left = float(game_data['g']['cl'].split(':')[1])
-        else:
-            logger.info(f"Game clock is not yet initialized, sleeping 15 minutes...")
-            time.sleep(60*15)
-            continue
-
-        logger.info(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_data['g']['cl']}, Score: {away_score}-{home_score}")
+        logger.info(f"Status: {game_status}, Quarter: {current_quarter}, Time: {game_status_text}, Score: {away_score}-{home_score}")
 
         # Sleep while game hasn't started or when game is in quarters (1..3)
         if game_status == 1 or current_quarter <= 3:
@@ -70,6 +73,7 @@ def status_check(nba_id, only_final):
 
         # Set game over conditions
         over_by_status = True if game_status == 3 else False
+        over_by_status_text = True if game_status_text == 'Final' else False
         over_by_time = True if current_quarter >= 4 and min_left == 0 and sec_left == 0 else False
         margin = abs(away_score - home_score)
         
@@ -142,4 +146,4 @@ if __name__ == "__main__":
 
     # Add handler to the logger
     logger.addHandler(handler)
-    status_check("0042400114", False)
+    status_check("0022500006", False)
