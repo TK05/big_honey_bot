@@ -21,7 +21,7 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
         f'{team_stats["fieldGoalsMade"]}-{team_stats["fieldGoalsAttempted"]} '
         f'({round((team_stats["fieldGoalsPercentage"] * 100), 1)})',
         f'{team_stats["threePointersMade"]}-{team_stats["threePointersAttempted"]} '
-        f'({round((team_stats['threePointersPercentage'] * 100), 1)})',
+        f'({round((team_stats["threePointersPercentage"] * 100), 1)})',
         f'{team_stats["freeThrowsMade"]}-{team_stats["freeThrowsAttempted"]} '
         f'({round((team_stats["freeThrowsPercentage"] * 100), 1)})',
         team_stats["reboundsOffensive"],
