@@ -58,7 +58,7 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
                 ps["blocks"],
                 ps["foulsPersonal"],
                 ps["points"],
-                ps["plusMinusPoints"],
+                round(ps["plusMinusPoints"]),
             ]
 
             player_rows += PostGame.stat_row(*player_data)
@@ -178,13 +178,13 @@ def generate_markdown_tables(game_data, home_away):
         get_value(game_data, key_paths.get("away_stats")),
         get_value(game_data, key_paths.get("away_players")),
         get_value(game_data, key_paths.get("away_tricode")),
-        home_away
+        'away'
     )
     home_box, bot_tm_table = team_boxscore(
         get_value(game_data, key_paths.get("home_stats")),
         get_value(game_data, key_paths.get("home_players")),
         get_value(game_data, key_paths.get("home_tricode")),
-        home_away
+        'home'
     )
 
     # Quarter by quarter table and team stats table
