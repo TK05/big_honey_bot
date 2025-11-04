@@ -44,8 +44,9 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
         if pd['played'] == "1":
             ps = pd['statistics']
             mp, sp, ss = parse_game_clock(ps['minutes'])
+            ne = f'^^{pd['position']}' if pd['starter'] == "1" else ""
             player_data = [
-                f'{pd["nameI"]}{("^^" + pd.get("position", ""))}',
+                f'{pd["nameI"]}{ne}',
                 f'{mp}:{sp:02d}',
                 f'{ps["fieldGoalsMade"]}-{ps["fieldGoalsAttempted"]} ({round((ps["fieldGoalsPercentage"] * 100), 1)})',
                 f'{ps["threePointersMade"]}-{ps["threePointersAttempted"]} ({round((ps["threePointersPercentage"] * 100), 1)})',
