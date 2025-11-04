@@ -41,10 +41,10 @@ def team_boxscore(team_stats, player_stats, team_str, home_away):
     for pd in player_stats:
 
         # Create row for player that played
-        if pd['played'] == "1":
-            ps = pd['statistics']
-            mp, sp, ss = parse_game_clock(ps['minutes'])
-            ne = f'^^{pd['position']}' if pd['starter'] == "1" else ""
+        if pd["played"] == "1":
+            ps = pd["statistics"]
+            mp, sp, ss = parse_game_clock(ps["minutes"])
+            ne = f'^^{pd["position"]}' if pd["starter"] == "1" else ""
             player_data = [
                 f'{pd["nameI"]}{ne}',
                 f'{mp}:{sp:02d}',
