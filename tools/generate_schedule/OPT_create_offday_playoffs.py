@@ -51,10 +51,10 @@ def create_schedule(start, end, playoffs=True, count_down=False):
 
         # Format Google Cal Event
         new_schedule[post_stamp]['start'] = {}
-        new_schedule[post_stamp]['start']['dateTime'] = post_time.strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[post_stamp]['start']['dateTime'] = post_time.strftime('%Y-%m-%dT%H:%M:%S')
         new_schedule[post_stamp]['start']['timeZone'] = setup['timezone']
         new_schedule[post_stamp]['end'] = {}
-        new_schedule[post_stamp]['end']['dateTime'] = (post_time + timedelta(seconds=61)).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[post_stamp]['end']['dateTime'] = (post_time + timedelta(seconds=61)).strftime('%Y-%m-%dT%H:%M:%S')
         new_schedule[post_stamp]['end']['timeZone'] = setup['timezone']
         new_schedule[post_stamp]['location'] = 'Parts Unknown'
 
@@ -131,10 +131,10 @@ def create_in_season_schedule(curr_sch):
 
         # Format Google Cal Event
         new_schedule[post_stamp]['start'] = {}
-        new_schedule[post_stamp]['start']['dateTime'] = post_time.strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[post_stamp]['start']['dateTime'] = post_time.strftime('%Y-%m-%dT%H:%M:%S')
         new_schedule[post_stamp]['start']['timeZone'] = setup['timezone']
         new_schedule[post_stamp]['end'] = {}
-        new_schedule[post_stamp]['end']['dateTime'] = (post_time + timedelta(seconds=61)).strftime('%G-%m-%dT%H:%M:%S')
+        new_schedule[post_stamp]['end']['dateTime'] = (post_time + timedelta(seconds=61)).strftime('%Y-%m-%dT%H:%M:%S')
         new_schedule[post_stamp]['end']['timeZone'] = setup['timezone']
         new_schedule[post_stamp]['location'] = 'Parts Unknown'
 
