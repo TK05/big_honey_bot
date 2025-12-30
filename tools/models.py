@@ -22,7 +22,7 @@ class GameEvent:
             self._event_type, self._event_data['home_away'], self._event_data['opponent'], self._in_playoffs
             )
         self._meta = None
-        self._time_fmt = '%G-%m-%dT%H:%M:%S'
+        self._time_fmt = '%Y-%m-%dT%H:%M:%S'
 
     
     @property
