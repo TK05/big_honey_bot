@@ -64,7 +64,7 @@ def generate_title(event):
                 tf_rec = team[rec_idx]
             elif team[id_idx] == opp_team_id:
                 opp_rec = team[rec_idx]
-    except requests.exceptions.ReadTimeout:
+    except:
         tf_rec = str()
         opp_rec = str()
 
@@ -130,57 +130,66 @@ def generate_game_body(event):
         away_abv = team_lookup[TEAM][1]
         home_abv = team_lookup[event.meta['opponent']][1]
 
-    # Call to lineup script to return lineups, injuries, betting odds
-    lineup_status, team_lineups, team_injuries, betting_odds = lineup_injury_odds(TEAM)
+    try:
+        # Call to lineup script to return lineups, injuries, betting odds
+        lineup_status, team_lineups, team_injuries, betting_odds = lineup_injury_odds(TEAM)
 
-    lineup_header = Game.lineup_head_and_fmt(away_abv, home_abv, lineup_status)
-    lineup_rows = Game.lineup_rows(team_lineups)
+        lineup_header = Game.lineup_head_and_fmt(away_abv, home_abv, lineup_status)
+        lineup_rows = Game.lineup_rows(team_lineups)
 
-    injuries_header = Game.injuries_head_and_fmt(away_abv, home_abv)
-    injuries_rows = Game.injuries_rows(team_injuries)
+        injuries_header = Game.injuries_head_and_fmt(away_abv, home_abv)
+        injuries_rows = Game.injuries_rows(team_injuries)
 
-    betting_header = Game.betting_head_and_fmt()
-    # Include last updated timestamp at end of betting rows
-    last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
-    betting_rows = Game.betting_rows(betting_odds, last_updated_time)
+        betting_header = Game.betting_head_and_fmt()
+        # Include last updated timestamp at end of betting rows
+        last_updated_time = get_str_from_datetime(fmt=last_updated_fmt, to_tz=True)
+        betting_rows = Game.betting_rows(betting_odds, last_updated_time)
 
-    lio_body = LineupInjuryOdds.format_body(
-        lineup_header,
-        lineup_rows,
-        injuries_header,
-        injuries_rows,
-        betting_header,
-        betting_rows
-    )
+        lio_body = LineupInjuryOdds.format_body(
+            lineup_header,
+            lineup_rows,
+            injuries_header,
+            injuries_rows,
+            betting_header,
+            betting_rows
+        )
+    except:
+        lio_body = LineupInjuryOdds.empty()
 
     # Scrape referees to get referees for the game
-    ref_res = requests.get("https://official.nba.com/referee-assignments/").text
-    ref_res = Selector(text=ref_res)
-    ref_all_games = ref_res.xpath('//div[@class="nba-refs-content"]/table/tbody/tr')
-    referees = "*Referees: "
+    try:
+        response = requests.get("https://official.nba.com/referee-assignments/", headers=setup['nba_com_headers'])
+        response.raise_for_status()
 
-    for i, game in enumerate(ref_all_games):
-        curr_row = game.xpath('./td[1]/text()')
+        ref_res = Selector(text=ref_res.text)
+        ref_all_games = ref_res.xpath('//div[@class="nba-refs-content"]/table/tbody/tr')
+        referees = "*Referees: "
 
-        if LOCATION in curr_row.get():
-            regex = re.compile('[^a-zA-Z\s]')
-            ref_list = []
+        for i, game in enumerate(ref_all_games):
+            curr_row = game.xpath('./td[1]/text()')
 
-            for n in range(2, 5):
-                try:
-                    ref_list.append(regex.sub('', game.xpath(f"./td[{n}]/a/text()").get()))
-                except TypeError:
+            if LOCATION in curr_row.get():
+                regex = re.compile('[^a-zA-Z\s]')
+                ref_list = []
+
+                for n in range(2, 5):
                     try:
-                        ref_list.append(regex.sub('', game.xpath(f"./td[{n}]/text()").get()))
+                        ref_list.append(regex.sub('', game.xpath(f"./td[{n}]/a/text()").get()))
                     except TypeError:
-                        ref_list.append("Unknown")
+                        try:
+                            ref_list.append(regex.sub('', game.xpath(f"./td[{n}]/text()").get()))
+                        except TypeError:
+                            ref_list.append("Unknown")
 
-            referees += ", ".join(str(i).strip() for i in ref_list)
+                referees += ", ".join(str(i).strip() for i in ref_list)
 
-    referees += '*'
+        referees += '*'
 
-    if referees == "*Referees: *":
+        if referees == "*Referees: *":
+            referees = ''
+    except:
         referees = ''
+    
 
     # Replace lio chunk by replace or regex depending on whether replace tag exists
     if description_tags['lineup_injury_odds'] in event.body:

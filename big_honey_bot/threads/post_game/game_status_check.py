@@ -35,7 +35,14 @@ def status_check(nba_id, only_final):
 
     while game_ongoing:
 
-        raw_data = requests.get(GD_TEMPLATE.format(nba_id)).json()
+        try:
+            response = requests.get(GD_TEMPLATE.format(nba_id), headers=setup['nba_cdn_headers'])
+            response.raise_for_status()
+        except:
+            time.sleep(5)
+            continue
+        
+        raw_data = response.json()
         game_data = get_value(raw_data, key_paths.get("game"))
         home_stats = get_value(game_data, key_paths.get("home_stats"))
         away_stats = get_value(game_data, key_paths.get("away_stats"))

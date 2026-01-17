@@ -27,7 +27,7 @@ logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def get_nba_games(playoffs=False):
-    all_games = requests.get(setup['nba_url']).json()
+    all_games = requests.get(setup['nba_url'], setup['nba_cdn_headers']).json()
 
     def get_game_data(game, for_team=''):
         game_data = []
@@ -61,8 +61,12 @@ def get_nba_games(playoffs=False):
             tv_ordered = [nat_tv, home_tv] if for_team == 'home' else [nat_tv, away_tv]
             game_data.append(", ".join([i for s in tv_ordered for i in s]))
         else:
-            odds = lineup_injury_odds(game['homeTeam']['teamName'])[-1]
-            game_data.append(" ".join(odds) if "N/A" not in odds else "")
+            try:
+                odds = lineup_injury_odds(game['homeTeam']['teamName'])[-1]
+                game_data.append(" ".join(odds) if "N/A" not in odds else "")
+            except:
+                game_data.append("")
+
             game_data.append(", ".join(nat_tv))
 
         return time_utc, game_data
@@ -122,7 +126,7 @@ def get_nba_games(playoffs=False):
 
 
 def get_espn_games():
-    response = requests.get('https://www.espn.com/nba/schedule').text
+    response = requests.get('https://www.espn.com/nba/schedule', headers=setup['espn_headers']).text
     response_selector = Selector(text=response)
     games_raw = response_selector.xpath('.//div[@class="mt3"]/div')
 
