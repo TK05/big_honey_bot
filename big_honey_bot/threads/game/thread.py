@@ -161,8 +161,7 @@ def generate_game_body(event):
         response = requests.get("https://official.nba.com/referee-assignments/", headers=setup['nba_com_headers'])
         response.raise_for_status()
 
-        ref_res = Selector(text=ref_res.text)
-        ref_all_games = ref_res.xpath('//div[@class="nba-refs-content"]/table/tbody/tr')
+        ref_all_games = Selector(text=response.text).xpath('//div[@class="nba-refs-content"]/table/tbody/tr')
         referees = "*Referees: "
 
         for i, game in enumerate(ref_all_games):
