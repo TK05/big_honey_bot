@@ -285,3 +285,14 @@ class LineupInjuryOdds(object):
         )
 
         return body
+    
+    @staticmethod
+    def empty():
+        sep = "\n\n&nbsp;\n\n"
+        body = (
+            f"{hidden_tags['lio_start']}\n" \
+            f"{sep}" \
+            f"\n{hidden_tags['lio_end']}"
+        )
+
+        return body

@@ -39,8 +39,11 @@ def lineup_injury_odds(team_name):
     team_injuries = [[], []]
     betting_data = ['N/A', 'N/A', 'N/A']
 
-    response = Selector(text=requests.get("https://www.rotowire.com/basketball/nba-lineups.php").text)
-    all_games = response.xpath('.//div[@class="lineup is-nba"]')
+    response = requests.get("https://www.rotowire.com/basketball/nba-lineups.php", headers=setup['rotowire_headers'])
+    response.raise_for_status()
+
+    selector = Selector(text=response.text)
+    all_games = selector.xpath('.//div[@class="lineup is-nba"]')
 
     # Find game box that contains correct game
     game_idx = None
