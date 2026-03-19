@@ -61,17 +61,17 @@ def generate_title(event):
         # iterate over results for record of both teams
         for team in standings['resultSets'][0]['rowSet']:
             if team[id_idx] == team_focus_id:
-                tf_rec = team[rec_idx]
+                tf_rec_str = f"({team[rec_idx]})"
             elif team[id_idx] == opp_team_id:
-                opp_rec = team[rec_idx]
+                opp_rec_str = f"({team[rec_idx]})"
     except:
-        tf_rec = str()
-        opp_rec = str()
+        tf_rec_str = str()
+        opp_rec_str = str()
 
     date_str, time_str = format_date_and_time(event.meta['game_start'])
 
-    event.summary = event.summary.replace(gt_placeholders['our_record'], f'({tf_rec})')
-    event.summary = event.summary.replace(gt_placeholders['opp_record'], f'({opp_rec})')
+    event.summary = event.summary.replace(gt_placeholders['our_record'], f'{tf_rec_str}')
+    event.summary = event.summary.replace(gt_placeholders['opp_record'], f'{opp_rec_str}')
     event.summary = event.summary.replace(gt_placeholders['date_and_time'], f'{date_str} - {time_str}')
 
 
