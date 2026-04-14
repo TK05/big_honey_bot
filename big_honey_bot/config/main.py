@@ -35,6 +35,7 @@ setup = {
     },
     'nba_url': 'https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json',  # nba.com json schedule
     'nba_game_detail_template': 'https://cdn.nba.com/static/json/liveData/boxscore/boxscore_{}.json',
+    'nba_playoff_template': 'https://cdn.nba.com/static/json/staticData/brackets/{}/PlayoffBracket.json',
     'user_agent': 'BigHoneyBot_by_TK05',
     'nba_api_headers': {
         'Host': 'stats.nba.com',
