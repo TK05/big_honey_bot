@@ -5,7 +5,7 @@ from big_honey_bot.config.main import setup
 
 TEAM = setup['team']
 SEASON = setup['season']
-NBA_URL = setup['nba_playoff_template']
+NBA_URL = setup['nba_playoff_template'].format(SEASON)
 
 
 def get_series_status():
@@ -16,7 +16,7 @@ def get_series_status():
     """
 
     try:
-        response = requests.get(NBA_URL.format(SEASON), headers=setup['nba_cdn_headers']).json()
+        response = requests.get(NBA_URL, headers=setup['nba_cdn_headers']).json()
 
         current_round = response['bracket'].get('currentRound', 0)
         series_record = [0,0]
