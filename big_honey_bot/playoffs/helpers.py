@@ -5,8 +5,7 @@ from big_honey_bot.config.main import setup
 
 TEAM = setup['team']
 SEASON = setup['season']
-
-nba_api_playoff_url = f'https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/{SEASON}/scores/00_playoff_bracket.json'
+NBA_URL = setup['nba_playoff_template']
 
 
 def get_series_status():
@@ -16,25 +15,23 @@ def get_series_status():
     :rtype: tuple
     """
 
-    response = requests.get(nba_api_playoff_url).json()
+    try:
+        response = requests.get(NBA_URL.format(SEASON), headers=setup['nba_cdn_headers']).json()
 
-    for each_round in response['pb']['r']:
-        current_round = each_round['id']
-        for conference in each_round['co']:
-            for series in conference['ser']:
-                if TEAM == series['tn1']:
-                    playoff_record = [series['t1w'], series['t2w']]
-                elif TEAM == series['tn2']:
-                    playoff_record = [series['t2w'], series['t1w']]
-                else:
-                    continue
+        current_round = response['bracket'].get('currentRound', 0)
+        series_record = [0,0]
+        
+        for series in response['bracket']['playoffBracketSeries']:
+            if current_round == series['roundNumber']:
+                if series['highSeedName'] == TEAM:
+                    series_record = [series['highSeedSeriesWins'], series['lowSeedSeriesWins']]
+                    break
+                elif series['lowSeedName'] == TEAM:
+                    series_record = [series['lowSeedSeriesWins'], series['highSeedSeriesWins']]
+                    break
 
-                try:
-                    if 4 in playoff_record:
-                        continue
-                    game_number = sum(playoff_record) + 1
-                    return current_round, game_number, playoff_record
-                except NameError:
-                    continue
+        game_number = sum(series_record) + 1
+    except:
+        raise Exception("Could not determine playoff series status")
 
-    raise Exception("COULD NOT DETERMINE PLAYOFF SERIES STATUS")
+    return current_round, game_number, series_record
