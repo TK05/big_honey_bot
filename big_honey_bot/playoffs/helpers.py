@@ -18,7 +18,8 @@ def get_series_status():
     try:
         response = requests.get(NBA_URL, headers=setup['nba_cdn_headers']).json()
 
-        current_round = response['bracket'].get('currentRound', 0)
+        # This is index 0 whereas individual series are index 1
+        current_round = response['bracket'].get('currentRound', 0) + 1
         series_record = [0,0]
         
         for series in response['bracket']['playoffBracketSeries']:
