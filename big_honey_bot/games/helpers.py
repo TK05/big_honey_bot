@@ -30,7 +30,7 @@ def request_schedule(url, headers, file_name):
             with open(OUTPUT_PATH.joinpath(file_name), 'r') as file:
                 response = file.read().replace('\n', '')
         except FileNotFoundError:
-            response = requests.get(url).text
+            response = requests.get(url, headers=headers).text
 
         f = open(OUTPUT_PATH.joinpath(file_name), 'w', encoding='utf-8')
         f.write(response)
@@ -150,7 +150,7 @@ def get_nba_com_schedule_dict():
 
     nbacom_data = dict()
 
-    all_games = requests.get(setup['nba_url']).json()
+    all_games = requests.get(setup['nba_url'], headers=setup['nba_cdn_headers']).json()
 
     for date in all_games['leagueSchedule']['gameDates']:
         for game in date['games']:
