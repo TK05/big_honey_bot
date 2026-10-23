@@ -6,7 +6,7 @@ from praw.exceptions import APIException
 
 from big_honey_bot.config.helpers import get_env, get_pname_fname_str
 from big_honey_bot.threads.models import Reddit
-from big_honey_bot.threads.helpers import replace_nbs, get_flair_uuid_from_event_type
+from big_honey_bot.threads.helpers import clean_body, get_flair_uuid_from_event_type
 from big_honey_bot.threads.static.templates import ThreadStats
 
 
@@ -40,7 +40,7 @@ def new_thread(event):
                     break
         
         flair_uuid = get_flair_uuid_from_event_type(event.meta['event_type'])
-        event.body = replace_nbs(event.body)
+        event.body = clean_body(event.body)
         
         post_attempts = 5
         while post_attempts > 0:
@@ -80,7 +80,7 @@ def edit_thread(event):
         post = reddit.submission(id=event.meta['reddit_id'])
 
         # Clean then replace post w/ current event's body
-        event.body = replace_nbs(event.body)
+        event.body = clean_body(event.body)
         post.edit(event.body)
 
         logger.info(f"Thread updated on r/{get_env('TARGET_SUB')} - {post.id}")

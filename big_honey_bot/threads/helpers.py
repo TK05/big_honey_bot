@@ -7,10 +7,15 @@ from big_honey_bot.config.helpers import get_env
 from big_honey_bot.threads.static.headlines import gt_placeholders as gtp
 
 
-def replace_nbs(text):
+def clean_body(text):
     # Attempt replacing non breaking spaces (NBS) with an emptry string to hopefully help with
     # google cal to reddit thread formatting oddities
     text = text.replace('\xa0', '')
+
+    # Reddit deprecated legacy markdown, need to ensure markdown is now valid
+    text = text.replace("||", "|")
+    text = re.sub(r'\|\s*:\s*---\s*\|', '|:---|', text)
+
     return text
 
 
