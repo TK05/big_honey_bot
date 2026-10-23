@@ -46,9 +46,11 @@ def new_thread(event):
         while post_attempts > 0:
             try:
                 post = subreddit.submit(event.summary, event.body, flair_id=flair_uuid, send_replies=False)
-            except APIException:
-                logger.error(f"Flair UUID ({flair_uuid}) is not valid for type={event.meta['event_type']}, attempting again without flair")
+            except APIException as e:
+                logger.error(e)
+                logger.error(f"Attempting submit again without flair")
                 flair_uuid = None
+                time.sleep(1)
             # TODO: see if better handling of other/common praw errors
             except prawcore.BadRequest:
                 time.sleep(30)
