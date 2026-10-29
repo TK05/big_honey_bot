@@ -11,11 +11,20 @@ from big_honey_bot.helpers import setup, description_tags, create_hash, get_date
 from big_honey_bot.events.helpers import create_service
 
 
-class HTMLFilter(HTMLParser, ABC):
-    text = ""
+class HTMLFilter(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.text = ""
 
     def handle_data(self, data):
         self.text += data
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "br":
+            self.text += "\n"
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
 
 
 def add_meta_and_body(event):
