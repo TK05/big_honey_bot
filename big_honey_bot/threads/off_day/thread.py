@@ -27,7 +27,7 @@ logger = logging.getLogger(get_pname_fname_str(__file__))
 
 
 def get_nba_games(playoffs=False):
-    all_games = requests.get(setup['nba_url'], setup['nba_cdn_headers']).json()
+    all_games = requests.get(setup['nba_url'], headers=setup['nba_cdn_headers']).json()
 
     def get_game_data(game, for_team=''):
         game_data = []
