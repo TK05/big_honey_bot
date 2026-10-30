@@ -1,13 +1,11 @@
 import json
-import re
 from datetime import timedelta
 from html.parser import HTMLParser
 
 from gcsa.serializers.event_serializer import EventSerializer
-from retrying import retry
 
 from big_honey_bot.helpers import setup, description_tags, create_hash, get_datetime
-from big_honey_bot.events.helpers import create_service
+from big_honey_bot.events.helpers import create_service, calendar_retry
 
 
 class HTMLFilter(HTMLParser):
@@ -72,7 +70,7 @@ def add_meta_and_body(event):
     return
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def get_all_events():
     service = create_service()
     all_events = service.get_events(order_by='startTime', single_events=True)
@@ -80,7 +78,7 @@ def get_all_events():
     return all_events
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def get_all_events_with_meta():
     service = create_service()
     events = service.get_events(order_by='startTime', single_events=True)
@@ -93,7 +91,7 @@ def get_all_events_with_meta():
     return all_events
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def get_previous_event(penultimate=False, days=30):
     service = create_service()
     now = get_datetime(to_tz=True, tz=setup['timezone'])
@@ -110,7 +108,7 @@ def get_previous_event(penultimate=False, days=30):
     return event
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def get_event(event_id):
     service = create_service()
     event = service.get_event(event_id)
@@ -119,7 +117,7 @@ def get_event(event_id):
     return event
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def get_next_event():
     all_events = get_all_events()
     for event in all_events:
@@ -133,7 +131,7 @@ def get_next_event():
         return None
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def find_event(query, past=None):
     service = create_service()
     event = next(service.get_events(time_min=past, query=query))
@@ -142,7 +140,7 @@ def find_event(query, past=None):
     return event
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def find_events_by_meta(**kwargs):
     all_events = get_all_events_with_meta()
 
@@ -155,13 +153,13 @@ def find_events_by_meta(**kwargs):
     return matches
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def create_event(event_data):
     service = create_service()
     service.add_event(event_data)
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def update_event(event):
     service = create_service()
 
@@ -176,19 +174,19 @@ def update_event(event):
     service.update_event(event)
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def update_event_serial(event_json):
     service = create_service()
     service.update_event(EventSerializer.to_object(event_json))
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def delete_event(event):
     service = create_service()
     service.delete_event(event)
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+@calendar_retry
 def delete_all_events():
     service = create_service()
     events = get_all_events()
