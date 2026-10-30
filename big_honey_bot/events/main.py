@@ -1,7 +1,6 @@
 import json
 import re
 from datetime import timedelta
-from abc import ABC
 from html.parser import HTMLParser
 
 from gcsa.serializers.event_serializer import EventSerializer
